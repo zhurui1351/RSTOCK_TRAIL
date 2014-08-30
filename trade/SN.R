@@ -1,3 +1,4 @@
+library("RMySQL")
 require("quantmod")
 judgeWeek3<-function(x)
 {
@@ -9,6 +10,10 @@ SN<-function(f,path)
 {
   
   fname<-file.path(path,f)
+  #drive=dbDriver("mysql")
+  #con=dbConnect(drive,dbname='stock',user='root',password='root',host='localhost')
+  #mydata=dbGetQuery(con,"select * from SH600612")
+  #try(stockdata<-read.zoo(mydata,header=TRUE, format = "%m/%d/%Y",index.column=1),TRUE)
  # fname="/Users/ruizhu/Desktop/stock/dest/SH600697.TXT"
  # print(fname)
   #try(stockdata<-read.table(fname,header=TRUE,skip=0,sep="\t",as.is=F,fileEncoding="ISO-8859-1"),TRUE)
