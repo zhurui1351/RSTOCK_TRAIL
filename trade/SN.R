@@ -17,7 +17,7 @@ SN<-function(f,path)
  # fname="/Users/ruizhu/Desktop/stock/dest/SH600697.TXT"
  # print(fname)
   #try(stockdata<-read.table(fname,header=TRUE,skip=0,sep="\t",as.is=F,fileEncoding="ISO-8859-1"),TRUE)
- try(stockdata<-read.zoo(fname,header=TRUE, format = "%m/%d/%Y",sep="\t",fileEncoding="ISO-8859-1",index.column=1),TRUE) 
+ try(stockdata<-read.zoo(fname,header=FALSE, format = "%m/%d/%Y",sep="\t",fileEncoding="ISO-8859-1",index.column=1),TRUE) 
 # stockdata[[1]]<-format(as.Date(stockdata[[1]],"%m/%d/%Y"),"%Y-%m-%d")
   names(stockdata)<-c("Open","High","Low","Close","Volume","Amount")
  # stockdata<-read.zoo(stockdata)
