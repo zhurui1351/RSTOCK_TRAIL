@@ -12,10 +12,19 @@ computeTrend<-function(f,path,n=30) # data is a zoo object ,data has rownames c(
   myframe=data.frame(recent,index=1:length(recent))
   mylm=lm(recent~index,myframe)
   coff<-mylm$coefficients["index"]
+ 
+  
+  recentPrice=last(Cl(stockdata),5)
+  priceFrame=data.frame(recentPrice,index=1:length(recentPrice))
+  priceLm=lm(recentPrice~index,priceFrame)
+  shortTrend=priceLm$coefficients["index"]
+  
   tmp<-NULL
-  if(coff>0){
-    tmp<-list(coff,summary(coff))
-    names(tmp)<-list(f,"summary")
+ 
+  if(coff>0.2 && last(Cl(stockdata)) < 15 && last(Cl(stockdata)) > 10 && shortTrend < 0){
+    tmp<-list(c(coff,shortTrend))
+    print("h")
+    names(tmp)<-c(f)
   }
   tmp
  # x<-Cl(weekdata)
