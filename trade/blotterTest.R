@@ -1,3 +1,4 @@
+require("quantstrat")
 currency("RMB")
 stock("ZSYH", currency = "RMB", multiplier = 1)
 ls(envir = FinancialInstrument:::.instrument) #设置 .instrument环境
@@ -19,6 +20,7 @@ myTheme$col$up.border <- "grey"
 # plot OHLC series
 chart_Series(x = ZSYH, theme = myTheme, name = "ZSYH", TA = "add_SMA(n=10,col=4)")
 b.strategy <- "bFaber"
+rm.strat(b.strategy)
 initPortf(b.strategy, "ZSYH", initDate = "2007-12-31")
 initAcct(b.strategy, portfolios = b.strategy, initDate = "2007-12-31", initEq = 1e+06) #初始的资金是1e6，即1，000，000
 ls(envir = FinancialInstrument:::.instrument)

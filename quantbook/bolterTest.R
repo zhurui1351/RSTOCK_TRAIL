@@ -7,11 +7,13 @@ get("USD",envir=FinancialInstrument:::.instrument)
 Sys.setenv(TZ="UTC")
 startDate <- '1998-01-01'
 endDate <- '2013-07-31'
-getSymbols('SPY', from=startDate, to=endDate, index.class=c("POSIXt","POSIXct"),adjust=T)
+#getSymbols('XLE', from=startDate, to=endDate, index.class=c("POSIXt","POSIXct"),adjust=T)
+SPY=stockdata
 SPY=to.monthly(SPY, indexAt='firstof', drop.time=FALSE)
 SPY$SMA10m <- SMA(Cl(SPY), 10)
+colnames(SPY)<-c("Open","High","Low","Close","Volume","SMA10m")
 tail(SPY,3)
-
+SPY=try.xts(SPY)
 # initial portfolio and account
 b.strategy <- "bFaber"
 require(quantstrat)
