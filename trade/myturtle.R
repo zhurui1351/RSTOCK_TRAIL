@@ -9,7 +9,7 @@ try(rm("portfolio","account","N",
        "TxnPrice","initDate","initEq","Posn","verbose"),silent=TRUE)
 path="/Users/ruizhu/Desktop/stock/dest"
 files<-dir(path)
-f = files[5]
+f = files[1000]
 Sys.setenv(TZ="UTC")
 fname<-file.path(path,f)
 try(stockdata<-read.zoo(fname,header=FALSE, format = "%m/%d/%Y",sep="\t",fileEncoding="ISO-8859-1",index.column=1),TRUE) 
@@ -167,8 +167,9 @@ for( i in 57:NROW(x) ){ # 假设所有日期相同 57:NROW(x)
       } 
     else
       # 离场和止损
-      if( #( Posn > 0 && ( as.numeric(Lo(x[i-1,]))  <  as.numeric(x[i-2,'Min20']) || Lo(x[i-1,])  < Stop ) ) ||
-            ( Posn < 0 && ( as.numeric(Hi(x[i-1,])) > as.numeric(x[i-2,'Max20']) || Hi(x[i-1,]) > Stop ) ) ) {
+      if( ( Posn > 0 && ( as.numeric(Lo(x[i-1,]))  <  as.numeric(x[i-2,'Min20']) || Lo(x[i-1,])  < Stop ) )
+        #  ||            ( Posn < 0 && ( as.numeric(Hi(x[i-1,])) > as.numeric(x[i-2,'Max20']) || Hi(x[i-1,]) > Stop ) )
+          ) {
         addTxn(Portfolio=portfolio, Symbol=symbol, TxnDate=CurrentDate,
                TxnPrice=ClosePrice, TxnQty = -Posn , TxnFees=0, verbose=verbose)
         N = as.numeric(x[i-1,'N'])
