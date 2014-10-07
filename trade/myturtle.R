@@ -1,21 +1,28 @@
+#rm(list=ls(all=T))
 require(quantmod)
 require(TTR)
-require(blotter)
-
-# 清理R环境，如果该demo程序之前运行过
+library(blotter)
 try(rm("account.turtles","portfolio.turtles",pos=.blotter),silent=TRUE)
 try(rm("portfolio","account","N",
        "symbol","symbols","ClosePrice","CurrentDate",
        "equity","Units","maxUnits","size","Stop","equity",
        "TxnPrice","initDate","initEq","Posn","verbose"),silent=TRUE)
-
-
+path="/Users/ruizhu/Desktop/stock/dest"
+files<-dir(path)
+f = files[5]
+Sys.setenv(TZ="UTC")
+fname<-file.path(path,f)
+try(stockdata<-read.zoo(fname,header=FALSE, format = "%m/%d/%Y",sep="\t",fileEncoding="ISO-8859-1",index.column=1),TRUE) 
+colnames(stockdata)<-c("Open","High","Low","Close","Volume","Amount")
+time(stockdata)=as.POSIXct(time(stockdata))
+stockdata=as.xts(stockdata)
+strat<-list()
 # 设定初始值
-initDate="2008-01-01"
+initDate="2000-01-01"
 initEq=100000
 print("Initializing portfolio and account structure")
 # 构建一个带三只股票的小型组合
-symbols = c("XLF")#, "XLP")#,""XLE "XLY", "XLV", "XLI", "XLB", "XLK", "XLU")
+symbols = c("stockdata")#, "XLP")#,""XLE "XLY", "XLV", "XLI", "XLB", "XLK", "XLU")
 currency("USD")
 for(symbol in symbols){
   stock(symbol, currency="USD",multiplier=1)
@@ -36,26 +43,24 @@ updateStrat <- function(Portfolio, Symbol, TxnDate,
   # TxnPrice: 最后交易价格
   # TxnN: 为最后交易结算N
   
-  # 输出：
+  # 输出 
   # 没有输出。在本地命名空间修改STRATEGY
   
   # 函数：
   # 保存交易事务与计算，返回投资组合
-#  pname=Portfolio
- # NewTxn = xts(t(c(PosUnitsQty, UnitSize, StopPrice, TxnPrice, TxnN)), order.by=as.POSIXct(TxnDate))
-#  colnames(NewTxn) = c('Pos.Units', 'Unit.Size', 'Stop.Price', 'Txn.Price', 'Txn.N')
-#  Portfolio<-getPortfolio(Portfolio)
-#  Portfolio[[Symbol]]$strat <- rbind(Portfolio[[Symbol]]$strat, NewTxn)
- # assign( paste("portfolio",pname,sep='.'), Portfolio, envir=.blotter )
+  #  pname=Portfolio
+  # NewTxn = xts(t(c(PosUnitsQty, UnitSize, StopPrice, TxnPrice, TxnN)), order.by=as.POSIXct(TxnDate))
+  #  colnames(NewTxn) = c('Pos.Units', 'Unit.Size', 'Stop.Price', 'Txn.Price', 'Txn.N')
+  #  Portfolio<-getPortfolio(Portfolio)
+  #  Portfolio[[Symbol]]$strat <- rbind(Portfolio[[Symbol]]$strat, NewTxn)
+  # assign( paste("portfolio",pname,sep='.'), Portfolio, envir=.blotter )
   NewTxn = xts(t(c(PosUnitsQty, UnitSize, StopPrice, TxnPrice, TxnN)), order.by=as.POSIXct(TxnDate))
   ss <- get('strat')
   ss$strat <- rbind(ss$strat, NewTxn)
   assign('strat',ss,pos=.GlobalEnv)
+#  browser()
 }
 
-getSymbols(symbols, index.class="POSIXct", from=initDate, source="yahoo")
-# getSymbols缺省为Date索引。在此我们将其改为用POSIXct。
-# getSymbols(symbols, index.class=c("POSIXt","POSIXct"), from=initDate, source="yahoo")
 
 # 创建一个投资组合对象和一个账户对象
 portfolio = "turtles"
@@ -65,21 +70,20 @@ initAcct(name=account,portfolios="turtles", initDate=initDate, initEq=initEq)
 
 # 该表保存与策略有关的交易事务相关信息
 # 将其存放到portfolio对象
-Portfolio<-getPortfolio(portfolio)
 for(symbol in symbols){
   #Portfolio[[symbol]]$strat <- xts( as.matrix(t(c(0,0,0,0,0))), order.by=as.POSIXct(initDate) )
   #colnames(Portfolio[[symbol]]$strat) <- c('Pos.Units', 'Unit.Size', 'Stop.Price', 'Txn.Price', 'Txn.N')
+  
   strat_tmp <- xts( as.matrix(t(c(0,0,0,0,0))), order.by=as.POSIXct(initDate) )
   colnames(strat_tmp) <- c('Pos.Units', 'Unit.Size', 'Stop.Price', 'Txn.Price', 'Txn.N')
   ss <- get('strat')
   ss$strat=strat_tmp
   assign('strat',ss,pos=.GlobalEnv)
-  
 }
 # 现在再将其放回所属处
 #assign( "portfolio.turtles", Portfolio , envir=.blotter )
 #rm("Portfolio")
-
+stockdata=stockdata['2010/']
 # 构建指标
 print("Setting up indicators")
 for(symbol in symbols){
@@ -106,7 +110,7 @@ for(symbol in symbols){
   x$Max55 <- runMax(x[,grep('High',colnames(x))],55)
   
   # 仓位规模参数c('High','Low','Close')
-  x$N <- ATR(x[,c(2,3,4)], n=20, maType=EMA, wilder=TRUE)[,'atr']
+  x$N <- 0.1 #ATR(x[,c(2,3,4)], n=20, maType=EMA, wilder=TRUE)[,'atr']
   assign(symbol,x)
 }
 # 投资组合参数
@@ -144,50 +148,54 @@ for( i in 57:NROW(x) ){ # 假设所有日期相同 57:NROW(x)
                TxnDate=CurrentDate, TxnPrice=ClosePrice,
                TxnQty = UnitSize , TxnFees=0, verbose=verbose)
         N = as.numeric(x[i-1,'N'])
- #       updateStrat(Portfolio=portfolio, Symbol=symbol,
-  #                  TxnDate = CurrentDate, PosUnitsQty = 1,
-   #                 UnitSize = UnitSize, StopPrice = (ClosePrice-2*N),
-    #                TxnPrice = ClosePrice, TxnN = N)
-      } else
+               updateStrat(Portfolio=portfolio, Symbol=symbol,
+                          TxnDate = CurrentDate, PosUnitsQty = 1,
+                         UnitSize = UnitSize, StopPrice = (ClosePrice-2*N),
+                        TxnPrice = ClosePrice, TxnN = N)
+       # browser()
+      } #else
         # 初始化空头仓位
-        if( as.numeric(Lo(x[i-1,]))  < as.numeric(x[i-2,'Min55']) ) {
-          addTxn(Portfolio=portfolio, Symbol=symbol,
-                 TxnDate=CurrentDate, TxnPrice=ClosePrice,
-                 TxnQty = -UnitSize , TxnFees=0, verbose=verbose)
-          N = as.numeric(x[i-1,'N'])
-  #        updateStrat(Portfolio=portfolio, Symbol = symbol,
-   #                   TxnDate = CurrentDate, PosUnitsQty = Units, UnitSize = UnitSize,
-    #                  StopPrice = (ClosePrice +2*N), TxnPrice = ClosePrice, TxnN = N)
-        }
-    } else
+      #if( as.numeric(Lo(x[i-1,]))  < as.numeric(x[i-2,'Min55']) ) {
+      #   addTxn(Portfolio=portfolio, Symbol=symbol,
+      #          TxnDate=CurrentDate, TxnPrice=ClosePrice,
+      #          TxnQty = -UnitSize , TxnFees=0, verbose=verbose)
+      #   N = as.numeric(x[i-1,'N'])
+      #           updateStrat(Portfolio=portfolio, Symbol = symbol,
+      #                      TxnDate = CurrentDate, PosUnitsQty = Units, UnitSize = UnitSize,
+      #                     StopPrice = (ClosePrice +2*N), TxnPrice = ClosePrice, TxnN = N)
+      # }
+      } 
+    else
       # 离场和止损
-      if( ( Posn > 0 && ( as.numeric(Lo(x[i-1,]))  <  as.numeric(x[i-2,'Min20']) || Lo(x[i-1,])  < Stop ) ) ||
+      if( #( Posn > 0 && ( as.numeric(Lo(x[i-1,]))  <  as.numeric(x[i-2,'Min20']) || Lo(x[i-1,])  < Stop ) ) ||
             ( Posn < 0 && ( as.numeric(Hi(x[i-1,])) > as.numeric(x[i-2,'Max20']) || Hi(x[i-1,]) > Stop ) ) ) {
         addTxn(Portfolio=portfolio, Symbol=symbol, TxnDate=CurrentDate,
                TxnPrice=ClosePrice, TxnQty = -Posn , TxnFees=0, verbose=verbose)
         N = as.numeric(x[i-1,'N'])
-#        updateStrat(Portfolio = portfolio, Symbol = symbol,
- #                   TxnDate = CurrentDate, PosUnitsQty = 0, UnitSize = UnitSize,
-  #                  StopPrice = NA, TxnPrice = ClosePrice, TxnN = N)
+                updateStrat(Portfolio = portfolio, Symbol = symbol,
+                           TxnDate = CurrentDate, PosUnitsQty = 0, UnitSize = UnitSize,
+                          StopPrice = NA, TxnPrice = ClosePrice, TxnN = N)
+      #  browser()
       } else
         # 加到多头仓位
         if( Posn > 0  && Units < maxUnits && Hi(x[i-1,]) > ( TxnPrice + N * 0.5 ) ) {
           addTxn(Portfolio=portfolio, Symbol=symbol, TxnDate=CurrentDate,
                  TxnPrice=ClosePrice, TxnQty = UnitSize , TxnFees=0, verbose=verbose)
           N = as.numeric(x[i-1,'N'])
-#          updateStrat(Portfolio = portfolio, Symbol = symbol, TxnDate = CurrentDate,
- #                     PosUnitsQty = Units+1, UnitSize = UnitSize,
-  #                    StopPrice = (ClosePrice-2*N), TxnPrice = ClosePrice, TxnN = N)
-        } else
+                   updateStrat(Portfolio = portfolio, Symbol = symbol, TxnDate = CurrentDate,
+                               PosUnitsQty = Units+1, UnitSize = UnitSize,
+                              StopPrice = (ClosePrice-2*N), TxnPrice = ClosePrice, TxnN = N)
+       #   browser()
+        }# else
           # 加到空头仓位
-          if( Posn < 0 && Units < maxUnits && Lo(x[i-1,])  < ( TxnPrice - N * 0.5 ) ) {
-            addTxn(Portfolio=portfolio, Symbol=symbol, TxnDate=CurrentDate,
-                   TxnPrice=Cl(x[i,]), TxnQty = -UnitSize , TxnFees=0, verbose=verbose)
-            N = as.numeric(x[i-1,'N'])
-#            updateStrat(Portfolio=portfolio, Symbol=symbol, TxnDate = CurrentDate,
- #                       PosUnitsQty = Units+1, UnitSize = UnitSize, StopPrice = (ClosePrice+2*N),
-  #                      TxnPrice = ClosePrice, TxnN = N)
-          } #else
+    #if( Posn < 0 && Units < maxUnits && Lo(x[i-1,])  < ( TxnPrice - N * 0.5 ) ) {
+    #       addTxn(Portfolio=portfolio, Symbol=symbol, TxnDate=CurrentDate,
+    #              TxnPrice=Cl(x[i,]), TxnQty = -UnitSize , TxnFees=0, verbose=verbose)
+    #       N = as.numeric(x[i-1,'N'])
+    #                   updateStrat(Portfolio=portfolio, Symbol=symbol, TxnDate = CurrentDate,
+    #                              PosUnitsQty = Units+1, UnitSize = UnitSize, StopPrice = (ClosePrice+2*N),
+    #                             TxnPrice = ClosePrice, TxnN = N)
+    #     } #else
     # 维持仓位
   } # 结束证券代码循环
   # 既然已经更新所有交易，是时候将其在订单薄中作标记
