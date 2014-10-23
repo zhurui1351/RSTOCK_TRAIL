@@ -7,12 +7,13 @@ try(rm("portfolio","account","N",
        "symbol","symbols","ClosePrice","CurrentDate",
        "equity","Units","maxUnits","size","Stop","equity",
        "TxnPrice","initDate","initEq","Posn","verbose"),silent=TRUE)
-path="/Users/ruizhu/Desktop/stock/dest"
+path="/home/zhu/Desktop/stock/data/stock"
 files<-dir(path)
-f = files[1000]
+#f = files[100]
+f="SH600100.TXT"
 Sys.setenv(TZ="UTC")
 fname<-file.path(path,f)
-try(stockdata<-read.zoo(fname,header=FALSE, format = "%m/%d/%Y",sep="\t",fileEncoding="ISO-8859-1",index.column=1),TRUE) 
+try(stockdata<-read.zoo(fname,header=FALSE, format = "%m/%d/%Y",sep=",",fileEncoding="ISO-8859-1",index.column=1),TRUE) 
 colnames(stockdata)<-c("Open","High","Low","Close","Volume","Amount")
 time(stockdata)=as.POSIXct(time(stockdata))
 stockdata=as.xts(stockdata)
