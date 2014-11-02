@@ -4,7 +4,7 @@ cd ../../data/stock
 export LC_ALL=C
 for f in *.TXT
 do
-dos2unix $f
+if [ ! -s $f ]; then rm $f; else dos2unix $f ; fi
 done
 
 for f in *.TXT
