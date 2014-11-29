@@ -133,7 +133,7 @@ for( i in 57:NROW(x) ){ # 假设所有日期相同 57:NROW(x)
     TxnPrice = as.numeric(s[,'Txn.Price'])
     N = as.numeric(s[,'Txn.N'])
     Stop = as.numeric(s[,'Stop.Price'])
-    
+    browser()
     UnitSize = as.numeric(trunc((size * equity)/(x[i-1,'N']*ClosePrice)))
     
     # 入市（假设以收盘价填入，因此考虑了滑价）
