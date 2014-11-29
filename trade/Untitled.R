@@ -1,0 +1,5 @@
+library(plyr)
+library(quantmod)
+library(TTR)
+library(ggplot2)
+library(scales)

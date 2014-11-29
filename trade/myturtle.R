@@ -31,29 +31,7 @@ for(symbol in symbols){
 #创建函数保存过程值
 updateStrat <- function(Portfolio, Symbol, TxnDate,
                         PosUnitsQty, UnitSize, StopPrice, TxnPrice, TxnN)
-{ # @作者 Peter Carl
-  
-  # 描述：
-  # 添加交易事务相关数据到STRATEGY时间序列
-  
-  # 输入：
-  # TxnDate: 以ISO 8106格式的交易日期，例如：'2008-09-01'
-  # PosUnitsQty: 总交易数量（股数）
-  # StopPrice: 交易完成价格
-  # TxnPrice: 最后交易价格
-  # TxnN: 为最后交易结算N
-  
-  # 输出 
-  # 没有输出。在本地命名空间修改STRATEGY
-  
-  # 函数：
-  # 保存交易事务与计算，返回投资组合
-  #  pname=Portfolio
-  # NewTxn = xts(t(c(PosUnitsQty, UnitSize, StopPrice, TxnPrice, TxnN)), order.by=as.POSIXct(TxnDate))
-  #  colnames(NewTxn) = c('Pos.Units', 'Unit.Size', 'Stop.Price', 'Txn.Price', 'Txn.N')
-  #  Portfolio<-getPortfolio(Portfolio)
-  #  Portfolio[[Symbol]]$strat <- rbind(Portfolio[[Symbol]]$strat, NewTxn)
-  # assign( paste("portfolio",pname,sep='.'), Portfolio, envir=.blotter )
+{
   NewTxn = xts(t(c(PosUnitsQty, UnitSize, StopPrice, TxnPrice, TxnN)), order.by=as.POSIXct(TxnDate))
   ss <- get('strat')
   ss$strat <- rbind(ss$strat, NewTxn)
@@ -224,4 +202,17 @@ if(require(PerformanceAnalytics))  {
                             main='Turtle Demo Instrument Return on Equity',geometric=FALSE)
 }
 getEndEq(account,Sys.time())
-
+library(PerformanceAnalytics)
+rets <- PortfReturns(Account='turtles')
+rownames(rets) <- NULL
+tab.perf <- table.Arbitrary(rets,
+                            metrics=c(
+                              "Return.cumulative",
+                              "Return.annualized",
+                              "SharpeRatio.annualized",
+                              "CalmarRatio"),
+                            metricsNames=c(
+                              "Cumulative Return",
+                              "Annualized Return",
+                              "Annualized Sharpe Ratio",
+                              "Calmar Ratio"))
