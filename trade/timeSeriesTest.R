@@ -135,3 +135,41 @@ pacf(volcanodustseries, lag.max=20,plot=FALSE)
 
 kingstimeseriesarima <- arima(kingstimeseries, order=c(0,1,1))
 kingstimeseriesarima
+
+getDifferData <- function(init,c=1,a=0.5,n=500,mean=0,var=0.5)
+{
+  y = c(init)
+  for(i in 2 : n)
+  {
+    m = y[i-1]
+    n = c + a*m + rnorm(1,mean,var)
+    y= c(y,n)
+  }
+  return(y)
+}
+
+y = getDifferData(3,a=1,n=1000)
+
+plot(y,type='l')
+abline(a=mean(y),b=0)
+acf(y)
+pacf(y)
+Box.test(y, lag=30, type="Ljung-Box") 
+
+
+getMaData <- function(c=1,a=0.5,n=500,mean=0,var=0.5)
+{
+  r = rnorm(n,mean,var)
+  y = c()
+  for(i in 2 : n)
+  {
+    n = c + a*r[i-1]+ r[i]
+    y= c(y,n)
+  }
+  return(y)
+}
+m=getMaData()
+plot(m,type='l')
+acf(m)
+
+Box.test(m, lag=1, type="Ljung-Box") 

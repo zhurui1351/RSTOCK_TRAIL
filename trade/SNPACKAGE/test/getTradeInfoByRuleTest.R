@@ -13,12 +13,16 @@ data = data.frame(index=c('2000-09-26','2000-09-27','2000-10-26','2000-10-27','2
 
 data =xts(data[,2:8],order.by = as.POSIXct(data[,1]))
 
-#周一涨的数据,用规则c(1,0,0,0,0)表示周一涨，交易周期按5天计算
+#满足周一涨的数据,则周二开盘买，收牌平仓。用规则c(1,0,0,0,0)表示周一涨，交易周期按5天计算
 
-result = compareToRule(c(1,0,0,0,0),data,tradeDays = 5)
+result = getTradeInfoByRule(c(1,0,0,0,0),data,2,2,tradeDays = 5)
+#期望返回结果，只有39周的周二满足，当天买卖
+expect_value1 = data[2,]
 
-#期望得到的结果,满足条件的频率在0.66 有两周满足条件，一共有三周
-expected_result = c(0.6666667,2,3)
+expect_equal(result[[1]]$data,data[2,])
+expect_equal(result[[1]]$type,'buy')
 
-#由于是浮点数 允许存在一定的误差
-expect_equal(expected_result,result,tolerance = .002)
+expect_value1 = data[2,]
+
+expect_equal(result[[2]]$data,data[2,])
+expect_equal(result[[2]]$type,'sell')

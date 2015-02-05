@@ -1,15 +1,12 @@
-library(plyr)
 library(quantmod)
 library(TTR)
-library(ggplot2)
-library(scales)
 library(quantstrat)
-path="/Users/ruizhu/Desktop/stock/dest"
+path="D:/stock/dest"
 files<-dir(path)
-f = files[1000]
+f = files[100]
 Sys.setenv(TZ="UTC")
 fname<-file.path(path,f)
-try(stockdata<-read.zoo(fname,header=FALSE, format = "%m/%d/%Y",sep="\t",fileEncoding="ISO-8859-1",index.column=1),TRUE) 
+try(stockdata<-read.zoo(fname,header=FALSE, format = "%m/%d/%Y",sep=",",fileEncoding="ISO-8859-1",index.column=1),TRUE) 
 colnames(stockdata)<-c("Open","High","Low","Close","Volume","Amount")
 time(stockdata)=as.POSIXct(time(stockdata))
 stockdata=as.xts(stockdata)

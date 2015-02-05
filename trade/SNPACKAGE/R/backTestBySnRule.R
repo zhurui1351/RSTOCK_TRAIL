@@ -1,5 +1,5 @@
 #回测一条规则
-backTestBySnRule <- function(rule,pdata,buyday,sellday,short=F,initEq = 100000,verbose=TRUE,tradeDays=5)
+backTestBySnRule <- function(rule,pdata,buyday,sellday,short=F,initEq = 100000,verbose=TRUE,tradeDays=5,type='iw')
 {
   #清除环境变量
  # rm("mydata",pos = .blotter)
@@ -11,7 +11,7 @@ backTestBySnRule <- function(rule,pdata,buyday,sellday,short=F,initEq = 100000,v
   #blotter包需要全局变量
   mydata <<- pdata
   #assign("mydata",pdata,pos = .GlobalEnv)
-  stockdata = initialData(mydata)
+  stockdata = initialData(mydata,type=type)
   strategy <- "mydata"
   #初始化货币
   currency("USD")
@@ -24,7 +24,7 @@ backTestBySnRule <- function(rule,pdata,buyday,sellday,short=F,initEq = 100000,v
   initAcct(strategy, portfolios = strategy, initDate = "1950-01-01", initEq = initEq) #初始的资金是1，000，000
   
   #交易日
-  tradeDays = getTradeInfoInByRule(rule,stockdata,buyday,sellday,tradeDays=tradeDays)
+  tradeDays = getTradeInfoByRule(rule,stockdata,buyday,sellday,tradeDays=tradeDays)
   #对交易日的数据逐个处理
   for( i in 1:length(tradeDays) )
   {
@@ -41,8 +41,8 @@ backTestBySnRule <- function(rule,pdata,buyday,sellday,short=F,initEq = 100000,v
     #获取当前开盘价
     openPrice <- as.numeric(Op(currentData))
     #全仓交易
-     #unitSize <-as.numeric(trunc(equity/closePrice))
-    unitSize <- 1000
+     unitSize <-as.numeric(trunc(equity/openPrice))
+    #unitSize <- 1000
     #type 为 buy 加仓， 为sell 平仓 
     # 如果short为true 则是卖空
     
@@ -70,7 +70,7 @@ backTestBySnRule <- function(rule,pdata,buyday,sellday,short=F,initEq = 100000,v
     if(posn < 0 && currentType == 'sell')
     {
       addTxn(Portfolio=strategy, Symbol=strategy, TxnDate=currentDate,
-             TxnPrice=closePrice, TxnQty = -1 * posn , TxnFees=0, verbose=verbose)
+             TxnPrice=closePrice, TxnQty = -1*posn , TxnFees=0, verbose=verbose)
     }
     
     #更新账户、头寸信息
@@ -82,7 +82,7 @@ backTestBySnRule <- function(rule,pdata,buyday,sellday,short=F,initEq = 100000,v
   #获取最终资金额
  #  pdf("c:/1.pdf")
   #绘制资金曲线图
-  chart.Posn(Portfolio=strategy,Symbol=strategy)
+  #chart.Posn(Portfolio=strategy,Symbol=strategy)
   #获得总的交易信息，如笔数、胜负率等
   states<-tradeStats(strategy,strategy)
   #获取每笔交易的信息

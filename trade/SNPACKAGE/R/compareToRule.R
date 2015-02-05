@@ -10,7 +10,7 @@ compareToRule <- function(rule,mydata,tradeDays=5)
   while(i <= total)
   {
     #周内循环
-    infoInOneWeek = getVolatilityInOneWeek(mydata,i,tradeDays)
+    infoInOneWeek = getVolatility(mydata,i,tradeDays)
     vol = infoInOneWeek[[1]]
     num = infoInOneWeek[[2]]
     i = i + num
