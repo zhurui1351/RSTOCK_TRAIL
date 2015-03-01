@@ -1,5 +1,5 @@
 #回测一条规则
-backTestBySnRule <- function(rule,pdata,buyday,sellday,short=F,initEq = 100000,verbose=TRUE,tradeDays=5,type='iw')
+backTestBySnRule <- function(rule,pdata,buyday,sellday,short=F,initEq = 100000,verbose=TRUE,tradeDays=5,type='iw',computePosition = fixPosition(size=1000))
 {
   #清除环境变量
  # rm("mydata",pos = .blotter)
@@ -31,21 +31,25 @@ backTestBySnRule <- function(rule,pdata,buyday,sellday,short=F,initEq = 100000,v
     currentData = tradeDays[[i]]$data
     currentType = tradeDays[[i]]$type
     #获取当前交易日期
-    currentDate <- time(currentData)
+    currentDate = time(currentData)
     #获取最近的头寸
-    equity<-getEndEq(strategy, currentDate)
+    equity = getEndEq(strategy, currentDate)
     #当前仓位
-    posn <- getPosQty(strategy, Symbol=strategy, Date=currentDate)
+    posn = getPosQty(strategy, Symbol=strategy, Date=currentDate)
     #获取当前收盘价
-    closePrice <- as.numeric(Cl(currentData))
+    closePrice = as.numeric(Cl(currentData))
     #获取当前开盘价
-    openPrice <- as.numeric(Op(currentData))
+    openPrice = as.numeric(Op(currentData))
     #全仓交易
-     unitSize <-as.numeric(trunc(equity/openPrice))
+    # unitSize <-as.numeric(trunc(equity/openPrice))
     #unitSize <- 1000
     #type 为 buy 加仓， 为sell 平仓 
     # 如果short为true 则是卖空
-    
+    unitSize = computePosition(eq =equity,price=openPrice,initeq = initEq,tradeDate=currentDate)
+    if(unitSize == 0)
+    {
+      next
+    }
     if(posn == 0 && currentType == 'buy')
     {
       #做空

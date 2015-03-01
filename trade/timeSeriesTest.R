@@ -173,3 +173,53 @@ plot(m,type='l')
 acf(m)
 
 Box.test(m, lag=1, type="Ljung-Box") 
+
+
+#案例研究
+da = read.table('C:/R/ch3data/w-petroprice.txt',header = T)
+da1 = read.table('C:/R/ch3data/w-gasoline.txt')
+#使用对数价格序列
+pgs = log(da1[,1])
+pus = log(da$US)
+#日期时间
+tdx = c(1:717) / 52 + 1997
+par(mfcol=c(2,1))
+#绘图查看数据
+plot(tdx,pgs,xlab='year',ylab='ln(price)',type='l')
+title(main='（a） Gosolin')
+plot(tdx,pus,xlab='year',ylab='ln(price)',type='l')
+title(main='（b） Crude oil')
+#差分，也就是增长率
+dpgs=diff(pgs)
+#acf和pacf图可以看出有ar的特征
+acf(dpgs)
+pacf(dpgs)
+#用ar建模
+m1 = ar(diff(pgs),method='mle')
+#查看模型的阶数
+m1$order
+#增长率并不显著与0，因此ar的mean可以视为0，不带常数项
+t.test(dpgs)
+#重新用arima做模型，去掉常数项
+m1 = arima(dpgs,order=c(5,0,0),include.mean = F)
+m1
+#4阶t比小于1，可以去掉
+m1 = arima(dpgs,order=c(5,0,0),include.mean = F,fixed=c(NA,NA,NA,0,NA))
+m1
+
+dpus = diff(pus)
+#两者差分的线性关系
+m3 = lm(dpgs ~ -1 +dpus)
+summary(m3)
+#检验残差,残差有序列关系
+acf(m3$residuals,lag=20)
+pacf(m3$residuals,lag=20)
+m4 = ar(m3$residuals,method='mle')
+m4$order
+#建模
+m4 = arima(dpgs,order=c(6,0,0),include.mean = F,xreg = dpus)
+m4
+#用5阶模型
+m4 = arima(dpgs,order=c(5,0,0),include.mean = F,xreg = dpus)
+m4 = arima(dpgs,order=c(5,0,0),include.mean = F,xreg = dpus,fixed = c(NA,NA,NA,0,NA,NA))
+tsdiag(m4,gof=20)
