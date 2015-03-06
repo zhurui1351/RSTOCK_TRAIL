@@ -69,4 +69,12 @@ New_MA <- function (){
   strategy.performance.snapshoot(models, T)
   models$ma.cross$trade.summary
 }
-  
+
+testdata =data$GBPUSDhour_
+#取日数据
+all_days = unique(strftime(index(testdata),'%Y-%m-%d'))
+for(day in all_days[1:2])
+{
+ daydata = testdata[day]
+ h_data = to.period(daydata,'hours',3)
+}

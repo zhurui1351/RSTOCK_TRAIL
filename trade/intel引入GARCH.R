@@ -1,3 +1,4 @@
+library(fGarch)
 da = read.table('C:/R/ch4data/m-intcsp7309.txt',header=T)
 
 head(da)
@@ -24,3 +25,18 @@ Box.test(y^2,lag=12,type='Ljung')
 #拉格朗日测试
 source('C:/mac/desk/R/code/trade/time_series_case/archTest.R', echo=TRUE)
 archTest(y,12)
+
+#求arch模型
+m1 = garchFit(-1~garch(3,0),data=intc,trace=F)
+summary(m1)
+#去掉不显著的参数
+m2 = garchFit(-1~garch(3,0),data=intc,trace=F)
+summary(m2)
+resi = residuals(m2,standardize=T)
+tdx = c(1:444) / 12 +  1973
+#绘图
+par(mfcol=c(3,3))
+plot(tdx,resi,xlab='year',ylab='stand-resi',type='l')
+acf(resi,lag=20)
+pacf(resi,lag=20)
+plot(m2)

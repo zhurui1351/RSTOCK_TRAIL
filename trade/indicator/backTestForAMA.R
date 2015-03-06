@@ -33,8 +33,8 @@ backTestForAMA<-function(stockdata,n=5,fast=2,slow=10,initEq=1000000,initDate="1
       #持仓为零时，判断是否买入
       if(Posn ==  0)
       {
-        #收盘价小于ama，买入
-        if(ClosePrice < as.numeric(stockdata[i-1,'ama']))
+       
+        if(ClosePrice > as.numeric(stockdata[i-1,'ama']))
         {
           addTxn(portfolio, Symbol=symbol, TxnDate=CurrentDate,
                  TxnPrice=ClosePrice, TxnQty = UnitSize , TxnFees=0,verbose=verbose) 
@@ -42,8 +42,7 @@ backTestForAMA<-function(stockdata,n=5,fast=2,slow=10,initEq=1000000,initDate="1
       }
       else
       {
-        #收盘价大于ama，卖出
-        if(ClosePrice > as.numeric(stockdata[i-1,'ama']))
+        if(ClosePrice < as.numeric(stockdata[i-1,'ama']))
         {
           addTxn(portfolio, Symbol=symbol, TxnDate=CurrentDate,
                  TxnPrice=ClosePrice, TxnQty = -Posn , TxnFees=0,verbose=verbose) 
@@ -92,7 +91,7 @@ backTestForMA<-function(stockdata,n=5,initEq=1000000,initDate="1990-01-01")
       if(Posn ==  0)
       {
         #收盘价小于ama，买入
-        if(ClosePrice < as.numeric(stockdata[i-1,'ma']))
+        if(ClosePrice > as.numeric(stockdata[i-1,'ma']))
         {
           addTxn(portfolio, Symbol=symbol, TxnDate=CurrentDate,
                  TxnPrice=ClosePrice, TxnQty = UnitSize , TxnFees=0,verbose=verbose) 
@@ -101,7 +100,7 @@ backTestForMA<-function(stockdata,n=5,initEq=1000000,initDate="1990-01-01")
       else
       {
         #收盘价大于ama，卖出
-        if(ClosePrice > as.numeric(stockdata[i-1,'ma']))
+        if(ClosePrice < as.numeric(stockdata[i-1,'ma']))
         {
           addTxn(portfolio, Symbol=symbol, TxnDate=CurrentDate,
                  TxnPrice=ClosePrice, TxnQty = -Posn , TxnFees=0,verbose=verbose) 
@@ -122,7 +121,7 @@ source.with.encoding('C:/mac/desk/R/code/trade/indicator/AMA.R', encoding='UTF-8
 path="D:/stock/dest"
 Sys.setenv(TZ="UTC")
 files<-dir(path)
-testNum = 100
+testNum = 10
 subset = sample(c(1:length(files)),testNum)
 result = list()
 n=5
