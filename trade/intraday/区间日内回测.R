@@ -47,27 +47,52 @@ for(day in all_days)
       {
         addTxn(symbol, Symbol=symbol, TxnDate=CurrentDate,
                TxnPrice=ClosePrice, TxnQty = UnitSize , TxnFees=0,verbose=verbose)
-        print('enter :' )
+        print('enter long:' )
+      }
+      if(ClosePrice < temp_low)
+      {
+        addTxn(symbol, Symbol=symbol, TxnDate=CurrentDate,
+               TxnPrice=ClosePrice, TxnQty = -UnitSize , TxnFees=0,verbose=verbose)
+        print('enter short:' )
       }
     }
-    else
+   if(Posn > 0)
     {
       #exit when close if position not equal to 0
       if(i == nrow(minute_data))
       {
         addTxn(symbol, Symbol=symbol, TxnDate=CurrentDate,
                TxnPrice=ClosePrice, TxnQty = -Posn , TxnFees=0,verbose=verbose) 
-        print("exit")
+        print("exit long")
       }
       #stop
       if(ClosePrice < temp_low)
       {
         addTxn(symbol, Symbol=symbol, TxnDate=CurrentDate,
                TxnPrice=ClosePrice, TxnQty = -Posn , TxnFees=0,verbose=verbose) 
-        print('stop')
+        print('stop long')
       }
       
     }
+   
+   if(Posn < 0)
+   {
+     #exit when close if position not equal to 0
+     if(i == nrow(minute_data))
+     {
+       addTxn(symbol, Symbol=symbol, TxnDate=CurrentDate,
+              TxnPrice=ClosePrice, TxnQty = Posn , TxnFees=0,verbose=verbose) 
+       print("exit short")
+     }
+     #stop
+     if(ClosePrice > temp_high)
+     {
+       addTxn(symbol, Symbol=symbol, TxnDate=CurrentDate,
+              TxnPrice=ClosePrice, TxnQty = -Posn , TxnFees=0,verbose=verbose) 
+       print('stop short')
+     }
+     
+   }
     updatePortf(symbol, Dates = CurrentDate)
     updateAcct(symbol, Dates = CurrentDate)
     updateEndEq(symbol, Dates = CurrentDate)

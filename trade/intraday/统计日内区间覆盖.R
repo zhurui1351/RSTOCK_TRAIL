@@ -13,13 +13,20 @@ colnames(daydata) <- c("Open","High","Low","Close","Volume")
 
 #取日数据
 all_days = unique(strftime(index(priceData),'%Y-%m-%d'))
+#区间最高为当日最高
 h_count = 0
+#区间最低为当日最低
 l_count = 0
 h_l_count = 0
+#区间低点同日低点比较
 leveltolow = c()
+#区间高点同日高点比较
 leveltohigh = c()
+#区间收盘同日收盘比较
 leveltoclose = c()
+#区间涨跌与日涨跌比较
 upfallthesame = 0
+#震幅占比
 volatilerange =c()
 for(day in all_days)
 {
