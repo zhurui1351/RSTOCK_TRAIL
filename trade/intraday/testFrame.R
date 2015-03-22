@@ -1,26 +1,31 @@
 require(quantmod)
 require(blotter)
 require(compiler)
-path = "C:/R"
-f = 'AUDUSD.txt'
-fname = file.path(path,f)
-
-priceData <- read.table(fname,sep=',',header=T,colClasses = rep(c("NULL", "character", "numeric"), c(1, 2, 5)))
-
-priceData <- read.zoo(priceData, sep=",", header=TRUE, 
-                      index.column=1:2, format="%Y%m%d %H%M%S", tz="")
-priceData <- as.xts(priceData)
-
-backdata = priceData
-priceData = priceData['2013']
-
-colnames(priceData) <- c("Open","High","Low","Close","Volume")
-
-
+path = "D:/minutedata"
+files <- dir(path)
+files = 'AUDJPY.txt'
 RBreaker_cmp <- cmpfun(RBreaker)
 dualthrust_cmp <-cmpfun(dualthrust)
 
-RBreaker_cmp(priceData,minute = 60,verbose = F)
+results =list()
+i = 1
+for(f in files)
+{
+  fname = file.path(path,f)
+  priceData <- read.table(fname,sep=',',header=T,colClasses = rep(c("NULL", "character", "numeric"), c(1, 2, 5)))  
+  priceData <- read.zoo(priceData, sep=",", header=TRUE, 
+                        index.column=1:2, format="%Y%m%d %H%M%S", tz="")
+  priceData <- as.xts(priceData)  
+  colnames(priceData) <- c("Open","High","Low","Close","Volume")
+  RBreaker_cmp(priceData,minute = 60,verbose = F)
+  dualthrust_cmp(priceData,minute = 1,verbose = F,ks=0.35,kx=0.3)
+    result = tradeStats('m_data','m_data')
+  results[[i]] = list(file=f,result=result,record=logger$record)
+  i = i+1
+  
+}
+
+RBreaker_cmp(priceData,minute = 1,verbose = F)
 r_stat = tradeStats('m_data','m_data')
 dualthrust_cmp(priceData,verbose=F,minute = 60)
 d_stat = tradeStats('m_data','m_data')
