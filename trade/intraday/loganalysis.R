@@ -24,6 +24,7 @@ records = as.xts(records)
 years =as.character(2001:2014)
 year_net = sapply(years,function(x){ sum(as.numeric(records[x]$net))})
 year_num = sapply(years,function(x){ length(as.numeric(records[x]$net))})
+year_mean_atr = sapply(years,function(x){ mean(ATR(to.daily(priceData[x]),n=3)$atr,na.rm = T)})
 
 lossAndProfit = function(records)
 {
@@ -77,8 +78,7 @@ lossAndProfit = function(records)
   performance$openshort_profit_num = length(as.numeric(records[as.numeric(records$net)>0 & records$entertype=='openshort','net']))
   return(performance)
 }
-p = lossAndProfit(records)
-#分析gross profit 和 gross loss
+
 
 report = function(p)
 {
@@ -98,17 +98,13 @@ report = function(p)
   colnames(m) = c('points','nums')
   return(m)
 }
-
+p = lossAndProfit(records)
+#分析gross profit 和 gross loss
 m = report(p)
 
-records_2001 = records['2001']
-p_2001 = lossAndProfit(records_2001)
-m_2001 = report(p_2001)
-
-records_2002 = records['2002']
-p_2002 = lossAndProfit(records_2002)
-m_2002 = report(p_2002)
-
-records_2003 = records['2003']
-p_2003 = lossAndProfit(records_2003)
-m_2003 = report(p_2003)
+for(y in years)
+{
+  r = records[y]
+  p = lossAndProfit(r)
+  assign(paste('m_',y,sep=""),report(p))
+}

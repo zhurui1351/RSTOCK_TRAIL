@@ -1,16 +1,16 @@
 require(quantmod)
 require(blotter)
 
-dualthrust <- function(priceData,n=3,ks = 0.35,kx = 0.2,initEq = 1000000,minute=1,initDate = '2000-01-01', verbose=F)
+dualthrust <- function(priceData,n=3,ks = 0.35,kx = 0.2,initEq = 1000000,minute=1,initDate = '2000-01-01',verbose=F)
 {
   #init portofolio
-  .blotter <<- new.env()
-  symbol = "m_data"
-  currency("USD")
-  stock(symbol, currency="USD",multiplier=1)
+ # .blotter <<- new.env()
+#  symbol = "m_data"
+ # currency("USD")
+  #stock(symbol, currency="USD",multiplier=1)
   
-  initPortf(name=symbol,symbol, initDate=initDate)
-  initAcct(name=symbol,portfolios=symbol, initDate=initDate, initEq=initEq)
+  #initPortf(name=symbol,symbol, initDate=initDate)
+  #initAcct(name=symbol,portfolios=symbol, initDate=initDate, initEq=initEq)
   
   #日数
   daydata = to.daily(priceData)
@@ -22,15 +22,16 @@ dualthrust <- function(priceData,n=3,ks = 0.35,kx = 0.2,initEq = 1000000,minute=
   daydata$LL = runMin(Lo(daydata),n)
   minute_data = to.period(priceData,'minutes',minute)
   m_data <<-c()
-  
+  daydata$atr = ATR(daydata,n=n)$atr
   logger <<- new.env()
   logger$record <- data.frame()
   #day by day
   for(day in (n+1):nrow(daydata))
   {
     #截止昨天，n日内的range
-    range = max(daydata[day-1]$HH-daydata[day-1]$LC,daydata[day-1]$HC-daydata[day-1]$LL)
-    
+   # range = max(daydata[day-1]$HH-daydata[day-1]$LC,daydata[day-1]$HC-daydata[day-1]$LL)
+    range = as.numeric(daydata[day-1]$atr)
+    if(is.na(range)) {next}
     date = as.character(time(daydata[day]))
     m_data <<- minute_data[date]
     if(nrow(m_data) < 2)
@@ -63,7 +64,7 @@ dualthrust <- function(priceData,n=3,ks = 0.35,kx = 0.2,initEq = 1000000,minute=
       #Posn <- getPosQty(symbol, Symbol=symbol, Date=CurrentDate)
       #0.1 every time 
       ClosePrice <- as.numeric(Cl(m_data[i]))
-      UnitSize <- 1000
+      UnitSize <- 1000 
       
       #enter,the last bar dont enter
       if(Posn == 0 && i!=nrow(m_data))
@@ -104,7 +105,7 @@ dualthrust <- function(priceData,n=3,ks = 0.35,kx = 0.2,initEq = 1000000,minute=
         {
           
           #stop and short
-          if(ClosePrice < stopprice)# lower_line)
+          if(ClosePrice < lower_line) # stopprice)#
           {
            # addTxn(symbol, Symbol=symbol, TxnDate=CurrentDate,
            #        TxnPrice=ClosePrice, TxnQty = -Posn , TxnFees=0,verbose=verbose) 
@@ -113,8 +114,8 @@ dualthrust <- function(priceData,n=3,ks = 0.35,kx = 0.2,initEq = 1000000,minute=
             print('stop long')
            # addTxn(symbol, Symbol=symbol, TxnDate=CurrentDate,
             #       TxnPrice=ClosePrice, TxnQty = -UnitSize , TxnFees=0,verbose=verbose)
-            #logger$record<-rbind(logger$record,data.frame(date=CurrentDate,price=ClosePrice,type='openshort'))
-           #Posn = -UnitSize
+          #  logger$record<-rbind(logger$record,data.frame(date=CurrentDate,price=ClosePrice,type='openshort'))
+          #  Posn = -UnitSize
            
            # print('open short')
             
@@ -137,7 +138,7 @@ dualthrust <- function(priceData,n=3,ks = 0.35,kx = 0.2,initEq = 1000000,minute=
         else
         {
           #stop
-          if(ClosePrice >  stopprice)#upper_line)
+          if(ClosePrice >  upper_line)# stopprice)#
           {
          #   addTxn(symbol, Symbol=symbol, TxnDate=CurrentDate,
           #         TxnPrice=ClosePrice, TxnQty = -Posn , TxnFees=0,verbose=verbose) 
@@ -147,7 +148,7 @@ dualthrust <- function(priceData,n=3,ks = 0.35,kx = 0.2,initEq = 1000000,minute=
           #  addTxn(symbol, Symbol=symbol, TxnDate=CurrentDate,
          #          TxnPrice=ClosePrice, TxnQty = UnitSize , TxnFees=0,verbose=verbose)
           #  logger$record<-rbind(logger$record,data.frame(date=CurrentDate,price=ClosePrice,type='openlong'))
-        # Posn = UnitSize  
+           # Posn = UnitSize  
          #   print('open long')
           }
         }
