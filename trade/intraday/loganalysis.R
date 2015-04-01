@@ -11,7 +11,7 @@ enter = record[which(index%%2==1),]
 exit = record[which(index%%2==0),]
 
 records = cbind(enter,exit)
-colnames(records) = c('enterdate','enterprice','entertype','exitdate','exitprice','exittype')
+colnames(records) = c('enterdate','enterprice','entertype','exitda te','exitprice','exittype')
 net = records$exitprice - records$enterprice
 #when short exitprice<enterprice means net profit
 index=c(which(records$exittype == 'stopshort'),which(records$exittype == 'exitshort'))
@@ -21,7 +21,7 @@ records$net = net
 records=read.zoo(records,header=T,index.column = 1,format="%Y-%m-%d %H:%M:%S", tz="")
 records = as.xts(records)
 
-years =as.character(2001:2014)
+years =as.character(2001:2013)
 year_net = sapply(years,function(x){ sum(as.numeric(records[x]$net))})
 year_num = sapply(years,function(x){ length(as.numeric(records[x]$net))})
 year_mean_atr = sapply(years,function(x){ mean(ATR(to.daily(priceData[x]),n=3)$atr,na.rm = T)})
@@ -34,23 +34,23 @@ lossAndProfit = function(records)
   performance$gross_loss_nums = length(as.numeric(records[as.numeric(records$net) < 0,'net']))
   #long loss
   #long stop loss and long exit loss
-  performance$enterlong_stop_loss = sum(as.numeric(records[records$entertype=='enterlong' & records$exittype=='stoplong' ,'net']))
+  performance$enterlong_stop_loss = sum(as.numeric(records[as.numeric(records$net) < 0 & records$entertype=='enterlong' & records$exittype=='stoplong' ,'net']))
   performance$enterlong_exit_loss = sum(as.numeric(records[as.numeric(records$net) < 0 &records$entertype=='enterlong' & records$exittype=='exitlong' ,'net']))
   performance$openlong_stop_loss = sum(as.numeric(records[records$entertype=='openlong' & records$exittype=='stoplong' ,'net']))
   performance$openlong_exit_loss = sum(as.numeric(records[as.numeric(records$net) < 0 &records$entertype=='openlong' & records$exittype=='exitlong' ,'net']))
   
-  performance$enterlong_stop_loss_num = length(as.numeric(records[records$entertype=='enterlong' & records$exittype=='stoplong' ,'net']))
+  performance$enterlong_stop_loss_num = length(as.numeric(records[as.numeric(records$net) < 0 & records$entertype=='enterlong' & records$exittype=='stoplong' ,'net']))
   performance$enterlong_exit_loss_num = length(as.numeric(records[as.numeric(records$net) < 0 &records$entertype=='enterlong' & records$exittype=='exitlong' ,'net']))
   performance$openlong_stop_loss_num = length(as.numeric(records[records$entertype=='openlong' & records$exittype=='stoplong' ,'net']))
   performance$openlong_exit_loss_num = length(as.numeric(records[as.numeric(records$net) < 0 &records$entertype=='openlong' & records$exittype=='exitlong' ,'net']))
   
   # short loss
-  performance$entershort_stop_loss = sum(as.numeric(records[records$entertype=='entershort' & records$exittype=='stopshort' ,'net']))
+  performance$entershort_stop_loss = sum(as.numeric(records[as.numeric(records$net) < 0 & records$entertype=='entershort' & records$exittype=='stopshort' ,'net']))
   performance$entershort_exit_loss = sum(as.numeric(records[as.numeric(records$net) < 0 & records$entertype=='entershort' & records$exittype=='exitshort' ,'net']))
   performance$openshort_stop_loss = sum(as.numeric(records[records$entertype=='openshort' & records$exittype=='stopshort' ,'net']))
   performance$openshort_exit_loss = sum(as.numeric(records[as.numeric(records$net) < 0 &records$entertype=='openshort' & records$exittype=='exitshort' ,'net']))
   
-  performance$entershort_stop_loss_num = length(as.numeric(records[records$entertype=='entershort' & records$exittype=='stopshort' ,'net']))
+  performance$entershort_stop_loss_num = length(as.numeric(records[ as.numeric(records$net) < 0 &records$entertype=='entershort' & records$exittype=='stopshort' ,'net']))
   performance$entershort_exit_loss_num = length(as.numeric(records[as.numeric(records$net) < 0 & records$entertype=='entershort' & records$exittype=='exitshort' ,'net']))
   performance$openshort_stop_loss_num = length(as.numeric(records[records$entertype=='openshort' & records$exittype=='stopshort' ,'net']))
   performance$openshort_exit_loss_num = length(as.numeric(records[as.numeric(records$net) < 0 &records$entertype=='openshort' & records$exittype=='exitshort' ,'net']))
@@ -108,3 +108,4 @@ for(y in years)
   p = lossAndProfit(r)
   assign(paste('m_',y,sep=""),report(p))
 }
+
