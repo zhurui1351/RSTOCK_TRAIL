@@ -3,7 +3,7 @@ require(blotter)
 require(compiler)
 path = "D:/minutedata"
 files <- dir(path)
-files = 'EURUSD.txt'
+files = 'XAGUSD.txt'
 RBreaker_cmp <- cmpfun(RBreaker)
 dualthrust_cmp <-cmpfun(dualthrust)
 f = files[1]
@@ -17,9 +17,9 @@ for(f in files)
                         index.column=1:2, format="%Y%m%d %H%M%S", tz="")
   priceData <- as.xts(priceData)  
   colnames(priceData) <- c("Open","High","Low","Close","Volume")
-   RBreaker_cmp(priceData,minute = 60,verbose = F)
-  dualthrust_cmp(priceData,minute=5,verbose = F,ks=0.4,kx=0.35)
-     result = logger$record
+  RBreaker_cmp(priceData,minute = 60,verbose = F)
+  dualthrust_cmp(priceData,minute= 5,verbose = F,ks=0.35,kx=0.3)
+  result = logger$record
   results[[i]] = list(file=f,record=logger$record)
   i = i+1
   

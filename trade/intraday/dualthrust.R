@@ -40,7 +40,7 @@ dualthrust <- function(priceData,n=3,ks = 0.35,kx = 0.2,initEq = 1000000,minute=
     {
       next
     }  
-   # range = as.numeric(daydata[day-1]$atr)
+  #  range = as.numeric(daydata[day-1]$atr)
     if(is.na(range)) {next}
     upper_line = as.numeric(Op(m_data[1])) + ks * range
     lower_line = as.numeric(Op(m_data[1])) - kx * range
@@ -101,7 +101,7 @@ dualthrust <- function(priceData,n=3,ks = 0.35,kx = 0.2,initEq = 1000000,minute=
       UnitSize <- 1000 
       
       #enter,the last bar dont enter
-      if(Posn == 0)# && i!=nrow(m_data) )
+      if(Posn == 0 )#&& i!=nrow(m_data) )
       {
         #long
         if(ClosePrice > upper_line)#  && angle> 8)#isallup) # )
@@ -130,22 +130,22 @@ dualthrust <- function(priceData,n=3,ks = 0.35,kx = 0.2,initEq = 1000000,minute=
         #exit when close if position not equal to 0
         if(i == nrow(m_data)) #bar == 3)#
         {
-      #     logger$record<-rbind(logger$record,data.frame(date=CurrentDate,price=ClosePrice,type='exitlong'))
-       #    Posn = 0
+     #      logger$record<-rbind(logger$record,data.frame(date=CurrentDate,price=ClosePrice,type='exitlong'))
+    #       Posn = 0
       #     bar = 0
        #   print("exit long")
         }
-     #   else
+    #    else
         {          
           #stop and short
-          if(ClosePrice < upstopprice)#lower_line) # stopprice)#  
+          if(ClosePrice < upstopprice)# lower_line) # stopprice)#  
           {
             logger$record<-rbind(logger$record,data.frame(date=CurrentDate,price=ClosePrice,type='stoplong'))
             Posn = 0
           #  bar = 0
       #      print('stop long')
       #      logger$record<-rbind(logger$record,data.frame(date=CurrentDate,price=ClosePrice,type='openshort'))
-       #     Posn = -UnitSize           
+       #    Posn = -UnitSize           
            # print('open short')
             
           }else{
@@ -166,23 +166,23 @@ dualthrust <- function(priceData,n=3,ks = 0.35,kx = 0.2,initEq = 1000000,minute=
         if(i == nrow(m_data)) #)(bar == 3)#
         {
           
-    #      logger$record<-rbind(logger$record,data.frame(date=CurrentDate,price=ClosePrice,type='exitshort'))
-   #       Posn = 0
+      #    logger$record<-rbind(logger$record,data.frame(date=CurrentDate,price=ClosePrice,type='exitshort'))
+     #     Posn = 0
      #     bar = 0
        #   print("exit short")
           
         }
-     #   else
+       # else
         {
           #stop
-          if(ClosePrice >  lowstopprice)#upper_line)# stopprice)# 
+          if(ClosePrice >  lowstopprice)# upper_line)#stopprice)# 
           {
             logger$record<-rbind(logger$record,data.frame(date=CurrentDate,price=ClosePrice,type='stopshort'))
             Posn = 0
       #      bar = 0
         #    print('stop short')
-      #      logger$record<-rbind(logger$record,data.frame(date=CurrentDate,price=ClosePrice,type='openlong'))
-       #     Posn = UnitSize  
+        #    logger$record<-rbind(logger$record,data.frame(date=CurrentDate,price=ClosePrice,type='openlong'))
+         #   Posn = UnitSize  
          #   print('open long')
           }else{
             if((ClosePrice - price) < -0.1*range)

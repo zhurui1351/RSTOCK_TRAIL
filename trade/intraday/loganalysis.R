@@ -3,7 +3,12 @@
 require(quantmod)
 record= logger$record
 
-if(nrow(record)%%2 != 0) stop('error trading nums')
+if(nrow(record)%%2 != 0)
+{
+  record = record[1:(nrow(record)-1),]
+  print('error trading nums')
+  
+}
 
 index = 1:nrow(record)
 
