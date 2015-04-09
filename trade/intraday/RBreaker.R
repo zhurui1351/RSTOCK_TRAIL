@@ -3,13 +3,6 @@ require(blotter)
 
 RBreaker <- function(priceData,ratio_up = 0.35,b1 = 0.25,f1 = 0.07,initEq = 1000000,initDate = '2000-01-01',minute=1,verbose=T)
 {
-  .blotter <<- new.env()
-  symbol = "m_data"
-  currency("USD")
-  stock(symbol, currency="USD",multiplier=1)
-  
-  initPortf(name=symbol,symbol, initDate=initDate)
-  initAcct(name=symbol,portfolios=symbol, initDate=initDate, initEq=initEq)
   
   daydata = to.daily(priceData)
   colnames(daydata) <- c("Open","High","Low","Close","Volume")
@@ -55,10 +48,6 @@ RBreaker <- function(priceData,ratio_up = 0.35,b1 = 0.25,f1 = 0.07,initEq = 1000
     for(i in start:nrow(m_data))
     {
       CurrentDate = time(m_data[i])
-    #  equity = getEndEq(symbol, CurrentDate)
-    #  if(equity == 0) stop('equit is empty')
-    #  Posn = getPosQty(symbol, Symbol=symbol, Date=CurrentDate)
-      #0.1 every time 
       ClosePrice = as.numeric(Cl(m_data[i]))
       UnitSize = 1000
       #enter
@@ -66,18 +55,13 @@ RBreaker <- function(priceData,ratio_up = 0.35,b1 = 0.25,f1 = 0.07,initEq = 1000
       {
         if(ClosePrice > bbreak)
         {
-         # addTxn(symbol, Symbol=symbol, TxnDate=CurrentDate,
-        #         TxnPrice=ClosePrice, TxnQty = UnitSize , TxnFees=0,verbose=verbose)
           Posn = UnitSize
           logger$record <- rbind(logger$record,data.frame(date=CurrentDate,price=ClosePrice,type='enterlong'))
           print('enter long:' )
         }
         if(ClosePrice < sbreak)
         {
-        #  addTxn(symbol, Symbol=symbol, TxnDate=CurrentDate,
-         #        TxnPrice=ClosePrice, TxnQty = -UnitSize , TxnFees=0,verbose=verbose)
-          Posn =- UnitSize
-          
+           Posn =- UnitSize          
           logger$record<-rbind(logger$record,data.frame(date=CurrentDate,price=ClosePrice,type='entershort'))
           print('enter short:' )
         }
@@ -86,11 +70,8 @@ RBreaker <- function(priceData,ratio_up = 0.35,b1 = 0.25,f1 = 0.07,initEq = 1000
       {
         if(i == nrow(m_data))
         {
-       #   addTxn(symbol, Symbol=symbol, TxnDate=CurrentDate,
-        #         TxnPrice=ClosePrice, TxnQty = -Posn , TxnFees=0,verbose=verbose) 
           Posn = 0
-          logger$record<-rbind(logger$record,data.frame(date=CurrentDate,price=ClosePrice,type='exitlong'))
-          
+          logger$record<-rbind(logger$record,data.frame(date=CurrentDate,price=ClosePrice,type='exitlong'))          
           print("exit long")
         }
         else
@@ -99,14 +80,10 @@ RBreaker <- function(priceData,ratio_up = 0.35,b1 = 0.25,f1 = 0.07,initEq = 1000
           highUnitlNow = max(Hi(m_data[start:i]))#
           if( ClosePrice <scenter && highUnitlNow > ssetup)
           {
-       #     addTxn(symbol, Symbol=symbol, TxnDate=CurrentDate,
-         #          TxnPrice=ClosePrice, TxnQty = -Posn , TxnFees=0,verbose=verbose) 
             logger$record<-rbind(logger$record,data.frame(date=CurrentDate,price=ClosePrice,type='stoplong'))
             Posn = 0
             print('stop long')
-           # addTxn(symbol, Symbol=symbol, TxnDate=CurrentDate,
-            #       TxnPrice=ClosePrice, TxnQty = -UnitSize , TxnFees=0,verbose=verbose)
-           Posn = -UnitSize
+            Posn = -UnitSize
            logger$record<-rbind(logger$record,data.frame(date=CurrentDate,price=ClosePrice,type='openshort'))
             
             print('open short')        
@@ -118,8 +95,6 @@ RBreaker <- function(priceData,ratio_up = 0.35,b1 = 0.25,f1 = 0.07,initEq = 1000
         if(i == nrow(m_data))
         {
           
-        #  addTxn(symbol, Symbol=symbol, TxnDate=CurrentDate,
-         #        TxnPrice=ClosePrice, TxnQty = -Posn , TxnFees=0,verbose=verbose) 
           logger$record<-rbind(logger$record,data.frame(date=CurrentDate,price=ClosePrice,type='exitshort'))
           Posn = 0
           
@@ -132,24 +107,16 @@ RBreaker <- function(priceData,ratio_up = 0.35,b1 = 0.25,f1 = 0.07,initEq = 1000
           lowUnitlNow = min(Lo(m_data[start:i]))#
           if( ClosePrice > bcenter && lowUnitlNow < bsetup )
           {
-         #   addTxn(symbol, Symbol=symbol, TxnDate=CurrentDate,
-          #         TxnPrice=ClosePrice, TxnQty = -Posn , TxnFees=0,verbose=verbose) 
             print('stop short')
             logger$record<-rbind(logger$record,data.frame(date=CurrentDate,price=ClosePrice,type='stopshort'))
             Posn = 0
-          #  addTxn(symbol, Symbol=symbol, TxnDate=CurrentDate,
-          #         TxnPrice=ClosePrice, TxnQty = UnitSize , TxnFees=0,verbose=verbose)
-          Posn = UnitSize
-          logger$record<-rbind(logger$record,data.frame(date=CurrentDate,price=ClosePrice,type='openlong'))
-            
+            Posn = UnitSize
+          logger$record<-rbind(logger$record,data.frame(date=CurrentDate,price=ClosePrice,type='openlong'))            
             print('open long')
           }
         }
         
       }
-    #  updatePortf(symbol, Dates = CurrentDate)
-     # updateAcct(symbol, Dates = CurrentDate)
-      #updateEndEq(symbol, Dates =CurrentDate)
     }
   }
 }
