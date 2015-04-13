@@ -282,7 +282,8 @@ result = rangeAfterNbarforMbar(pricedata,up=F,condition=6,m=3)
 
 getTheSmallestPoint <- function(symbol)
 {
-   symbols = c(USDJPY=0.01,AUDJPY=0.01,EURUSD=0.0001,AUDUSD=0.0001,CHFJPY=0.01)
+   symbols = c(USDJPY=0.01,AUDJPY=0.01,EURUSD=0.0001,AUDUSD=0.0001,CHFJPY=0.01,EURGBP=0.0001,GBPUSD=0.0001,
+               NZDUSD=0.0001,USDCAD=0.0001,USDCHF=0.0001,XAGUSD=0.01)
    return(as.numeric(symbols[symbol]))
 }
 
@@ -292,7 +293,7 @@ conditiondays = 3:6
 sepbars = 1:5
 reports = list()
 reports_index = 1
-symbol = 'EURGBP' 
+symbol = 'XAGUSD' 
 truePoint = getTheSmallestPoint(symbol)
 if(is.na(truePoint)) truePoint = 1
 for(i in 1:length(timeframe))
