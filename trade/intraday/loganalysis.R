@@ -16,7 +16,7 @@ enter = record[which(index%%2==1),]
 exit = record[which(index%%2==0),]
 
 records = cbind(enter,exit)
-colnames(records) = c('enterdate','enterprice','entertype','exitda te','exitprice','exittype')
+colnames(records) = c('enterdate','enterprice','entertype','exitdate','exitprice','exittype')
 net = records$exitprice - records$enterprice
 #when short exitprice<enterprice means net profit
 index=c(which(records$exittype == 'stopshort'),which(records$exittype == 'exitshort'))

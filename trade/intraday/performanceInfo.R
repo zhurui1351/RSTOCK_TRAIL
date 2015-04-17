@@ -9,6 +9,8 @@ performanceInfo<-function(trades)
   peaktime = NULL
   temppeaktime = NULL
   maxDrawDownTime=NULL
+  
+  maxDrawDownRatio = 0
   #最大回撤
   mdd = 0
   dd = rep(0,nrow(tradeSum)) 
@@ -25,10 +27,12 @@ performanceInfo<-function(trades)
       peaktime = temppeaktime
       mdd = dd[i]
       maxDrawDownTime = index(tradeSum[i])
+      maxDrawDownRatio = mdd  / peak
     }
   }
  # result$dd = dd
   result$mdd = mdd
+  result$maxDrawDownRatio = maxDrawDownRatio
   result$maxDrawDownFrom = peaktime
   result$maxDrawDownTo = maxDrawDownTime
   #最大连续亏损笔数
