@@ -159,7 +159,7 @@ conditiondays = 3:6
 sepbars = 1:5
 reports = list()
 reports_index = 1
-symbol = 'USDCAD' 
+symbol = 'AUDJPY' 
 truePoint = getTheSmallestPoint(symbol)
 if(is.na(truePoint)) truePoint = 1
 for(i in 1:length(timeframe))
