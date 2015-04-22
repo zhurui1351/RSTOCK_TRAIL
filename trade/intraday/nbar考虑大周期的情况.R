@@ -4,6 +4,10 @@
 
 rangeAfterNbarforMbarFilter <- function(pricedata,up=T,condition = 3,m=1,filter=function(...){return(T)})
 {
+  logger <<- new.env()
+  logger$record <- data.frame()
+  date = index(pricedata)
+  
   s = as.numeric(Cl(pricedata) - Op(pricedata)) 
   op = as.numeric(Op(pricedata)) 
   cl = as.numeric(Cl(pricedata))  
@@ -37,6 +41,10 @@ rangeAfterNbarforMbarFilter <- function(pricedata,up=T,condition = 3,m=1,filter=
         count_condition_happen = count_condition_happen + 1
         point = 0
         point_list[count_condition_happen] = cl[i+m] - op[i]
+        
+        logger$record<-rbind(logger$record,data.frame(date=date[i],price=op[i],type='first'))          
+        logger$record<-rbind(logger$record,data.frame(date=date[i+m],price=cl[i+m] ,type='second'))   
+        
         i = i + m + 1
         pre = F
         count = 0
@@ -60,6 +68,10 @@ rangeAfterNbarforMbarFilter <- function(pricedata,up=T,condition = 3,m=1,filter=
         count_condition_happen = count_condition_happen + 1
         point = 0
         point_list[count_condition_happen] = cl[i+m] - op[i]
+        
+        logger$record<-rbind(logger$record,data.frame(date=date[i],price=op[i],type='first'))          
+        logger$record<-rbind(logger$record,data.frame(date=date[i+m],price=cl[i+m] ,type='second'))   
+        
         i = i + m + 1
         pre = F
         count = 0      
@@ -78,7 +90,7 @@ rangeAfterNbarforMbarFilter <- function(pricedata,up=T,condition = 3,m=1,filter=
   }
   return(list(point=point_list,count=count_condition_happen))
 }
-filterMaParentFrame <- function(pricedata,longpricedata,shortmaptolong)
+filterMaParentFrame <- function(pricedata,longpricedata,shortmaptolong,m=5)
 {
  
   short = pricedata
@@ -95,17 +107,21 @@ filterMaParentFrame <- function(pricedata,longpricedata,shortmaptolong)
     }
     pos = para$index
     longpos = shortmaptolong[pos] 
-    if(longpos - 2 <= 1)
+    if(longpos - m <= 0)
     {
       return(F)
     }
-    #过去n个大周期bar的sma情况
-    smaseq = as.numeric(long$sma[(longpos-2) : longpos])
-    xaxel= 1 : 3
+    #过去m个大周期bar的sma情况
+    smaseq = as.numeric(long$sma[(longpos-m) : (longpos-1)])
+    xaxel= 1 : m
     #回归看斜率
     f = lm(smaseq~xaxel)
+    
+    di = diff(as.numeric(long$sma[(longpos-m) : longpos]))
+    diup = all(di<0)
+    
     slope = f$coefficients[2]
-    if(slope < 0)
+    if(slope < 0)#diup ==T)#
     {
       return(T)
     }
@@ -151,9 +167,11 @@ getTheSmallestPoint <- function(symbol)
               NZDUSD=0.0001,USDCAD=0.0001,USDCHF=0.0001,XAGUSD=0.01)
   return(as.numeric(symbols[symbol]))
 }
-#result = rangeAfterNbarforMbarFilter(pricedata,up=F,condition=6,m=3)
+result = rangeAfterNbarforMbarFilter(pricedata,up=T,condition=4,m=3,filter=filterMaParentFrame(pricedata,longpricedata,shortmaptolong,m=10))
+result = rangeAfterNbarforMbar(pricedata,up=F,condition=3,m=1)
 
-timeframe = c(5,15,30,60)
+
+timeframe = c(5)#c(5,15,30,60)
 upordown = c(T,F)
 conditiondays = 3:6
 sepbars = 1:5
@@ -178,7 +196,8 @@ for(i in 1:length(timeframe))
       for(i3 in 1:length(sepbars))
       {
         sepbar = sepbars[i3]
-        result = rangeAfterNbarforMbarFilter(pricedata,up=upflag,condition=conditionday,m=sepbar,filter=filterMaParentFrame(pricedata,longpricedata,shortmaptolong))
+        #result = rangeAfterNbarforMbarFilter(pricedata,up=upflag,condition=conditionday,m=sepbar,filter=filterMaParentFrame(pricedata,longpricedata,shortmaptolong))
+        result = rangeAfterNbarforMbar(pricedata,up=upflag,condition=conditionday,m=sepbar)
         point = result$point
         totalpoint = sum(point)
         pratio = length(point[point>0]) / length(point)
@@ -186,7 +205,7 @@ for(i in 1:length(timeframe))
         totalcount = length(point)
         truetotalpoint = totalpoint/truePoint
         meanpoint = truetotalpoint /  totalcount
-        if(pratio> 0.55 && totalpoint >0  &&  meanpoint > 10) # next m up
+        if(pratio> 0.55 && totalpoint >0  &&  meanpoint > 5) # next m up
         {
           if(upflag == T) text = 'up' else text = 'down'
           r1 = paste("timeframe is : ", timeframe[i])

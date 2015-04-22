@@ -3,7 +3,7 @@ require(blotter)
 require(compiler)
 path = "D:/minutedata"
 files <- dir(path)
-files = 'AUDJPY.txt'
+files = 'EURUSD.txt'
 RBreaker_cmp <- cmpfun(RBreaker)
 dualthrust_cmp <-cmpfun(dualthrust)
 f = files[1]
@@ -14,7 +14,7 @@ for(f in files)
   fname = file.path(path,f)
   priceData <- read.table(fname,sep=',',header=T,colClasses = rep(c("NULL", "character", "numeric"), c(1, 2, 5)))  
   priceData <- read.zoo(priceData, sep=",", header=TRUE, 
-                        index.column=1:2, format="%Y%m%d %H%M%S", tz="")
+                        index.column=1:2, format="%Y%m%d %H%M%S", tz="GMT")
   priceData <- as.xts(priceData)  
   colnames(priceData) <- c("Open","High","Low","Close","Volume")
   RBreaker_cmp(priceData,minute = 60,verbose = F)
