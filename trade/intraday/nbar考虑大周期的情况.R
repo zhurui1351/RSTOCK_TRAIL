@@ -168,7 +168,7 @@ getTheSmallestPoint <- function(symbol)
   return(as.numeric(symbols[symbol]))
 }
 result = rangeAfterNbarforMbarFilter(pricedata,up=T,condition=4,m=3,filter=filterMaParentFrame(pricedata,longpricedata,shortmaptolong,m=10))
-result = rangeAfterNbarforMbar(pricedata,up=F,condition=3,m=1)
+result = rangeAfterNbarforMbar(pricedata,up=F,condition=4,m=1)
 
 
 timeframe = c(5)#c(5,15,30,60)
@@ -177,7 +177,7 @@ conditiondays = 3:6
 sepbars = 1:5
 reports = list()
 reports_index = 1
-symbol = 'AUDJPY' 
+symbol = 'NZDUSD' 
 truePoint = getTheSmallestPoint(symbol)
 if(is.na(truePoint)) truePoint = 1
 for(i in 1:length(timeframe))

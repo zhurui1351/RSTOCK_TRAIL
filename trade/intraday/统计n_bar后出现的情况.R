@@ -149,15 +149,8 @@ rangeAfterNbarforMbar <- function(pricedata,up=T,condition = 3,range=0,m=1)
   s = as.numeric(Cl(pricedata) - Op(pricedata)) 
   op = as.numeric(Op(pricedata)) 
   cl = as.numeric(Cl(pricedata)) 
-  
-  ratio = as.numeric(Cl(pricedata) - Op(pricedata)) / as.numeric(Op(pricedata))
-  ratio[is.infinite(ratio)==T] = 0 
-  ratio[is.na(ratio)==T] = 0
   pre = F
   count = 0
-  
-  cumrange = 0
-  ratio_list = c(0)
   point_list = c(0)
   count_condition_happen = 0
   i=1
@@ -176,25 +169,21 @@ rangeAfterNbarforMbar <- function(pricedata,up=T,condition = 3,range=0,m=1)
     {
       
       count =  count + 1
-      cumrange = cumrange + s[i]
       #return if do not have enough data
       if(i + m > length(s))
       {
-        return(list(point=point_list,count=count_condition_happen))
+#        return(list(point=point_list,count=count_condition_happen))
       }
       #符合条件
-      if(count==condition && cumrange>= range)
+      if(count==condition)
       {
         count_condition_happen = count_condition_happen + 1
-        nextrange = 0
-        point = 0
         point_list[count_condition_happen] = cl[i+m] - op[i]
         
         logger$record<-rbind(logger$record,data.frame(date=date[i],price=op[i],type='first'))          
         logger$record<-rbind(logger$record,data.frame(date=date[i+m],price=cl[i+m] ,type='second'))   
         
         i = i + m + 1
-        cumrange = 0
         pre = F
         count = 0
         
@@ -208,24 +197,20 @@ rangeAfterNbarforMbar <- function(pricedata,up=T,condition = 3,range=0,m=1)
     else if(up==F && pre ==T && s[i] < 0)
     {
       count =  count + 1
-      cumrange = cumrange + s[i] 
       #return if do not have enough data
       if(i + m > length(s))
       {
         return(list(point=point_list,count=count_condition_happen))
       }
-      if(count==condition  && cumrange <= -range)
+      if(count==condition )
       {
         count_condition_happen = count_condition_happen + 1
-        nextrange = 0
-        point = 0
         point_list[count_condition_happen] = cl[i+m] - op[i]
         
         logger$record<-rbind(logger$record,data.frame(date=date[i],price=op[i],type='first'))          
         logger$record<-rbind(logger$record,data.frame(date=date[i+m],price=cl[i+m] ,type='second'))   
         
         i = i + m + 1
-        cumrange = 0
         pre = F
         count = 0
         
@@ -238,7 +223,6 @@ rangeAfterNbarforMbar <- function(pricedata,up=T,condition = 3,range=0,m=1)
     }
     else  #the next m day
     {
-      cumrange = 0
       pre = F
       count = 0
       i = i +1

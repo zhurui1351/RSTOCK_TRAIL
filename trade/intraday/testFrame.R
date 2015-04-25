@@ -3,7 +3,7 @@ require(blotter)
 require(compiler)
 path = "D:/minutedata"
 files <- dir(path)
-files = 'EURUSD.txt'
+files = 'AUDUSD.txt'
 RBreaker_cmp <- cmpfun(RBreaker)
 dualthrust_cmp <-cmpfun(dualthrust)
 f = files[1]
