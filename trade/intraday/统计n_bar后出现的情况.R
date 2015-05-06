@@ -139,12 +139,12 @@ performanceAfterNbarThenReverse <- function(s,up=T,condition = 3)
   }
   return(list(result=result,count=count_condition_happen))
 }
-#连续的
+#连续的m天
 rangeAfterNbarforMbar <- function(pricedata,up=T,condition = 3,range=0,m=1)
 {
   logger <<- new.env()
   logger$record <- data.frame()
-  
+ 
   date = index(pricedata)
   s = as.numeric(Cl(pricedata) - Op(pricedata)) 
   op = as.numeric(Op(pricedata)) 
@@ -152,6 +152,7 @@ rangeAfterNbarforMbar <- function(pricedata,up=T,condition = 3,range=0,m=1)
   pre = F
   count = 0
   point_list = c(0)
+  date_list = c(date[1])
   count_condition_happen = 0
   i=1
  while(i<length(s))
@@ -172,15 +173,16 @@ rangeAfterNbarforMbar <- function(pricedata,up=T,condition = 3,range=0,m=1)
       #return if do not have enough data
       if(i + m > length(s))
       {
-#        return(list(point=point_list,count=count_condition_happen))
+       return(list(point=point_list,count=count_condition_happen,dates=date_list))
       }
       #符合条件
       if(count==condition)
       {
         count_condition_happen = count_condition_happen + 1
-        point_list[count_condition_happen] = cl[i+m] - op[i]
+        point_list[count_condition_happen] = cl[i+m] - op[i+1]
+        date_list[count_condition_happen] = date[i+1]
         
-        logger$record<-rbind(logger$record,data.frame(date=date[i],price=op[i],type='first'))          
+        logger$record<-rbind(logger$record,data.frame(date=date[i+1],price=op[i],type='first'))          
         logger$record<-rbind(logger$record,data.frame(date=date[i+m],price=cl[i+m] ,type='second'))   
         
         i = i + m + 1
@@ -200,14 +202,15 @@ rangeAfterNbarforMbar <- function(pricedata,up=T,condition = 3,range=0,m=1)
       #return if do not have enough data
       if(i + m > length(s))
       {
-        return(list(point=point_list,count=count_condition_happen))
+        return(list(point=point_list,count=count_condition_happen,dates=date_list))
       }
       if(count==condition )
       {
         count_condition_happen = count_condition_happen + 1
-        point_list[count_condition_happen] = cl[i+m] - op[i]
+        point_list[count_condition_happen] = cl[i+m] - op[i+1]
+        date_list[count_condition_happen] = date[i+1]
         
-        logger$record<-rbind(logger$record,data.frame(date=date[i],price=op[i],type='first'))          
+        logger$record<-rbind(logger$record,data.frame(date=date[i+1],price=op[i],type='first'))          
         logger$record<-rbind(logger$record,data.frame(date=date[i+m],price=cl[i+m] ,type='second'))   
         
         i = i + m + 1
@@ -228,7 +231,7 @@ rangeAfterNbarforMbar <- function(pricedata,up=T,condition = 3,range=0,m=1)
       i = i +1
     }
   }
-  return(list(point=point_list,count=count_condition_happen))
+  return(list(point=point_list,count=count_condition_happen,dates=date_list))
 }
 
 
