@@ -1,0 +1,12 @@
+require(quantmod)
+require(timeSeries)
+require(fPortfolio)
+getSymbols(c('IBM','CAT','YHOO'))
+IBM_ret <- dailyReturn(IBM)
+CAT_ret <-dailyReturn(CAT)
+YHOO_ret <- dailyReturn(YHOO)
+dat<-merge(IBM_ret,CAT_ret,YHOO_ret)
+dat<-as.timeSeries(dat)
+Frontier<-portfolioFrontier(dat)
+Frontier
+plot(Frontier)
