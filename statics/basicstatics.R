@@ -62,4 +62,49 @@ mytable
 ftable(mytable)
 margin.table(mytable, c(1, 3))
 ftable(prop.table(mytable, c(1, 2)))
-156
+
+#Tests of independence chi test fisher test Cochran-Mantel–Haenszel test
+library(vcd)
+#是否使用药物治疗和疗效的关系是不独立的
+mytable <- xtabs(~Treatment+Improved, data=Arthritis)
+#这两个变量不相互独立
+chisq.test(mytable)
+#性别同治疗效果的关系 是独立的
+mytable <- xtabs(~Improved+Sex, data=Arthritis)
+chisq.test(mytable)
+#FISHER’S EXACT TEST
+mytable <- xtabs(~Treatment+Improved, data=Arthritis)
+fisher.test(mytable)
+#Cochran–Mantel–Haenszel 在性别控制下，疗效不独立
+mytable <- xtabs(~Treatment+Improved+Sex, data=Arthritis)
+mantelhaen.test(mytable)
+
+#联列表的相联性 association
+library(vcd)
+mytable <- xtabs(~Treatment+Improved, data=Arthritis)
+assocstats(mytable)
+#Correlations 相关性 度量线性
+states<- state.x77[,1:6]
+cov(states)
+cor(states)
+cor(states, method="spearman")
+x <- states[,c("Population", "Income", "Illiteracy", "HS Grad")]
+y <- states[,c("Life Exp", "Murder")]
+cor(x,y)
+#偏相关
+library(ggm)
+pcor(c(1,5,2,3,6), cov(states))
+#相关性的显著性分析
+cor.test(states[,3], states[,5])
+library(psych)
+corr.test(states, use="complete")
+#t检验
+library(MASS)
+t.test(Prob ~ So, data=UScrime)
+sapply(UScrime[c("U1","U2")], function(x)(c(mean=mean(x),sd=sd(x))))
+with(UScrime, t.test(U1, U2, paired=TRUE))
+#组间差异的非参分析
+#Mann–Whitney U test
+with(UScrime, by(Prob, So, median))
+wilcox.test(Prob ~ So, data=UScrime)
+173
