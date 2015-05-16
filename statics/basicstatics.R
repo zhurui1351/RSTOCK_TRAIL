@@ -107,4 +107,54 @@ with(UScrime, t.test(U1, U2, paired=TRUE))
 #Mann–Whitney U test
 with(UScrime, by(Prob, So, median))
 wilcox.test(Prob ~ So, data=UScrime)
-173
+
+#回归分析
+#简单回归
+fit <- lm(weight ~ height, data=women)
+summary(fit)
+women$weight
+fitted(fit)
+residuals(fit)
+plot(women$height,women$weight,
+     xlab="Height (in inches)",
+     ylab="Weight (in pounds)")
+abline(fit)
+#多项式回归
+fit2 <- lm(weight ~ height + I(height^2), data=women)
+summary(fit2)
+
+plot(women$height,women$weight,
+     xlab="Height (in inches)",
+     ylab="Weight (in lbs)")
+lines(women$height,fitted(fit2))
+
+fit3 <- lm(weight ~ height + I(height^2) +I(height^3), data=women)
+#点图
+library(car)
+scatterplot(weight ~ height,
+            data=women,
+            spread=FALSE, lty.smooth=2,
+            pch=19,
+            main="Women Age 30-39",
+            xlab="Height (inches)",
+            ylab="Weight (lbs.)")
+
+#多个变量
+states <- as.data.frame(state.x77[,c("Murder", "Population",
+                                     "Illiteracy", "Income", "Frost")])
+cor(states)
+#两两分析
+scatterplotMatrix(states, spread=FALSE, lty.smooth=2,
+                  main="Scatter Plot Matrix")
+#假设变量相互独立
+fit <- lm(Murder ~ Population + Illiteracy + Income + Frost,data=states)
+summary(fit)
+#变量之间有交互作用
+fit <- lm(mpg ~ hp + wt + hp:wt, data=mtcars)
+summary(fit)
+library(effects)
+plot(effect("hp:wt", fit,list(wt=c(2.2,3.2,4.2))),multiline=TRUE)
+
+ fit <- lm(Murder ~ Population + Illiteracy + Income + Frost, data=states)
+#置信区间
+confint(fit)
