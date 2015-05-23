@@ -32,6 +32,7 @@ for(f in files)
     {
      # print(pricedata[i:(i+2),])
      # print("next")
+      #2天后的情况
       if((i+2) > nrow(pricedata)){next}
       cn = as.numeric(Op(pricedata[(i+2),]))
       cc = as.numeric(Op(pricedata[(i+1),]))
