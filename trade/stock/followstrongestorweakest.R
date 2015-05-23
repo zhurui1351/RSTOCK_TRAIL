@@ -1,3 +1,4 @@
+#分析大幅涨跌后一段时间内的情况
 require(quantmod)
 require(TTR)
 library(blotter)
@@ -47,3 +48,4 @@ r = sapply(resultlist,function(m){length(m[m>0])/length(m)})
 r1 = na.omit(r)
 length(r1[r1>0.55]) / length(r1)
 save(resultlist,file='resultlist.Rdata')
+

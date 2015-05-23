@@ -5,6 +5,6 @@ system.file('examples',package='shiny')
 runExample("01_hello")
 runExample("03_reactivity")
 runApp("C:/R/code/RSTOCK_TRAIL/packageStudy/shiny/app-1",display.mode = "showcase")
-runApp("C:/R/code/RSTOCK_TRAIL/packageStudy/shiny/myapp3")
+runApp("C:/R/code/RSTOCK_TRAIL/packageStudy/shiny/myapp4")
 #产生html代码
 h1("My title")
