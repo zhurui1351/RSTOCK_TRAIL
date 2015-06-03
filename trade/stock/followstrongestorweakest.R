@@ -6,8 +6,8 @@ library(blotter)
 path = "D:/data/dest"
 #Sys.setenv(TZ="UTC")
 files = dir(path)
-#files=c('SH603606.TXT')
-#f = files[200]
+#files=c('SH000001.TXT')
+f = files[1]
 resultlist=list()
 resultlistindex = 1
 print(files)

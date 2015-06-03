@@ -1,5 +1,5 @@
 library(RMySQL)
-conn <- dbConnect(MySQL(), dbname = "everydaystudy", username="zhurui", password="123456",host="127.0.0.1",port=3306)
+conn <- dbConnect(MySQL(), dbname = "everydaystudy", username="zhurui", password="123456",host="127.0.0.1",port=3306,allowMultiQueries=T)
 
 dbListTables(conn)
 dbListFields(conn, "tt")
@@ -44,5 +44,32 @@ dbWriteTable(conn, "tt", xx, append=T,row.names=F)
 dbReadTable(conn, "tt")
 #更新
 r = dbGetQuery(conn,"update tt set name = '小刘' where name='d'")
+
+#全文索引
+sql = "drop table if EXISTS sortalltest;"
+dbGetQuery(conn,sql)
+
+sql = "
+CREATE TABLE IF NOT EXISTS sortalltest (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+`text` text NOT NULL,
+PRIMARY KEY (`id`),
+FULLTEXT KEY `text` (`text`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+
+"
+dbGetQuery(conn,sql)
+dbSendQuery(conn,'SET NAMES GBK')
+
+sql = "insert into sortalltest(text) values('早已空虚冷寞的古行宫，
+　　零落宫花依然开行艳红。
+　　有几个满头白发的宫女，
+　　闲坐谈论当年的唐玄宗。')"
+tt = '得得'
+sql = "insert into sortalltest(text) values('得得')"
+sql = paste("insert into sortalltest(text) values('",tt,"')",sep="")
+dbGetQuery(conn,sql)
+
 dbDisconnect(conn)
+
 
