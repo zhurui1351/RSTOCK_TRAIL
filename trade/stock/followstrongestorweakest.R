@@ -7,7 +7,7 @@ path = "D:/data/dest"
 #Sys.setenv(TZ="UTC")
 files = dir(path)
 #files=c('SH000001.TXT')
-f = files[1]
+f = files[2]
 resultlist=list()
 resultlistindex = 1
 print(files)
