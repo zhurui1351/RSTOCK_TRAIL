@@ -320,3 +320,27 @@ relweights <- function(fit,...){
 }
 relweights(fit, col="lightgrey")
 #方差分析
+library(multcomp)
+head(cholesterol)
+attach(cholesterol)
+table(trt)
+#各组均值
+aggregate(response,by=list(trt),FUN=mean)
+#各组标准差
+aggregate(response,by=list(trt),FUN=sd)
+#组间差异
+fit = aov(response~trt)
+summary(fit)
+#绘制各组均值与置信区间
+library(gplots)
+plotmeans(response~trt,xlab='Treatment',ylab='Response',main="mean plot 95% ci")
+detach(cholesterol)
+#防止兼容性问题
+detach("package::HH")
+#各组均值成对比较
+TukeyHSD(fit)
+par(las=2)
+par(mar=c(5,8,4,2))
+plot(TukeyHSD(fit))
+
+238
