@@ -1,5 +1,6 @@
 library('quantmod')
 library('blotter')
+library('testthat')
 rm(list=ls())
 sourceDir <- function(path, trace = TRUE, ...) {
   for (nm in list.files(path, pattern = "[.][RrSsQq]$")) {
@@ -10,11 +11,11 @@ sourceDir <- function(path, trace = TRUE, ...) {
 }
 
 #导入源码包
-sourceDir("C:/mac/desk/R/code/trade/SNPACKAGE/R",encoding='utf8')
+sourceDir("C:/R/code/RSTOCK_TRAIL/trade/SNPACKAGE/R",encoding='utf8')
 #导入分析函数
-source("C:/mac/desk/R/code/trade/SNPACKAGE/analysis/performanceInfo.R",encoding='utf8')
+source("C:/R/code/RSTOCK_TRAIL/trade/SNPACKAGE/analysis/performanceInfo.R",encoding='utf8')
 #运行一遍测试，一般用于代码修改以后
-sourceDir("C:/mac/desk/R/code/trade/SNPACKAGE/test",encoding='utf8')
+sourceDir("C:/R/code/RSTOCK_TRAIL/trade/SNPACKAGE/test",encoding='utf8')
 
 
 #运行整个sn找出规则
@@ -34,7 +35,7 @@ for(f in files)
   priceData = as.xts(priceData)
   priceData = priceData['1994/2013']
 #固定头寸1000
-  reports = SnReport(priceData,confProp=0.6,profitratio = 0.2,prune=3,drawdownratio = -5,path=paste(reportpath,'/',f,sep=""),type='bm',tradeDays = 12,computePosition=fixPosition(size=1000))
+  reports = SnReport(priceData,confProp=0.6,profitratio = 0.2,prune=3,drawdownratio = -5,path=paste(reportpath,'/',f,sep=""),type='bm',tradeDays = 12,computePosion=fixPosition(size=1000))
 # print(reports)
 }
 

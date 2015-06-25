@@ -1,4 +1,4 @@
-SnReport <- function(priceData,confProp=0.55,conf=0.05,tradeDays=5,prune=5,profitratio=0.2,drawdownratio=-0.1,initEq = 100000,path='',type='iw',computePosion = fixPosition(size=1000))
+SnReport <- function(priceData,confProp=0.55,conf=0.05,tradeDays=5,prune=5,profitratio=0.2,drawdownratio=-0.1,initEq = 100000,path='',type='iw',computePosition = fixPosition(size=1000))
 {
   snrules = SNRules(priceData,confProp=confProp,conf=conf,tradeDays=tradeDays,prune=prune,type=type)
   traderules = getTradeRules(snrules)
@@ -12,7 +12,7 @@ SnReport <- function(priceData,confProp=0.55,conf=0.05,tradeDays=5,prune=5,profi
     print("now testing:  ")
     print(traderule)
     print(type)
-    report = backTestBySnRule(traderule$rule,priceData,tradeDays=tradeDays,traderule$buyday,traderule$sellday,short = traderule$short,verbose=FALSE,initEq=initEq,type=type,computePosion=computePosion)
+    report = backTestBySnRule(traderule$rule,priceData,tradeDays=tradeDays,traderule$buyday,traderule$sellday,short = traderule$short,verbose=FALSE,initEq=initEq,type=type,computePosition=computePosition)
     perfomance = report$totalStates
     pratio = perfomance$End.Equity / initEq
     ddownRatio = perfomance$Max.Drawdown / initEq

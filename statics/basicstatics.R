@@ -343,4 +343,57 @@ par(las=2)
 par(mar=c(5,8,4,2))
 plot(TukeyHSD(fit))
 
-238
+library(multcomp)
+par(mar=c(5,4,6,2))
+tuk <- glht(fit, linfct=mcp(trt="Tukey"))
+plot(cld(tuk, level=.05),col="lightgrey")
+
+#方差分析假设因变量服从正态分布，各组方差相等。可以使用Q-Q图来检验正态性假设
+library(car)
+qqPlot(lm(response ~ trt, data=cholesterol),
+       simulate=TRUE, main="Q-Q Plot", labels=FALSE)
+#方差齐次检测
+bartlett.test(response ~ trt, data=cholesterol)
+#离群点
+outlierTest(fit)
+
+#单因素协方差分析
+data(litter, package="multcomp")
+head(litter)
+attach(litter)
+table(dose)
+aggregate(weight, by=list(dose), FUN=mean)
+fit <- aov(weight ~ gesttime + dose)
+summary(fit)
+library('effects')
+effect("dose",fit)
+#多重比较
+contrast <- rbind("no drug vs. drug" = c(3, -1, -1, -1))
+summary(glht(fit, linfct=mcp(dose=contrast)))
+
+fit2 <- aov(weight ~ gesttime*dose, data=litter)
+summary(fit2)
+library(HH)
+ancova(weight ~ gesttime + dose, data=litter)
+detach(litter)
+#双因素方差分析
+attach(ToothGrowth)
+table(supp, dose)
+aggregate(len, by=list(supp, dose), FUN=mean)
+aggregate(len, by=list(supp, dose), FUN=sd)
+fit <- aov(len ~ supp*dose)
+summary(fit)
+interaction.plot(dose, supp, len, type="b",
+                 col=c("red","blue"), pch=c(16, 18),
+                 main = "Interaction between Dose and Supplement Type")
+require(gplots)
+plotmeans(len ~ interaction(supp, dose, sep=" "),
+          connect=list(c(1,3,5),c(2,4,6)),
+          col=c("red", "darkgreen"),
+          main = "Interaction Plot with 95% CIs",
+          xlab="Treatment and Dose Combination")
+interaction2wt(len~supp*dose)
+
+#重复测量方差分析
+
+237
