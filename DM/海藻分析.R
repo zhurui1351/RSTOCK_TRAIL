@@ -175,3 +175,45 @@ plot(res.all)
 bestScores(res.all)
 #可见除a1外效果都不是很好，使用随机森林
 library(randomForest)
+cv.rf = function(form,train,test,...)
+{
+  m = randomForest(form,train,...)
+  p = predict(m,test)
+  mse = mean((p-resp(form,test))^2)
+  c(nmse=mse/mean((mean(resp(form,train))-resp(form,test))^2))
+}
+
+res.all = experimentalComparison(DSs,c(variants('cv.lm'),variants('cv.rpart',se=c(0,0.5,1))
+                                       ,variants('cv.rf',ntree = c(200,500,700))),
+                                 cvSettings(5,10,1234))
+
+bestScores(res.all)
+
+#对模型之间进行Wilcoxon检验 威尔科克森符号秩检验
+
+compAnalysis(res.all,against='cv.rf.v3',datasets=c('a1','a2','a4','a6'))
+
+#预测7类海藻的频率
+bestModelsNames = sapply(bestScores(res.all),function(x) x['nmse','system'])
+learners = c(rf="randomForest",rpart='rpartXse')
+funcs = learners[sapply(strsplit(bestModelsNames,'\\.'),function(x) x[2])]
+parSetts =  lapply(bestModelsNames,function(x) getVariant(x,res.all)@pars)
+bestModels = list()
+for(a in 1 : 7)
+{
+  form = as.formula(paste(names(clean.algae[11+a]),'~ .'))
+  bestModels[[a]] = do.call(funcs[a],
+                            c(list(form,clean.algae[,c(1:11,11+a)]),parSetts[[a]])
+                            )
+}
+#用训练集来填补测试集的缺失值 相对比较合理
+clean.test.algae = knnImputation(test.algae,k=10,distData = algae[,1:11])
+preds = matrix(ncol=7,nrow=140)
+for(i in  1:nrow(clean.test.algae))
+{
+  preds[i,] = sapply(1:7,function(x) predict(bestModels[[x]],clean.test.algae[i,]))
+}
+
+#计算测试集的NMSE
+avg.preds = apply(algae[,12:18],2,mean)
+apply(((algae.sols-preds)^2),2,mean) / apply((scale(algae.sols,avg.preds,F)^2),2,mean)
