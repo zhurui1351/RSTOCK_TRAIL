@@ -1,6 +1,6 @@
 require(quantmod)
 require(TTR)
-
+require('dygraphs')
 path = "D:/data/dest"
 #Sys.setenv(TZ="UTC")
 files = dir(path)
@@ -15,6 +15,8 @@ pricedata=as.xts(pricedata)
 weekdata = to.weekly(pricedata)
 weekdata = weekdata['2000/']
 weekdata$sma = na.omit(SMA(Cl(weekdata),n=30))
+pweekdata = Cl(weekdata)
+
 deltratio = na.omit(Delt(weekdata$sma) * 100)
 cumsumDeltratio = na.omit(cumsum(deltratio))
 
@@ -29,7 +31,7 @@ par(old.par)
 
 getratio = function(y)
 {
-  x = 1:length(x)
+  x = 1:length(y)
   f = lm(x~y)
   coff = f$coefficients[[2]]
   return(coff)
@@ -42,3 +44,20 @@ t = as.character(index(y))
 #尺度不一样 从1到2 和从100到200其实是不同的
 merge(y,Cl(weekdata[t]))
 
+x =seq(from=1,to=100, length.out=10)
+y = 1:10
+x1 = seq(from=500,to=600,length.out=10)
+
+#使用累积增长率 滑动窗口
+deltratioSlideLong = na.omit(runSum(deltratio,n=25))
+deltratioSlideShort = na.omit(runSum(deltratio,n=3))
+deltratioSlide = na.omit(merge(deltratioSlideLong,deltratioSlideShort))
+
+m = na.omit(rollapply(deltratioSlide,width=25,FUN=getratio))
+old.par = par(mfrow=c(2,2))
+plot(pweekdata)
+plot(deltratioSlideLong)
+plot(deltratioSlideShort)
+plot(na.omit(deltratioSlideShort-deltratioSlideLong))
+par(old.par)
+dygraph(pweekdata['2008-03-28/2008-11-28'])
