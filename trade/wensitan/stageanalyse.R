@@ -18,7 +18,7 @@ weekdata$sma = na.omit(SMA(Cl(weekdata),n=30))
 deltratio = na.omit(Delt(weekdata$sma) * 100)
 cumsumDeltratio = na.omit(cumsum(deltratio))
 
-deltratioSD = runSD(deltratio)
+deltratioSD = runSD(deltratio,n=20)
 
 old.par = par(mfrow=c(2,2))
 plot(Cl(weekdata))
@@ -26,3 +26,19 @@ plot(cumsumDeltratio)
 plot(deltratio)
 plot(deltratioSD)
 par(old.par)
+
+getratio = function(y)
+{
+  x = 1:length(x)
+  f = lm(x~y)
+  coff = f$coefficients[[2]]
+  return(coff)
+}
+y = rollapply(cumsumDeltratio,width=25,FUN=getratio)
+
+y = cumsumDeltratio[1:25]
+
+t = as.character(index(y))
+#尺度不一样 从1到2 和从100到200其实是不同的
+merge(y,Cl(weekdata[t]))
+
