@@ -4,9 +4,10 @@ require(TTR)
 library(blotter)
 
 path = "D:/data/dest"
+#files=c('SH000001.TXT')
 #Sys.setenv(TZ="UTC")
 files = dir(path)
-#files=c('SH603606.TXT')
+#files=c('SH000001.TXT')
 #f = files[200]
 
 rm(list=files)

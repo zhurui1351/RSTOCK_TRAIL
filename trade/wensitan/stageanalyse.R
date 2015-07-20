@@ -2,18 +2,18 @@
 require(quantmod)
 require(TTR)
 require('dygraphs')
-path = "D:/data/dest"
+require('lubridate')
+require('dplyr')
+path = "D:/data/index"
 #Sys.setenv(TZ="UTC")
-files = dir(path)
-files=c('SH000001.TXT')
-f = files[1]
+f='SH000001.TXT'
 fname = file.path(path,f)
-pricedata = read.zoo(fname,header=FALSE, format = "%m/%d/%Y",sep="\t",index.column=1) 
-colnames(pricedata)<-c("Open","High","Low","Close","Volume","Amount")
-time(pricedata)=as.POSIXct(time(pricedata))
-pricedata=as.xts(pricedata)
+shindex = read.zoo(fname,header=FALSE, format = "%m/%d/%Y",sep="\t",index.column=1) 
+colnames(shindex)<-c("Open","High","Low","Close","Volume","Amount")
+time(shindex)=as.POSIXct(time(shindex))
+shindex=as.xts(shindex)
 
-weekdata = to.weekly(pricedata)
+weekdata = to.weekly(shindex)
 #weekdata = weekdata['2000/']
 weekdata$sma = na.omit(SMA(Cl(weekdata),n=30))
 pweekdata = Cl(weekdata)
@@ -73,9 +73,9 @@ deltratio[ns:ne,]
 deltratioSlideLong[ns:ne,]
 #猜想 long在 5 - -5 short 2 - -2之间可能是阶段划分的边界
 
-m_alldata = as.matrix(alldata)
+#m_alldata = as.matrix(alldata)
 
-stage=apply(m_alldata,MARGIN=1,FUN=function(x){
+stage=apply(alldata,MARGIN=1,FUN=function(x){
   if(is.na(x['deltratioSlideLong']) || is.na(x['deltratioSlideShort']))
     return(-1)
   else
@@ -93,3 +93,50 @@ alldata = merge(alldata,stage)
 
 #反过来 肉眼判断阶段，利用数据挖掘找到系数 
 #随机抽取m个比如100 形成大的dataframe 再来学习
+
+
+#添加周平均成交 周大盘上升股比例交量等信息
+
+tempdata = shindex[,'Volume']
+tempdata = apply.weekly(tempdata,mean)
+alldata= merge(alldata,tempdata)
+
+#增加每日up比例数据
+path = "D:/data/dest"
+files = dir(path)
+rm(list=files)
+lookups = c()
+indexlookups =  1
+for(f in files)
+{
+ # print(f)
+  fname = file.path(path,f)
+  pricedata = read.zoo(fname,header=FALSE, format = "%m/%d/%Y",sep="\t",index.column=1) 
+  colnames(pricedata)<-c("Open","High","Low","Close","Volume","Amount")
+  time(pricedata)=as.POSIXct(time(pricedata))
+  pricedata=as.xts(pricedata)
+  pricedata$volatile = (Cl(pricedata)-Op(pricedata))/Op(pricedata)
+  if(nrow(pricedata) < 500){ next}
+  assign(f,pricedata)
+  lookups[indexlookups] = f
+  indexlookups = indexlookups + 1
+}
+
+mg = mget(lookups)
+mg=lapply(mg,function(x){x$volatile})
+#mm=merge(p,p1)
+mm = do.call("merge",args=mg)
+
+uptorange = function(x)
+{
+  total = length(which(is.na(x) == F))
+  i = length(which(x > 0 ))
+  return(i / total)
+}
+uplist = apply(mm,FUN=uptorange,MARGIN=1)
+names(uplist) = ''
+uplist = xts(uplist,index(mm))
+
+tempdata = apply.weekly(uplist,mean)
+alldata= merge(alldata,tempdata)
+alldata=na.omit(alldata)
