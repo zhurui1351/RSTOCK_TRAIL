@@ -140,3 +140,23 @@ uplist = xts(uplist,index(mm))
 tempdata = apply.weekly(uplist,mean)
 alldata= merge(alldata,tempdata)
 alldata=na.omit(alldata)
+
+
+#处理每个时间的筛选
+shindex_week = shindex_week['2000/']
+end = index(shindex_week)
+#lapply(end,function(x,y){ 
+#                      return(list(x,y))},'d')
+
+lapply(end[1],function(x){
+  
+  l = sapply(mg,function(p,date){
+    s = Cl(p[date])
+    return(s)
+  }
+  ,as.character(end[100]))
+  l = Filter(function(x){!(length(x)==0)},l)
+  print(l)
+  return(NULL)
+  
+})
