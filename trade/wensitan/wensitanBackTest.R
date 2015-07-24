@@ -7,7 +7,7 @@ require('dplyr')
 
 readSHindex = function()
 {
-  path = "D:/data/index"
+  path = "D:/data/stock/index"
   #Sys.setenv(TZ="UTC")
   f='SH000001.TXT'
   fname = file.path(path,f)
@@ -24,7 +24,7 @@ readallstock = function()
   
   lookups = c()
   indexlookups =  1
-  path = "D:/data/dest"
+  path = "D:/data/stock/dest"
   files = dir(path)
   rm(list=files)
   lookups = c()
