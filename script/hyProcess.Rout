@@ -1,0 +1,48 @@
+
+R version 3.2.1 (2015-06-18) -- "World-Famous Astronaut"
+Copyright (C) 2015 The R Foundation for Statistical Computing
+Platform: x86_64-w64-mingw32/x64 (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+[Previously saved workspace restored]
+
+> ## grep -r 'T110101' ./
+> #R CMD BATCH hyProcess.R
+> 
+> path = 'C:/new_zx_allin1/T0002/hq_cache'
+> file_hy = 'tdxhy.cfg'
+> hy = file.path(path,file_hy)
+> hy = read.table(hy,head=F,sep='|', colClasses=rep('character',4))
+> hy = hy[,c(2,3)]
+> names(hy) = c('stockcode','hy')
+> 
+> file_hy_code = 'tdxzs.cfg'
+> hy_code = file.path(path,file_hy_code)
+> hy_code = read.table(hy_code,head=F,sep='|',colClasses=rep('character',6))
+> hy_code = hy_code[,c(1,2,6)]
+> names(hy_code) = c('hyname','hycode','hy')
+> 
+> 
+> stockandhy = merge(hy,hy_code,by='hy')
+> 
+> path = 'D:/data/stock/code'
+> name = 'hycode.txt'
+> write.table(stockandhy,file.path(path,name),sep=',',quote=F)
+> 
+> 
+> 
+> 
+> proc.time()
+   user  system elapsed 
+   0.17    0.01    0.17 

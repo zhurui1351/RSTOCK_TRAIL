@@ -11,7 +11,7 @@ readSHindex = function()
   #Sys.setenv(TZ="UTC")
   f='SH000001.TXT'
   fname = file.path(path,f)
-  shindex = read.zoo(fname,header=FALSE, format = "%m/%d/%Y",sep="\t",index.column=1) 
+  shindex = read.zoo(fname,header=FALSE, format = "%m/%d/%Y",sep=",",index.column=1) 
   colnames(shindex)<-c("Open","High","Low","Close","Volume","Amount")
   time(shindex)=as.POSIXct(time(shindex))
   shindex=as.xts(shindex)
@@ -34,7 +34,7 @@ readallstock = function()
   {
      #print(f)
     fname = file.path(path,f)
-    pricedata = read.zoo(fname,header=FALSE, format = "%m/%d/%Y",sep="\t",index.column=1) 
+    pricedata = read.zoo(fname,header=FALSE, format = "%m/%d/%Y",sep=",",index.column=1) 
     if(nrow(pricedata) < 500){ next}
     colnames(pricedata)<-c("Open","High","Low","Close","Volume","Amount")
     time(pricedata)=as.POSIXct(time(pricedata))
@@ -49,8 +49,11 @@ readallstock = function()
     pricedata = na.omit(pricedata)
     pricedata$meanVolume = apply.weekly(pricedata[,'Volume'],mean)
     
-    assign(f,pricedata,envir=e)
-    lookups[indexlookups] = f
+    fname = strsplit(f,'.',fixed=T)[[1]][1]
+    fname = substr(fname,3,8)
+    
+    assign(fname,pricedata,envir=e)
+    lookups[indexlookups] =fname
     indexlookups = indexlookups + 1
   } 
   print(now())

@@ -1,5 +1,5 @@
 ## grep -r 'T110101' ./
-require('dplyr')
+#R CMD BATCH hyProcess.R
 
 path = 'C:/new_zx_allin1/T0002/hq_cache'
 file_hy = 'tdxhy.cfg'
@@ -20,3 +20,6 @@ stockandhy = merge(hy,hy_code,by='hy')
 path = 'D:/data/stock/code'
 name = 'hycode.txt'
 write.table(stockandhy,file.path(path,name),sep=',',quote=F)
+
+
+
