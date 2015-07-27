@@ -345,3 +345,444 @@ CRchart(PTs.lof[,,1],PTs.lof[,,2],
         add=T,lty=2,
         avg='vertical')
 legend('bottomright',c('BPrule','LOF'),lty=c(1,2))
+
+#基于聚类的离群值排序
+#主要思想 离群值应该不太容易被合并 最终合并时 他们合并前所属类的大小 和他们被合并进去的
+#类的大小应该相差较大 当他们被包含在正常的观察值组中会造成改组相同性的明显降低
+ho.ORh <- function(form, train, test, ...) {
+  require(dprep,quietly=T)
+  ntr <- nrow(train)
+  all <- rbind(train,test)
+  N <- nrow(all)
+  ups <- split(all$Uprice,all$Prod)
+  r <- list(length=ups)
+  for(u in seq(along=ups)) 
+    r[[u]] <- if (NROW(ups[[u]]) > 3) 
+      outliers.ranking(ups[[u]])$prob.outliers 
+  else if (NROW(ups[[u]])) rep(0,NROW(ups[[u]])) 
+  else NULL
+  all$lof <- vector(length=N)
+  split(all$lof,all$Prod) <- r
+  all$lof[which(!(is.infinite(all$lof) | is.nan(all$lof)))] <- 
+    SoftMax(all$lof[which(!(is.infinite(all$lof) | is.nan(all$lof)))])
+  structure(evalOutlierRanking(test,order(all[(ntr+1):N,'lof'],
+                                          decreasing=T),...),
+            itInfo=list(preds=all[(ntr+1):N,'lof'],
+                        trues=ifelse(test$Insp=='fraud',1,0))
+  )
+}
+
+orh.res <- holdOut(learner('ho.ORh',
+                           pars=list(Threshold=0.1,
+                                     statsProds=globalStats)),
+                   dataset(Insp ~ .,sales),
+                   hldSettings(3,0.3,1234,T),
+                   itsInfo=TRUE
+)
+
+
+summary(orh.res)
+
+par(mfrow=c(1,2))
+info <- attr(orh.res,'itsInfo')
+PTs.orh <- aperm(array(unlist(info),dim=c(length(info[[1]]),2,3)),
+                 c(1,3,2)
+)
+PRcurve(PTs.bp[,,1],PTs.bp[,,2],
+        main='PR curve',lty=1,xlim=c(0,1),ylim=c(0,1),
+        avg='vertical')
+PRcurve(PTs.lof[,,1],PTs.lof[,,2],
+        add=T,lty=2,
+        avg='vertical')
+PRcurve(PTs.orh[,,1],PTs.orh[,,2],
+        add=T,lty=1,col='grey',
+        avg='vertical')        
+legend('topright',c('BPrule','LOF','ORh'),
+       lty=c(1,2,1),col=c('black','black','grey'))
+CRchart(PTs.bp[,,1],PTs.bp[,,2],
+        main='Cumulative Recall curve',lty=1,xlim=c(0,1),ylim=c(0,1),
+        avg='vertical')
+CRchart(PTs.lof[,,1],PTs.lof[,,2],
+        add=T,lty=2,
+        avg='vertical')
+CRchart(PTs.orh[,,1],PTs.orh[,,2],
+        add=T,lty=1,col='grey',
+        avg='vertical')
+legend('bottomright',c('BPrule','LOF','ORh'),
+       lty=c(1,2,1),col=c('black','black','grey'))
+
+#类失衡 利用抽样来改变类的失衡 欠抽样和过抽样
+#SMOTE方法 用少数类个案的最近邻产生少数类的个案
+data(iris)
+data <- iris[,c(1,2,5)]
+data$Species <- factor(ifelse(data$Species == 'setosa','rare','common'))
+newData <- SMOTE(Species ~ .,data,perc.over=600)
+table(newData$Species)
+
+
+par(mfrow=c(1,2))
+plot(data[,1],data[,2],pch=19+as.integer(data[,3]),main='Original Data')
+plot(newData[,1],newData[,2],pch=19+as.integer(newData[,3]),main="SMOTE'd Data")
+
+#简单贝叶斯方法
+nb <- function(train,test) {
+  require(e1071,quietly=T)
+  sup <- which(train$Insp != 'unkn')
+  data <- train[sup,c('ID','Prod','Uprice','Insp')]
+  data$Insp <- factor(data$Insp,levels=c('ok','fraud'))
+  model <- naiveBayes(Insp ~ .,data)
+  preds <- predict(model,test[,c('ID','Prod','Uprice','Insp')],type='raw')
+  return(list(rankOrder=order(preds[,'fraud'],decreasing=T),
+              rankScore=preds[,'fraud'])
+  )
+}
+
+
+ho.nb <- function(form, train, test, ...) {
+  res <- nb(train,test)
+  structure(evalOutlierRanking(test,res$rankOrder,...),
+            itInfo=list(preds=res$rankScore,
+                        trues=ifelse(test$Insp=='fraud',1,0)
+            )
+  )
+}
+
+nb.res <- holdOut(learner('ho.nb',
+                          pars=list(Threshold=0.1,
+                                    statsProds=globalStats)),
+                  dataset(Insp ~ .,sales),
+                  hldSettings(3,0.3,1234,T),
+                  itsInfo=TRUE
+)
+
+
+summary(nb.res)
+
+
+par(mfrow=c(1,2))
+info <- attr(nb.res,'itsInfo')
+PTs.nb <- aperm(array(unlist(info),dim=c(length(info[[1]]),2,3)),
+                c(1,3,2)
+)
+PRcurve(PTs.nb[,,1],PTs.nb[,,2],
+        main='PR curve',lty=1,xlim=c(0,1),ylim=c(0,1),
+        avg='vertical')
+PRcurve(PTs.orh[,,1],PTs.orh[,,2],
+        add=T,lty=1,col='grey',
+        avg='vertical')        
+legend('topright',c('NaiveBayes','ORh'),
+       lty=1,col=c('black','grey'))
+CRchart(PTs.nb[,,1],PTs.nb[,,2],
+        main='Cumulative Recall curve',lty=1,xlim=c(0,1),ylim=c(0,1),
+        avg='vertical')
+CRchart(PTs.orh[,,1],PTs.orh[,,2],
+        add=T,lty=1,col='grey',
+        avg='vertical')        
+legend('bottomright',c('NaiveBayes','ORh'),
+       lty=1,col=c('black','grey'))
+
+#解决类失衡 重跑贝叶斯
+nb.s <- function(train,test) {
+  require(e1071,quietly=T)
+  sup <- which(train$Insp != 'unkn')
+  data <- train[sup,c('ID','Prod','Uprice','Insp')]
+  data$Insp <- factor(data$Insp,levels=c('ok','fraud'))
+  newData <- SMOTE(Insp ~ .,data,perc.over=700)
+  model <- naiveBayes(Insp ~ .,newData)
+  preds <- predict(model,test[,c('ID','Prod','Uprice','Insp')],type='raw')
+  return(list(rankOrder=order(preds[,'fraud'],decreasing=T),
+              rankScore=preds[,'fraud'])
+  )
+}
+
+
+ho.nbs <- function(form, train, test, ...) {
+  res <- nb.s(train,test)
+  structure(evalOutlierRanking(test,res$rankOrder,...),
+            itInfo=list(preds=res$rankScore,
+                        trues=ifelse(test$Insp=='fraud',1,0)
+            )
+  )
+}
+
+
+nbs.res <- holdOut(learner('ho.nbs',
+                           pars=list(Threshold=0.1,
+                                     statsProds=globalStats)),
+                   dataset(Insp ~ .,sales),
+                   hldSettings(3,0.3,1234,T),
+                   itsInfo=TRUE
+)
+
+
+summary(nbs.res)
+
+
+par(mfrow=c(1,2))
+info <- attr(nbs.res,'itsInfo')
+PTs.nbs <- aperm(array(unlist(info),dim=c(length(info[[1]]),2,3)),
+                 c(1,3,2)
+)
+PRcurve(PTs.nb[,,1],PTs.nb[,,2],
+        main='PR curve',lty=1,xlim=c(0,1),ylim=c(0,1),
+        avg='vertical')
+PRcurve(PTs.nbs[,,1],PTs.nbs[,,2],
+        add=T,lty=2,
+        avg='vertical')
+PRcurve(PTs.orh[,,1],PTs.orh[,,2],
+        add=T,lty=1,col='grey',
+        avg='vertical')        
+legend('topright',c('NaiveBayes','smoteNaiveBayes','ORh'),
+       lty=c(1,2,1),col=c('black','black','grey'))
+CRchart(PTs.nb[,,1],PTs.nb[,,2],
+        main='Cumulative Recall curve',lty=1,xlim=c(0,1),ylim=c(0,1),
+        avg='vertical')
+CRchart(PTs.nbs[,,1],PTs.nbs[,,2],
+        add=T,lty=2,
+        avg='vertical')
+CRchart(PTs.orh[,,1],PTs.orh[,,2],
+        add=T,lty=1,col='grey',
+        avg='vertical')        
+legend('bottomright',c('NaiveBayes','smoteNaiveBayes','ORh'),
+       lty=c(1,2,1),col=c('black','black','grey'))
+
+
+#adaboost
+library(RWeka)
+WOW(AdaBoostM1)
+
+data(iris)
+idx <- sample(150,100)
+model <- AdaBoostM1(Species ~ .,iris[idx,],
+                    control=Weka_control(I=100))
+preds <- predict(model,iris[-idx,])
+head(preds)
+table(preds,iris[-idx,'Species'])
+prob.preds <- predict(model,iris[-idx,],type='probability')
+head(prob.preds)
+
+ab <- function(train,test) {
+  require(RWeka,quietly=T)
+  sup <- which(train$Insp != 'unkn')
+  data <- train[sup,c('ID','Prod','Uprice','Insp')]
+  data$Insp <- factor(data$Insp,levels=c('ok','fraud'))
+  model <- AdaBoostM1(Insp ~ .,data,
+                      control=Weka_control(I=100))
+  preds <- predict(model,test[,c('ID','Prod','Uprice','Insp')],
+                   type='probability')
+  return(list(rankOrder=order(preds[,'fraud'],decreasing=T),
+              rankScore=preds[,'fraud'])
+  )
+}
+
+
+ho.ab <- function(form, train, test, ...) {
+  res <- ab(train,test)
+  structure(evalOutlierRanking(test,res$rankOrder,...),
+            itInfo=list(preds=res$rankScore,
+                        trues=ifelse(test$Insp=='fraud',1,0)
+            )
+  )
+}
+
+
+ab.res <- holdOut(learner('ho.ab',
+                          pars=list(Threshold=0.1,
+                                    statsProds=globalStats)),
+                  dataset(Insp ~ .,sales),
+                  hldSettings(3,0.3,1234,T),
+                  itsInfo=TRUE
+)
+
+
+summary(ab.res)
+
+
+par(mfrow=c(1,2))
+info <- attr(ab.res,'itsInfo')
+PTs.ab <- aperm(array(unlist(info),dim=c(length(info[[1]]),2,3)),
+                c(1,3,2)
+)
+PRcurve(PTs.nb[,,1],PTs.nb[,,2],
+        main='PR curve',lty=1,xlim=c(0,1),ylim=c(0,1),
+        avg='vertical')
+PRcurve(PTs.orh[,,1],PTs.orh[,,2],
+        add=T,lty=1,col='grey',
+        avg='vertical')        
+PRcurve(PTs.ab[,,1],PTs.ab[,,2],
+        add=T,lty=2,
+        avg='vertical')        
+legend('topright',c('NaiveBayes','ORh','AdaBoostM1'),
+       lty=c(1,1,2),col=c('black','grey','black'))
+CRchart(PTs.nb[,,1],PTs.nb[,,2],
+        main='PR curve',lty=1,xlim=c(0,1),ylim=c(0,1),
+        avg='vertical')
+CRchart(PTs.orh[,,1],PTs.orh[,,2],
+        add=T,lty=1,col='grey',
+        avg='vertical')        
+CRchart(PTs.ab[,,1],PTs.ab[,,2],
+        add=T,lty=2,
+        avg='vertical')        
+legend('bottomright',c('NaiveBayes','ORh','AdaBoostM1'),
+       lty=c(1,1,2),col=c('black','grey','black'))
+
+#半监督学习
+#自我分类学习，用有标签的进行训练，然后将没有标签的进行分类，等到置信度最高的，继续进行
+#训练，直到到达某个值
+require(e1071)
+data(iris)
+idx = sample(150,100)
+tr = iris[idx,]
+ts = iris[-idx,]
+nb = naiveBayes(Species~.,tr)
+table(predict(nb,ts),ts$Species)
+trST <- tr
+nas <- sample(100,90)
+trST[nas,'Species'] <- NA
+func <- function(m,d) {
+  p <- predict(m,d,type='raw')
+  data.frame(cl=colnames(p)[apply(p,1,which.max)],p=apply(p,1,max))
+}
+nbSTbase <- naiveBayes(Species ~ .,trST[-nas,])
+table(predict(nbSTbase,ts),ts$Species)
+nbST <- SelfTrain(Species ~ .,trST,learner('naiveBayes',list()),'func')
+table(predict(nbST,ts),ts$Species)
+
+
+pred.nb <- function(m,d) {
+  p <- predict(m,d,type='raw')
+  data.frame(cl=colnames(p)[apply(p,1,which.max)],
+             p=apply(p,1,max)
+  )
+}
+nb.st <- function(train,test) {
+  require(e1071,quietly=T)
+  train <- train[,c('ID','Prod','Uprice','Insp')]
+  train[which(train$Insp == 'unkn'),'Insp'] <- NA
+  train$Insp <- factor(train$Insp,levels=c('ok','fraud'))
+  model <- SelfTrain(Insp ~ .,train,
+                     learner('naiveBayes',list()),'pred.nb')
+  preds <- predict(model,test[,c('ID','Prod','Uprice','Insp')],
+                   type='raw')
+  return(list(rankOrder=order(preds[,'fraud'],decreasing=T),
+              rankScore=preds[,'fraud'])
+  )
+}
+ho.nb.st <- function(form, train, test, ...) {
+  res <- nb.st(train,test)
+  structure(evalOutlierRanking(test,res$rankOrder,...),
+            itInfo=list(preds=res$rankScore,
+                        trues=ifelse(test$Insp=='fraud',1,0)
+            )
+  )
+}
+
+
+nb.st.res <- holdOut(learner('ho.nb.st',
+                             pars=list(Threshold=0.1,
+                                       statsProds=globalStats)),
+                     dataset(Insp ~ .,sales),
+                     hldSettings(3,0.3,1234,T),
+                     itsInfo=TRUE
+)
+
+
+summary(nb.st.res)
+
+par(mfrow=c(1,2))
+info <- attr(nb.st.res,'itsInfo')
+PTs.nb.st <- aperm(array(unlist(info),dim=c(length(info[[1]]),2,3)),
+                   c(1,3,2)
+)
+PRcurve(PTs.nb[,,1],PTs.nb[,,2],
+        main='PR curve',lty=1,xlim=c(0,1),ylim=c(0,1),
+        avg='vertical')
+PRcurve(PTs.orh[,,1],PTs.orh[,,2],
+        add=T,lty=1,col='grey',
+        avg='vertical')        
+PRcurve(PTs.nb.st[,,1],PTs.nb.st[,,2],
+        add=T,lty=2,
+        avg='vertical')        
+legend('topright',c('NaiveBayes','ORh','NaiveBayes-ST'),
+       lty=c(1,1,2),col=c('black','grey','black'))
+CRchart(PTs.nb[,,1],PTs.nb[,,2],
+        main='Cumulative Recall curve',lty=1,xlim=c(0,1),ylim=c(0,1),
+        avg='vertical')
+CRchart(PTs.orh[,,1],PTs.orh[,,2],
+        add=T,lty=1,col='grey',
+        avg='vertical')        
+CRchart(PTs.nb.st[,,1],PTs.nb.st[,,2],
+        add=T,lty=2,
+        avg='vertical')        
+legend('bottomright',c('NaiveBayes','ORh','NaiveBayes-ST'),
+       lty=c(1,1,2),col=c('black','grey','black'))
+
+
+pred.ada <- function(m,d) {
+  p <- predict(m,d,type='probability')
+  data.frame(cl=colnames(p)[apply(p,1,which.max)],
+             p=apply(p,1,max)
+  )
+}
+ab.st <- function(train,test) {
+  require(RWeka,quietly=T)
+  train <- train[,c('ID','Prod','Uprice','Insp')]
+  train[which(train$Insp == 'unkn'),'Insp'] <- NA
+  train$Insp <- factor(train$Insp,levels=c('ok','fraud'))
+  model <- SelfTrain(Insp ~ .,train,
+                     learner('AdaBoostM1',
+                             list(control=Weka_control(I=100))),
+                     'pred.ada')
+  preds <- predict(model,test[,c('ID','Prod','Uprice','Insp')],
+                   type='probability')
+  return(list(rankOrder=order(preds[,'fraud'],decreasing=T),
+              rankScore=preds[,'fraud'])
+  )
+}
+ho.ab.st <- function(form, train, test, ...) {
+  res <- ab.st(train,test)
+  structure(evalOutlierRanking(test,res$rankOrder,...),
+            itInfo=list(preds=res$rankScore,
+                        trues=ifelse(test$Insp=='fraud',1,0)
+            )
+  )
+}
+ab.st.res <- holdOut(learner('ho.ab.st',
+                             pars=list(Threshold=0.1,
+                                       statsProds=globalStats)),
+                     dataset(Insp ~ .,sales),
+                     hldSettings(3,0.3,1234,T),
+                     itsInfo=TRUE
+)
+
+
+summary(ab.st.res)
+
+
+par(mfrow=c(1,2))
+info <- attr(ab.st.res,'itsInfo')
+PTs.ab.st <- aperm(array(unlist(info),dim=c(length(info[[1]]),2,3)),
+                   c(1,3,2)
+)
+PRcurve(PTs.ab[,,1],PTs.ab[,,2],
+        main='PR curve',lty=1,xlim=c(0,1),ylim=c(0,1),
+        avg='vertical')
+PRcurve(PTs.orh[,,1],PTs.orh[,,2],
+        add=T,lty=1,col='grey',
+        avg='vertical')        
+PRcurve(PTs.ab.st[,,1],PTs.ab.st[,,2],
+        add=T,lty=2,
+        avg='vertical')        
+legend('topright',c('AdaBoostM1','ORh','AdaBoostM1-ST'),
+       lty=c(1,1,2),col=c('black','grey','black'))
+CRchart(PTs.ab[,,1],PTs.ab[,,2],
+        main='Cumulative Recall curve',lty=1,xlim=c(0,1),ylim=c(0,1),
+        avg='vertical')
+CRchart(PTs.orh[,,1],PTs.orh[,,2],
+        add=T,lty=1,col='grey',
+        avg='vertical')        
+CRchart(PTs.ab.st[,,1],PTs.ab.st[,,2],
+        add=T,lty=2,
+        avg='vertical')        
+legend('bottomright',c('AdaBoostM1','ORh','AdaBoostM1-ST'),
+       lty=c(1,1,2),col=c('black','grey','black'))

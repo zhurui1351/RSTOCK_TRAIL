@@ -3,19 +3,19 @@ R version 3.2.1 (2015-06-18) -- "World-Famous Astronaut"
 Copyright (C) 2015 The R Foundation for Statistical Computing
 Platform: x86_64-w64-mingw32/x64 (64-bit)
 
-R is free software and comes with ABSOLUTELY NO WARRANTY.
-You are welcome to redistribute it under certain conditions.
-Type 'license()' or 'licence()' for distribution details.
+R是自由软件，不带任何担保。
+在某些条件下你可以将其自由散布。
+用'license()'或'licence()'来看散布的详细条件。
 
-R is a collaborative project with many contributors.
-Type 'contributors()' for more information and
-'citation()' on how to cite R or R packages in publications.
+R是个合作计划，有许多人为之做出了贡献.
+用'contributors()'来看合作者的详细情况
+用'citation()'会告诉你如何在出版物中正确地引用R或R程序包。
 
-Type 'demo()' for some demos, 'help()' for on-line help, or
-'help.start()' for an HTML browser interface to help.
-Type 'q()' to quit R.
+用'demo()'来看一些示范程序，用'help()'来阅读在线帮助文件，或
+用'help.start()'通过HTML浏览器来看帮助文件。
+用'q()'退出R.
 
-[Previously saved workspace restored]
+[原来保存的工作空间已还原]
 
 > ## grep -r 'T110101' ./
 > #R CMD BATCH hyProcess.R
@@ -38,11 +38,11 @@ Type 'q()' to quit R.
 > 
 > path = 'D:/data/stock/code'
 > name = 'hycode.txt'
-> write.table(stockandhy,file.path(path,name),sep=',',quote=F)
+> write.table(stockandhy,file.path(path,name),sep=',',quote=F,row.names=F)
 > 
 > 
 > 
 > 
 > proc.time()
-   user  system elapsed 
-   0.17    0.01    0.17 
+用户 系统 流逝 
+0.56 0.07 0.82 

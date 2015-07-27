@@ -19,7 +19,7 @@ stockandhy = merge(hy,hy_code,by='hy')
 
 path = 'D:/data/stock/code'
 name = 'hycode.txt'
-write.table(stockandhy,file.path(path,name),sep=',',quote=F)
+write.table(stockandhy,file.path(path,name),sep=',',quote=F,row.names=F)
 
 
 
