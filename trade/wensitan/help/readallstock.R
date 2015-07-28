@@ -1,4 +1,4 @@
-readallstock = function(codeTable)
+readallstock = function(codeTable,shindex)
 {
   require('dplyr')
   print(now())
@@ -30,6 +30,8 @@ readallstock = function(codeTable)
     pricedata = na.omit(pricedata)
     pricedata$meanVolume = apply.weekly(pricedata[,'Volume'],mean)
     
+    rs = RS(Cl(shindex),Cl(pricedata))
+    pricedata$rs = rs
     
     
     fname = strsplit(f,'.',fixed=T)[[1]][1]
@@ -42,6 +44,8 @@ readallstock = function(codeTable)
     {
       pricedata$hy = NA
       pricedata$hystage = NA
+      pricedata$hyrs = NA
+      
     }
     else
     {
@@ -49,6 +53,8 @@ readallstock = function(codeTable)
       hy = get(hycode,envir = e)
       hystage = hy[,'stage']
       pricedata$hystage = hystage
+      pricedata$hyrs = hy[,'rs']
+
     }
     assign(fname,pricedata,envir=e)
     lookups[indexlookups] =fname

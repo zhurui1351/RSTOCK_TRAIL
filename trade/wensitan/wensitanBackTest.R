@@ -35,7 +35,7 @@ lookups_hy = readallHy()
 codeTable = readHycode()
 
 #读入所有数据
-lookups = readallstock(codeTable)
+lookups = readallstock(codeTable,shindex_week)
 #形成列表
 mg = mget(lookups)
 mgl=lapply(mg,function(x){x$volatile})
@@ -59,7 +59,7 @@ colnames(shindex_week) = c('Open','Hign','Low','Close','Volume','sma30','stage',
 
 
 #处理每个时间的筛选
-shindex_week = shindex_week['2000/']
+#shindex_week = shindex_week['2000/']
 end = index(shindex_week)
 #lapply(end,function(x,y){ 
  #                      return(list(x,y))},'d')

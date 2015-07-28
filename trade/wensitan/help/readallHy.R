@@ -29,6 +29,9 @@ readallHy = function()
     pricedata = na.omit(pricedata)
     pricedata$meanVolume = apply.weekly(pricedata[,'Volume'],mean)
     
+    rs = RS(Cl(shindex),Cl(pricedata))
+    pricedata$rs = rs
+    
     fname = strsplit(f,'.',fixed=T)[[1]][1]
     fname = substr(fname,3,8)
     
