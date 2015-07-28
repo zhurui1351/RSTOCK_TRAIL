@@ -1,5 +1,6 @@
-readallstock = function()
+readallstock = function(codeTable)
 {
+  require('dplyr')
   print(now())
   e = parent.env(environment())
   lookups = c()
@@ -10,7 +11,7 @@ readallstock = function()
   lookups = c()
   indexlookups =  1
   
-  for(f in files)
+  for(f in files[1])
   {
     #print(f)
     fname = file.path(path,f)
@@ -29,9 +30,26 @@ readallstock = function()
     pricedata = na.omit(pricedata)
     pricedata$meanVolume = apply.weekly(pricedata[,'Volume'],mean)
     
+    
+    
     fname = strsplit(f,'.',fixed=T)[[1]][1]
     fname = substr(fname,3,8)
     
+    hy = filter(codeTable,stockcode==fname)
+    hycode = hy[1,'hycode']
+    #找不到对应代码
+    if(nrow(hy) == 0 || !exists(hycode))
+    {
+      pricedata$hy = NA
+      pricedata$hystage = NA
+    }
+    else
+    {
+      pricedata$hy = hycode
+      hy = get(hycode,envir = e)
+      hystage = hy[,'stage']
+      pricedata$hystage = hystage
+    }
     assign(fname,pricedata,envir=e)
     lookups[indexlookups] =fname
     indexlookups = indexlookups + 1

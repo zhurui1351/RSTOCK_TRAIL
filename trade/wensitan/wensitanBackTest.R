@@ -28,9 +28,14 @@ shindex_week = na.omit(shindex_week)
 #添加周平均成交 周大盘上升股比例交量等信息
 shindex_week$meanVolume = apply.weekly(shindex[,'Volume'],mean)
 
+#读入所有行业
+lookups_hy = readallHy()
+
+#读入行业代码
+codeTable = readHycode()
 
 #读入所有数据
-lookups = readallstock()
+lookups = readallstock(codeTable)
 #形成列表
 mg = mget(lookups)
 mgl=lapply(mg,function(x){x$volatile})
@@ -50,12 +55,6 @@ tempdata = apply.weekly(uplist,mean)
 shindex_week = merge(shindex_week,tempdata)
 shindex_week = na.omit(shindex_week)
 colnames(shindex_week) = c('Open','Hign','Low','Close','Volume','sma30','stage','meanVolume','meanUpRatio')
-
-#读入所有行业
-lookups_hy = readallHy()
-
-#读入行业代码
-codeTable = readHycode()
 
 
 
