@@ -26,8 +26,9 @@ shindex_week$stage = judegeStage(shindex_week$sma30)
 shindex_week = na.omit(shindex_week)
 
 #添加周平均成交 周大盘上升股比例交量等信息
-shindex_week$meanVolume = apply.weekly(shindex[,'Volume'],mean)
+shindex_week$meanVolume = runTrend(apply.weekly(shindex[,'Volume'],mean),5)
 
+shindex_week = na.omit(shindex_week)
 #读入所有行业
 lookups_hy = readallHy()
 

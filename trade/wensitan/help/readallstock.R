@@ -11,7 +11,7 @@ readallstock = function(codeTable,shindex)
   lookups = c()
   indexlookups =  1
   
-  for(f in files[1])
+  for(f in files)
   {
     #print(f)
     fname = file.path(path,f)
