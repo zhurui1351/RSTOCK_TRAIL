@@ -1,3 +1,4 @@
+require(compiler)
 runTrend = cmpfun(function(data,n=10)
 {
   

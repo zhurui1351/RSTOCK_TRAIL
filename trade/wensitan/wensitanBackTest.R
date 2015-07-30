@@ -62,17 +62,39 @@ colnames(shindex_week) = c('Open','Hign','Low','Close','Volume','sma30','stage',
 #处理每个时间的筛选
 #shindex_week = shindex_week['2000/']
 end = index(shindex_week)
-#lapply(end,function(x,y){ 
- #                      return(list(x,y))},'d')
-lapply(end[1],function(x){
+#frame for iter all the data
+# lapply(end,function(x){
+#   
+#   l = lapply(mg,function(p,date){
+#     s = as.numeric(Cl(p[date]))
+#     return(s)
+#   }
+#     ,as.character(x))
+#   l = Filter(function(x){!(length(x)==0)},l)
+#   m = min(unlist(l))
+#   print(x)
+#   print(m)
+#   return(NULL)
+#   
+# })
+
+
+lapply(end,function(x){
   
-  l = sapply(mg,function(p,date){
-    s = Cl(p[date])
+  shstage =  shindex_week[as.character(x)]$stage
+  #no trading when shindex stage is 4
+  if(coredata(shstage) == 4)
+    return(NULL)
+  
+  l = lapply(mg,function(p,date){
+    s = as.numeric(Cl(p[date]))
     return(s)
   }
-    ,as.character(end[100]))
+    ,as.character(x))
   l = Filter(function(x){!(length(x)==0)},l)
-  print(l)
+  m = min(unlist(l))
+  print(x)
+  print(m)
   return(NULL)
   
 })
