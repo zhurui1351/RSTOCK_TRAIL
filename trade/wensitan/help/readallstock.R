@@ -29,10 +29,14 @@ readallstock = function(codeTable,shindex)
     pricedata$stage = judegeStage(pricedata$sma30)
     pricedata = na.omit(pricedata)
     pricedata$meanVolume = apply.weekly(pricedata[,'Volume'],mean)
-    
+    pricedata$mvSma10 = lag(SMA(pricedata$meanVolume,10),1)
+    pricedata$mvratio = pricedata$meanVolume / pricedata$mvSma10 
     rs = RS(Cl(shindex),Cl(pricedata))
-    pricedata$rs = rs
+    rs[which(rs==Inf | rs == -Inf)] = 0
     
+    pricedata$rs = rs
+    pricedata$rsSma10 =lag(SMA(rs,10),1)
+    pricedata$rsratio = pricedata$rs / pricedata$rsSma10 
     
     fname = strsplit(f,'.',fixed=T)[[1]][1]
     fname = substr(fname,3,8)
@@ -45,6 +49,8 @@ readallstock = function(codeTable,shindex)
       pricedata$hy = NA
       pricedata$hystage = NA
       pricedata$hyrs = NA
+      pricedata$hyrsSma10 = NA
+      pricedata$hyrsRatio = NA
       
     }
     else
@@ -54,6 +60,8 @@ readallstock = function(codeTable,shindex)
       hystage = hy[,'stage']
       pricedata$hystage = hystage
       pricedata$hyrs = hy[,'rs']
+      pricedata$hyrsSma10 =hy[,'rsSma10']
+      pricedata$hyrsRatio =hy[,'rsratio']
 
     }
     assign(fname,pricedata,envir=e)

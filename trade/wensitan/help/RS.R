@@ -6,6 +6,6 @@ RS = function(base,taget)
   
   rsdata = na.omit(merge(shdeltratio,pdeltratio))
   
-  rs = rsdata[,2] / rsdata[,1]
+  rs = rsdata[,2] - rsdata[,1]
   return(rs)
 }

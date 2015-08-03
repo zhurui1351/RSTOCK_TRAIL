@@ -26,8 +26,9 @@ shindex_week$stage = judegeStage(shindex_week$sma30)
 shindex_week = na.omit(shindex_week)
 
 #添加周平均成交 周大盘上升股比例交量等信息
-shindex_week$meanVolume = runTrend(apply.weekly(shindex[,'Volume'],mean),5)
-
+shindex_week$meanVolume = apply.weekly(shindex[,'Volume'],mean)
+shindex_week$mvSma10 = lag(SMA(shindex_week$meanVolume,10),1)
+shindex_week$mvratio = shindex_week$meanVolume  / shindex_week$mvSma10 
 shindex_week = na.omit(shindex_week)
 #读入所有行业
 lookups_hy = readallHy()
@@ -55,7 +56,7 @@ uplist = xts(uplist,index(mm))
 tempdata = apply.weekly(uplist,mean)
 shindex_week = merge(shindex_week,tempdata)
 shindex_week = na.omit(shindex_week)
-colnames(shindex_week) = c('Open','Hign','Low','Close','Volume','sma30','stage','meanVolume','meanUpRatio')
+colnames(shindex_week) = c('Open','Hign','Low','Close','Volume','sma30','stage','meanVolume','mvSma10','mvratio','upratio')
 
 
 
@@ -79,6 +80,7 @@ end = index(shindex_week)
 # })
 
 
+allcodes = names(mg)
 lapply(end,function(x){
   
   shstage =  shindex_week[as.character(x)]$stage
@@ -86,15 +88,19 @@ lapply(end,function(x){
   if(coredata(shstage) == 4)
     return(NULL)
   
-  l = lapply(mg,function(p,date){
-    s = as.numeric(Cl(p[date]))
-    return(s)
+  l = lapply(allcodes,function(p,date){
+    n = mg[[p]]
+    s = as.numeric(Cl(n[date]))
+    return(p)
   }
     ,as.character(x))
   l = Filter(function(x){!(length(x)==0)},l)
-  m = min(unlist(l))
-  print(x)
-  print(m)
+#  m = min(unlist(l))
+  print(l)
+ # print(m)
   return(NULL)
   
 })
+x = get('600817')
+x = get('601666')
+x = x[,c('Close','sma30','stage','meanVolume','rs','hystage','hyrs')]

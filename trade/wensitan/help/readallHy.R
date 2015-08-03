@@ -28,11 +28,13 @@ readallHy = function()
     pricedata$stage = judegeStage(pricedata$sma30)
     pricedata = na.omit(pricedata)
     pricedata$meanVolume = apply.weekly(pricedata[,'Volume'],mean)
-    
+    pricedata$mvSma10 = lag(SMA(pricedata$meanVolume,10),1)
+    pricedata$mvratio = pricedata$meanVolume / pricedata$mvSma10 
     rs = RS(Cl(shindex),Cl(pricedata))
+    rs[which(rs==Inf | rs == -Inf)] = 0
     pricedata$rs = rs
-    
-    
+    pricedata$rsSma10 = lag(SMA(pricedata$rs,10),1)
+    pricedata$rsratio = pricedata$rs / pricedata$rsSma10 
     fname = strsplit(f,'.',fixed=T)[[1]][1]
     fname = substr(fname,3,8)
     

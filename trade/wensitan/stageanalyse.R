@@ -6,7 +6,7 @@ require('lubridate')
 require('dplyr')
 path = "D:/data/index"
 #Sys.setenv(TZ="UTC")
-f='SH000001.TXT'
+f='SH603008.TXT'
 fname = file.path(path,f)
 shindex = read.zoo(fname,header=FALSE, format = "%m/%d/%Y",sep="\t",index.column=1) 
 colnames(shindex)<-c("Open","High","Low","Close","Volume","Amount")
@@ -102,8 +102,9 @@ tempdata = apply.weekly(tempdata,mean)
 alldata= merge(alldata,tempdata)
 
 #增加每日up比例数据
-path = "D:/data/dest"
+path = "D:/data/stock/dest"
 files = dir(path)
+f = 'SH603008.txt'
 rm(list=files)
 lookups = c()
 indexlookups =  1
@@ -111,7 +112,7 @@ for(f in files)
 {
  # print(f)
   fname = file.path(path,f)
-  pricedata = read.zoo(fname,header=FALSE, format = "%m/%d/%Y",sep="\t",index.column=1) 
+  pricedata = read.zoo(fname,header=FALSE, format = "%m/%d/%Y",sep=",",index.column=1) 
   colnames(pricedata)<-c("Open","High","Low","Close","Volume","Amount")
   time(pricedata)=as.POSIXct(time(pricedata))
   pricedata=as.xts(pricedata)
