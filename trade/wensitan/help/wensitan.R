@@ -2,19 +2,20 @@ require("quantmod")
 
 filterBasicOneDay = function(mg,daydate,indexp)
 {
-  daydate = '2015-07-31'
+  daydate = '2012-07-13'
   allcodes = names(mg)
   currentindexp =indexp[daydate] 
   l = lapply(allcodes,function(p,date){
     n = mg[[p]]
     current = n[date]
-    if(currentindexp$stage != 4 && nrow(current) == 1  && !is.na(current$stage) && current$stage == 0 && current$Close > current$sma30)
+    if(currentindexp$stage != 4 && nrow(current) == 1  && !is.na(current$stage) && current$stage == 1 && current$Close > current$sma30)
     {
       
       i = which(index(n) == date)
-      if(i < 3 ) return(NULL)
+      if(i < 6 ) return(NULL)
       allZero = all(n[(i-5):i]$stage==0)
-      if(!is.na(allZero) && allZero)
+      excess =  (current$Close - current$sma30)/current$sma30
+      if(!is.na(allZero) && allZero && excess>= 0.01)
       {
         return(p)
       }
@@ -38,12 +39,12 @@ filterBasicOneDay = function(mg,daydate,indexp)
 for(p in allcodes)
 {
   n = mg[[p]]
-  current = n[date]
-  if(currentindexp$stage != 4 && nrow(current) == 1  && !is.na(current$stage) && current$stage == 0)
+  current = n[daydate]
+  if(currentindexp$stage != 4 && nrow(current) == 1  && !is.na(current$stage) && current$stage == 1 && current$Close > current$sma30)
   {
     
-    i = which(index(n) == date)
-    if(i < 3 ) return(NULL)
+    i = which(index(n) == daydate)
+    if(i < 6 ) return(NULL)
     allZero = all(n[(i-5):i]$stage==0)
     if(allZero)
     {
@@ -60,3 +61,4 @@ for(p in allcodes)
     print(0)
   }
 }
+x = x[,c('Close','sma30','mvratio','rsratio','stage')]
