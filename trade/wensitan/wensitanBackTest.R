@@ -62,7 +62,7 @@ colnames(shindex_week) = c('Open','Hign','Low','Close','Volume','sma30','stage',
 
 #处理每个时间的筛选
 #shindex_week = shindex_week['2000/']
-end = index(shindex_week)
+end = index(shindex_week['1996/'])
 #frame for iter all the data
 # lapply(end,function(x){
 #   
@@ -78,29 +78,19 @@ end = index(shindex_week)
 #   return(NULL)
 #   
 # })
-
+print(now())
 
 allcodes = names(mg)
-lapply(end,function(x){
-  
-  shstage =  shindex_week[as.character(x)]$stage
-  #no trading when shindex stage is 4
-  if(coredata(shstage) == 4)
-    return(NULL)
-  
-  l = lapply(allcodes,function(p,date){
-    n = mg[[p]]
-    s = as.numeric(Cl(n[date]))
-    return(p)
-  }
-    ,as.character(x))
-  l = Filter(function(x){!(length(x)==0)},l)
-#  m = min(unlist(l))
-  print(l)
- # print(m)
-  return(NULL)
-  
-})
-x = get('600817')
-x = get('601666')
-x = x[,c('Close','sma30','stage','meanVolume','rs','hystage','hyrs')]
+ld = lapply(end,function(x){
+  l = filterBasicOneDay(as.character(x),mg,shindex_week)
+  l = list(l)
+  names(l) = as.character(x)
+  return(l)
+    })
+
+l = Filter(function(x){ ll = x[[1]]
+                        length(ll)!=0},ld)
+print(now())
+
+save(l,file='result01.Rdata')
+
