@@ -24,6 +24,7 @@ readallstock = function(codeTable,shindex)
     colnames(pricedata)<-c("Open","High","Low","Close","Volume")
     pricedata$sma30 = SMA(Cl(pricedata),n=30)
     pricedata$volatile = (Cl(pricedata)-Op(pricedata))/Op(pricedata)
+    pricedata$atr = ATR(HLC(pricedata),n=5)
     
     pricedata = na.omit(pricedata)
     pricedata$stage = judegeStage(pricedata$sma30)

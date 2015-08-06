@@ -9,14 +9,14 @@ filterBasicOneDay = function(daydate,mg,indexp)
   l = lapply(allcodes,function(p,date){
     n = mg[[p]]
     current = n[date]
-    if(currentindexp$stage != 4 && nrow(current) == 1  && !is.na(current$stage) && current$stage == 1 && current$Close > current$sma30)
+    if(currentindexp$stage != 4 && nrow(current) == 1  && !is.na(current$stage) && !is.na(current$rs) && !is.na(current$rsratio) && current$stage == 1 && current$Close > current$sma30)
     {
       
       i = which(index(n) == date)
       if(i < 6 ) return(NULL)
       allZero = all(n[(i-5):i]$stage==1)
       excess =  (current$Close - current$sma30)/current$sma30
-      if(!is.na(allZero) && allZero && excess>= 0.03 && current$rs > 0 && current$rsratio > 1)
+      if(!is.na(allZero) && allZero && excess>= 0.05 &&  current$rs> 0  && current$rsratio> 1)
       {
         return(p)
       }
@@ -65,4 +65,4 @@ filterBasicOneDay = function(daydate,mg,indexp)
 #     print(0)
 #   }
 # }
-# x = x[,c('Close','sma30','mvratio','rsratio','stage')]
+ x = x[,c('Close','sma30','volatile','mvratio','rsratio','stage','tr','atr')]
