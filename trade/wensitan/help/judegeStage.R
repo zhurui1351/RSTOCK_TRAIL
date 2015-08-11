@@ -23,18 +23,18 @@ judegeStage = function(smaData)
     
   })
   names(stage) = ''
-  for(i in 2:length(stage))
-  {
-    if(stage[i]  == 0)
-    {
-      if(stage[i-1] == 2)
-        stage[i] = 3
-      else if(stage[i-1] == 4)
-        stage[i] = 1
-      else
-        stage[i] =  stage[i-1]
-    }
-  }
+#   for(i in 2:length(stage))
+#   {
+#     if(stage[i]  == 0)
+#     {
+#       if(stage[i-1] == 2)
+#         stage[i] = 3
+#       else if(stage[i-1] == 4)
+#         stage[i] = 1
+#       else
+#         stage[i] =  stage[i-1]
+#     }
+#   }
   stage = xts(stage,index(alldata))
   return(stage)
 }

@@ -62,24 +62,10 @@ colnames(shindex_week) = c('Open','Hign','Low','Close','Volume','sma30','stage',
 
 #处理每个时间的筛选
 #shindex_week = shindex_week['2000/']
-xxs = shindex_week['1996/']
+xxs = shindex_week['2004/']
 xxs = xxs[xxs$stage!=4]
 end = index(xxs)
-#frame for iter all the data
-# lapply(end,function(x){
-#   
-#   l = lapply(mg,function(p,date){
-#     s = as.numeric(Cl(p[date]))
-#     return(s)
-#   }
-#     ,as.character(x))
-#   l = Filter(function(x){!(length(x)==0)},l)
-#   m = min(unlist(l))
-#   print(x)
-#   print(m)
-#   return(NULL)
-#   
-# })
+
 print(now())
 
 allcodes = names(mg)
@@ -110,7 +96,7 @@ for(i in 1:length(l))
  sdays =  sapply(p,function(x,pdate){
     pname = x[[1]]
    # print(pname)
-    sep = findtimeGapWhengrowToSomeDegree(pname,pdate)
+    sep = findtimeGapWhengrowToSomeDegree(pname,pdate,0.5)
     return(sep)
   },pdate)
  
@@ -119,4 +105,27 @@ for(i in 1:length(l))
 }
 sepdays =  unlist(sepdays)
 sepdays = sepdays[!is.na(sepdays)]
-length(sepdays[sepdays<30]) / length(sepdays)
+length(sepdays[sepdays<20]) / length(sepdays)
+
+seps = list()
+# look for good 
+for(i in 1:length(l))
+{
+  print(i)
+  p = l[[i]]
+  pdate = names(p) 
+  
+  p = p[[1]]
+  sep =  sapply(p,function(x,pdate){
+    pname = x[[1]]
+    # print(pname)
+    sp = findStockWhengrowToSomeDegree(pname,pdate,0.5)
+    return(sp)
+  },pdate)
+  
+  if(!is.null(sep)) seps = append(seps,sep)
+  
+}
+
+#exit and portofolio management
+

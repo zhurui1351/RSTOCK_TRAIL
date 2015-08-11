@@ -1,5 +1,5 @@
 #http://freakonometrics.hypotheses.org/19874
-
+#http://freakonometrics.hypotheses.org/19949
 n=300
 set.seed(1)
 u=sort(runif(n)*2*pi)
