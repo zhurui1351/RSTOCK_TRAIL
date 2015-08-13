@@ -1,1 +1,2 @@
-code,costprice,amount
+code,costprice,amount,type
+6100002,12.1,200,s
