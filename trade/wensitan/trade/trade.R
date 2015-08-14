@@ -1,9 +1,9 @@
-simulateTrade = function(date,code,price,fee,amount,type)
+simulateTrade = function(date,code,price,fee,amount,stopprice,type)
 {
   require('dplyr')
   #trading log
   logpath = 'D:/Rcode/code/RSTOCK_TRAIL/trade/wensitan/log/tradelog.csv'
-  content = data.frame(date,code,price,fee,amount,type)
+  content = data.frame(date,code,price,fee,amount,stopprice,type)
   
   #update holding postion
   poslogpath = 'D:/Rcode/code/RSTOCK_TRAIL/trade/wensitan/log/currentpositionlog.csv'
@@ -74,7 +74,7 @@ simulateTrade = function(date,code,price,fee,amount,type)
       currentpos[currentpos$code ==code && currentpos$type=='s',] = currentrow 
     }
   }
-  write.table(content,logpath,quote=F,append=T,row.names = F,col.names = F)  
+  write.table(content,logpath,quote=F,append=T,row.names = F,col.names = F,sep=',')  
   write.table(currentpos,poslogpath,quote=F,row.names = F,col.names = T,sep=',')  
 }
 
