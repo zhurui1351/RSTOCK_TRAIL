@@ -4,11 +4,10 @@ simulateTrade = function(date,code,price,fee,amount,type)
   #trading log
   logpath = 'D:/Rcode/code/RSTOCK_TRAIL/trade/wensitan/log/tradelog.csv'
   content = data.frame(date,code,price,fee,amount,type)
-  write.table(content,logpath,quote=F,append=T,row.names = F,col.names = F)
   
   #update holding postion
   poslogpath = 'D:/Rcode/code/RSTOCK_TRAIL/trade/wensitan/log/currentpositionlog.csv'
-  currentpos = read.table(poslogpath,head=T,sep=',')
+  currentpos = read.table(poslogpath,head=T,sep=',',stringsAsFactors=F)
   if(type == 's' || type == 'b')
   {
     currentposforcode = filter(currentpos,code==code && type ==type)
@@ -27,14 +26,14 @@ simulateTrade = function(date,code,price,fee,amount,type)
     }
     
   }# clean buy pos
-  else if(type = 'cb')
+  else if(type == 'cb')
   {
     currentposforcode = filter(currentpos,code==code && type == 'b')
-    if(nrow(currentpos) != 0 )
+    if(nrow(currentposforcode) != 1 )
     {
       stop('cant clean buy ,beacause no long position or you have mutilpal rows')
     }
-    if(amount > currentposforcode)
+    if(amount > currentposforcode$amount)
     {
       stop('cant clean buy  more than you hold')     
     }
@@ -46,21 +45,21 @@ simulateTrade = function(date,code,price,fee,amount,type)
     }
     else
     {
-      newcostprice = ( price*amount - currentposforcode$costprice * currentposforcode$amount + fee) / newamount
-      currentrow = list(code=code,costprice=newcostprice,amount=newamount,type=type)
+      newcostprice = (newamount * currentpos$costprice - amount*(price - currentpos$costprice) + fee) / newamount
+      currentrow = list(code=code,costprice=newcostprice,amount=newamount,type='b')
       currentpos[currentpos$code ==code && currentpos$type=='b',] = currentrow 
     }
   }# clean sell pos
-  else if(type = 'cb')
+  else if(type == 'cs')
   {
     currentposforcode = filter(currentpos,code==code && type == 's')
-    if(nrow(currentpos) != 0 )
+    if(nrow(currentposforcode) != 1 )
     {
-      stop('cant clean buy ,beacause no long position or you have mutilpal rows')
+      stop('cant clean sell ,beacause no long position or you have mutilpal rows')
     }
-    if(amount > currentposforcode)
+    if(amount > currentposforcode$amount)
     {
-      stop('cant clean buy  more than you hold')     
+      stop('cant clean sell  more than you hold')     
     }
     newamount = currentposforcode$amount - amount
     if(newamount == 0 )
@@ -70,14 +69,13 @@ simulateTrade = function(date,code,price,fee,amount,type)
     }
     else
     {
-      newcostprice = (  currentposforcode$costprice * currentposforcode$amount -price*amount  + fee) / newamount
-      currentrow = list(code=code,costprice=newcostprice,amount=newamount,type=type)
+      newcostprice = (newamount * currentpos$costprice - amount*(currentpos$costprice-price ) + fee) / newamount
+      currentrow = list(code=code,costprice=newcostprice,amount=newamount,type='s')
       currentpos[currentpos$code ==code && currentpos$type=='s',] = currentrow 
     }
   }
-  
-  write.table(currentpos,poslogpath,quote=F,row.names = F,col.names = T,sep=',')
-  
+  write.table(content,logpath,quote=F,append=T,row.names = F,col.names = F)  
+  write.table(currentpos,poslogpath,quote=F,row.names = F,col.names = T,sep=',')  
 }
 
 
