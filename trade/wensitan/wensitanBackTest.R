@@ -126,6 +126,20 @@ for(i in 1:length(l))
   if(!is.null(sep)) seps = append(seps,sep)
   
 }
+#test for one code
+code = '600390'
+mgone = list(get(code))
+names(mgone) = code
+ldone = lapply(end,function(x){
+  l = filterBasicOneDay(as.character(x),mgone,shindex_week)
+  l = list(l)
+  names(l) = as.character(x)
+  return(l)
+})
+
+lone = Filter(function(x){ ll = x[[1]]
+                        length(ll)!=0},ldone)
+names(lone)=sapply(lone,function(x){return(names(x))})
 
 #exit and portofolio management
 

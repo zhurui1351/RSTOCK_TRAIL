@@ -5,6 +5,7 @@ filterBasicOneDay = function(daydate,mg,indexp)
   #daydate = '2013-01-18'
  # print(daydate)
   allcodes = names(mg)
+  #print(allcodes)
   currentindexp =indexp[daydate] 
   l = lapply(allcodes,function(p,date){
     n = mg[[p]]
@@ -70,4 +71,4 @@ filterBasicOneDay = function(daydate,mg,indexp)
 #     print(0)
 #   }
 # }
-# x = x[,c('Close','sma30','volatile','mvratio','rs','rsratio','stage','atr')]
+# x = x[,c('Open','Close','sma30','volatile','mvratio','rs','rsratio','stage','atr')]
