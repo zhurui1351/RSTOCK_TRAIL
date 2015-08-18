@@ -1,9 +1,9 @@
-simulateTrade = function(date,code,price,fee,amount,stopprice,type)
+simulateTrade = function(id,date,code,price,fee,amount,stopprice,type)
 {
   require('dplyr')
   #trading log
   logpath = 'D:/Rcode/code/RSTOCK_TRAIL/trade/wensitan/log/tradelog.csv'
-  content = data.frame(date,code,price,fee,amount,stopprice,type)
+  content = data.frame(id,date,code,price,fee,amount,stopprice,type)
   
   #update holding postion
   poslogpath = 'D:/Rcode/code/RSTOCK_TRAIL/trade/wensitan/log/currentpositionlog.csv'
@@ -78,5 +78,20 @@ simulateTrade = function(date,code,price,fee,amount,stopprice,type)
   write.table(currentpos,poslogpath,quote=F,row.names = F,col.names = T,sep=',')  
 }
 
+updateTrailStop = function(id,date,stopprice)
+{
+  logpath = 'D:/Rcode/code/RSTOCK_TRAIL/trade/wensitan/log/tradelog.csv'
+  alltrades = read.table(logpath,head=T,sep=',',stringsAsFactors=F)
+  trade = filter(alltrades,id==id)
+  if(nrow(trade) == 0) return()
+  
+  traillogpath = 'D:/Rcode/code/RSTOCK_TRAIL/trade/wensitan/log/trailstoplog.csv'
+  PreStopPrice = alltrades[alltrades$id==id,'stopprice']
+  content = data.frame(id=id,date=date,stopprice=stopprice,prestopprice=PreStopPrice)
+  alltrades[alltrades$id==id,'stopprice'] = stopprice
+  
+  write.table(alltrades,logpath,quote=F,row.names = F,col.names = T,sep=',')  
+  write.table(content,traillogpath,quote=F,append=T,row.names = F,col.names = F,sep=',')  
+}
 
 

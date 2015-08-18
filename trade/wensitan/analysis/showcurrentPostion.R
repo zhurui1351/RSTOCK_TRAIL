@@ -17,7 +17,7 @@ showcurrentPostionforcode = function(date,stockcode,currentpos)
   }
   cp$holdamount = currentposforcode$amount
   cp$costprice = currentposforcode$costprice
-  cp$profit = (cp$costprice - cp$Close)*cp$holdamount 
+  cp$profit = ( cp$Close - cp$costprice)*cp$holdamount 
   print(cp)
 }
 
@@ -38,3 +38,4 @@ showcurrentPostion = function(date,code='all')
   }
   
 }
+
