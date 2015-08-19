@@ -168,3 +168,53 @@ ggplot(data.frame(X = gamma.values), aes(x = X)) +
 
 ggplot(heights.weights, aes(x = Height, y = Weight)) +
   geom_point()
+
+ggplot(heights.weights, aes(x = Height, y = Weight)) +
+  geom_point() +
+  geom_smooth()
+
+ggplot(heights.weights[1:20, ], aes(x = Height, y = Weight)) +
+  geom_point() +
+  geom_smooth()
+ggplot(heights.weights[1:200, ], aes(x = Height, y = Weight)) +
+  geom_point() +
+  geom_smooth()
+ggplot(heights.weights[1:2000, ], aes(x = Height, y = Weight)) +
+  geom_point() +
+  geom_smooth()
+
+#
+# Snippet 34
+#
+
+# Visualize how gender depends on height and weight.
+ggplot(heights.weights, aes(x = Height, y = Weight)) +
+  geom_point(aes(color = Gender, alpha = 0.25)) +
+  scale_alpha(guide = "none") + 
+  scale_color_manual(values = c("Male" = "black", "Female" = "gray")) +
+  theme_bw()
+
+# An alternative using bright colors.
+ggplot(heights.weights, aes(x = Height, y = Weight, color = Gender)) +
+  geom_point()
+
+#
+# Snippet 35
+#
+
+heights.weights <- transform(heights.weights,
+                             Male = ifelse(Gender == 'Male', 1, 0))
+
+logit.model <- glm(Male ~ Weight + Height,
+                   data = heights.weights,
+                   family = binomial(link = 'logit'))
+
+ggplot(heights.weights, aes(x = Height, y = Weight)) +
+  geom_point(aes(color = Gender, alpha = 0.25)) +
+  scale_alpha(guide = "none") + 
+  scale_color_manual(values = c("Male" = "black", "Female" = "gray")) +
+  theme_bw() +
+  stat_abline(intercept = -coef(logit.model)[1] / coef(logit.model)[2],
+              slope = - coef(logit.model)[3] / coef(logit.model)[2],
+              geom = 'abline',
+              color = 'black')

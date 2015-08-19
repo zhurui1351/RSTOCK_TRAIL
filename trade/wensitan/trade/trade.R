@@ -10,26 +10,15 @@ simulateTrade = function(id,date,code,price,fee,amount,stopprice,type)
   currentpos = read.table(poslogpath,head=T,sep=',',stringsAsFactors=F)
   if(type == 's' || type == 'b')
   {
-    currentposforcode = filter(currentpos,code==code && type ==type)
-    if(nrow(currentpos) == 0 )
-    {
-      costprice=(price*amount + fee)/amount
-      currentrow = list(code=code,costprice=costprice,amount=amount,type=type)
-      currentpos = rbind(currentpos,currentrow, make.row.names = F)
-    }
-    else if(nrow(currentpos) == 1)
-    {
-      newamount = currentposforcode$amount + amount
-      newcostprice = (currentposforcode$costprice * currentposforcode$amount +  price*amount + fee) / newamount
-      currentrow = list(code=code,costprice=newcostprice,amount=newamount,type=type)
-      currentpos[currentpos$code ==code && currentpos$type==type,] = currentrow
-    }
+    costprice=(price*amount + fee)/amount
+    currentrow = list(id=id,code=code,costprice=costprice,stopprice=stopprice,amount=amount,type=type)
+    currentpos = rbind(currentpos,currentrow, make.row.names = F)
     
   }# clean buy pos
   else if(type == 'cb')
   {
-    currentposforcode = filter(currentpos,code==code && type == 'b')
-    if(nrow(currentposforcode) != 1 )
+    currentposforcode = filter(currentpos,id==id)
+    if(nrow(currentposforcode) != 1 || currentposforcode$type != 'b')
     {
       stop('cant clean buy ,beacause no long position or you have mutilpal rows')
     }
@@ -52,8 +41,8 @@ simulateTrade = function(id,date,code,price,fee,amount,stopprice,type)
   }# clean sell pos
   else if(type == 'cs')
   {
-    currentposforcode = filter(currentpos,code==code && type == 's')
-    if(nrow(currentposforcode) != 1 )
+    currentposforcode = filter(currentpos,id == id)
+    if(nrow(currentposforcode) != 1 || currentposforcode$type != 's' )
     {
       stop('cant clean sell ,beacause no long position or you have mutilpal rows')
     }
@@ -80,8 +69,8 @@ simulateTrade = function(id,date,code,price,fee,amount,stopprice,type)
 
 updateTrailStop = function(id,date,stopprice)
 {
-  logpath = 'D:/Rcode/code/RSTOCK_TRAIL/trade/wensitan/log/tradelog.csv'
-  alltrades = read.table(logpath,head=T,sep=',',stringsAsFactors=F)
+  logpath = 'D:/Rcode/code/RSTOCK_TRAIL/trade/wensitan/log/currentpositionlog.csv'
+  alltrades = read.table(logpath,head=T,sep=',')
   trade = filter(alltrades,id==id)
   if(nrow(trade) == 0) return()
   

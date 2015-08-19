@@ -17,16 +17,19 @@ showcurrentPostionforcode = function(date,stockcode,currentpos)
   }
   cp$holdamount = currentposforcode$amount
   cp$costprice = currentposforcode$costprice
+  cp$stopprice = currentposforcode$stopprice
   cp$profit = ( cp$Close - cp$costprice)*cp$holdamount 
   print(cp)
+  return(cp)
 }
 
 showcurrentPostion = function(date,code='all')
 {
   require('dplyr')
   poslogpath = 'D:/Rcode/code/RSTOCK_TRAIL/trade/wensitan/log/currentpositionlog.csv'
-  currentpos = read.table(poslogpath,head=T,sep=',')
+  currentpos = read.table(poslogpath,head=T,sep=',',stringsAsFactors=F)
   if(nrow(currentpos) == 0) return()
+  r = list()
   if(code == 'all')
   {
     codelist = as.character(currentpos$code)
@@ -34,8 +37,8 @@ showcurrentPostion = function(date,code='all')
   }
   else
   {
-    showcurrentPostionforcode(date,code,currentpos)
+    r=showcurrentPostionforcode(date,code,currentpos)
   }
-  
+  return(r)
 }
 

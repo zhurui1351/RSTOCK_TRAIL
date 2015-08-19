@@ -32,6 +32,7 @@ readallstock = function(codeTable,shindex)
     pricedata$meanVolume = apply.weekly(pricedata[,'Volume'],mean)
     pricedata$mvSma10 = lag(SMA(pricedata$meanVolume,10),1)
     pricedata$mvratio = pricedata$meanVolume / pricedata$mvSma10 
+    pricedata$highest = lag(runMax(pricedata$Close,10),1)
     rs = RS(Cl(shindex),Cl(pricedata))
     rs[which(rs==Inf | rs == -Inf)] = 0
     

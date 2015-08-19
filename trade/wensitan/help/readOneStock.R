@@ -13,7 +13,7 @@ readOneStock = function(code)
   return(pricedata)
 }
 
-readallstockweek = function(code,shindex,codeTable)
+readOnestockweek = function(code,shindex,codeTable)
 {
   require('dplyr')
   path = "D:/data/stock/dest"

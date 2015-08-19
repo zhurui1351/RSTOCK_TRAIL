@@ -22,7 +22,7 @@ filterBasicOneDay = function(daydate,mg,indexp)
       
       #current bigger than 0.1
       excess =  (current$Close - current$sma30)/current$sma30
-      if(!is.na(allZero) && allZero && allexcess && excess>= 0.01 &&  current$rs>= 0.5  && current$mvratio> 1.5)
+      if(current$Close > current$highest && !is.na(allZero) && allZero && allexcess && excess>= 0.01 &&  current$rs>= 0.5  && current$mvratio> 1.5)
       {
         return(p)
       }
