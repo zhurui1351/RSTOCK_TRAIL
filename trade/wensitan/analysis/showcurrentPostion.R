@@ -19,6 +19,7 @@ showcurrentPostionforcode = function(date,stockcode,currentpos)
   cp$costprice = currentposforcode$costprice
   cp$stopprice = currentposforcode$stopprice
   cp$profit = ( cp$Close - cp$costprice)*cp$holdamount 
+  cp = transform(cp,type=currentposforcode$type)
   print(cp)
   return(cp)
 }

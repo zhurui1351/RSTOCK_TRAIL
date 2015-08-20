@@ -71,4 +71,4 @@ filterBasicOneDay = function(daydate,mg,indexp)
 #     print(0)
 #   }
 # }
-# x = x[,c('Open','Close','sma30','volatile','mvratio','rs','rsratio','stage','atr')]
+# x = x[,c('Open','Close','sma30','volatile','mvratio','rs','stage','atr')]
