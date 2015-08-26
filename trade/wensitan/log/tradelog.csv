@@ -1,2 +1,3 @@
 id,date,code,price,fee,amount,stopprice,type
 1,2015-08-17,600390,16.5,5,100,13.1,b
+1,2015-08-26,600390,11.8,5,100,0,cb

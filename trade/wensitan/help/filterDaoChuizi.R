@@ -1,0 +1,49 @@
+filterDaoChuizi = function(daydate,mg)
+{
+  allcodes = names(mg)
+  l = lapply(allcodes,function(p,date){
+    n = mg[[p]]
+    current = n[date]
+    if(nrow(current) == 1 && current$stage30 ==2 && current$stage5 ==4)
+    {
+       cuizi = (Lo(current) - Cl(current)) / abs(Cl(current)-Op(current))
+       if(!is.nan(cuizi) && cuizi< -2)
+       {
+         return(p)
+       }
+       else
+      {
+         return(NULL)
+       }
+    }
+    else
+    {
+      return(NULL)
+    }
+    
+  }
+  ,daydate)
+  
+}
+
+
+for(p in allcodes)
+{
+  n = mg[[p]]
+  current = n[daydate]
+  if(nrow(current) == 1 && current$stage30 ==2 && current$stage5 ==4)
+  {
+    cuizi = (Lo(current) - Cl(current)) / abs(Cl(current)-Op(current))
+    if(!is.nan(cuizi) && cuizi< -2)
+    {
+      print(1)
+    }
+    else
+    {
+      print(0)    }
+  }
+  else
+  {
+    print(0)    
+  }
+}

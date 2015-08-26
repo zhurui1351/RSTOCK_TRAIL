@@ -17,7 +17,9 @@ simulateTrade = function(id,date,code,price,fee,amount,stopprice,type)
   }# clean buy pos
   else if(type == 'cb')
   {
-    currentposforcode = filter(currentpos,id==id)
+    tradeid = id
+    stockcode= code
+    currentposforcode = filter(currentpos,id==tradeid & code==stockcode)
     if(nrow(currentposforcode) != 1 || currentposforcode$type != 'b')
     {
       stop('cant clean buy ,beacause no long position or you have mutilpal rows')
@@ -41,7 +43,9 @@ simulateTrade = function(id,date,code,price,fee,amount,stopprice,type)
   }# clean sell pos
   else if(type == 'cs')
   {
-    currentposforcode = filter(currentpos,id == id)
+    tradeid = id
+    stockcode= code
+    currentposforcode = filter(currentpos,id==tradeid & code==stockcode)
     if(nrow(currentposforcode) != 1 || currentposforcode$type != 's' )
     {
       stop('cant clean sell ,beacause no long position or you have mutilpal rows')

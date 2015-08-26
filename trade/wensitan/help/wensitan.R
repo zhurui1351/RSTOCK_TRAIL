@@ -10,7 +10,7 @@ filterBasicOneDay = function(daydate,mg,indexp)
   l = lapply(allcodes,function(p,date){
     n = mg[[p]]
     current = n[date]
-    if(currentindexp$stage != 4 && nrow(current) == 1  && !is.na(current$stage) && !is.na(current$rs) && !is.na(current$rsratio) && current$stage == 0 && current$Close > current$sma30)
+    if(nrow(current) == 1 && currentindexp$stage != 4  && !is.na(current$stage) && !is.na(current$rs) && !is.na(current$rsratio) && current$stage == 0 && current$Close > current$sma30)
     {
       
       i = which(index(n) == date)

@@ -15,6 +15,9 @@ sourceDir <- function(path, trace = TRUE, ...) {
 }
 
 sourceDir('D:/Rcode/code/RSTOCK_TRAIL/trade/wensitan/help')
+sourceDir('D:/Rcode/code/RSTOCK_TRAIL/trade/wensitan/log')
+sourceDir('D:/Rcode/code/RSTOCK_TRAIL/trade/wensitan/trade')
+sourceDir('D:/Rcode/code/RSTOCK_TRAIL/trade/wensitan/analysis')
 
 #加入大盘阶段判断信息
 shindex = readSHindex()
@@ -62,7 +65,7 @@ colnames(shindex_week) = c('Open','Hign','Low','Close','Volume','sma30','stage',
 
 #处理每个时间的筛选
 #shindex_week = shindex_week['1996/']
-xxs = shindex_week['1996/']
+xxs = shindex_week['2015-08-22']
 xxs = xxs[xxs$stage!=4]
 end = index(xxs)
 
