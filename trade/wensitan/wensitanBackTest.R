@@ -65,7 +65,7 @@ colnames(shindex_week) = c('Open','Hign','Low','Close','Volume','sma30','stage',
 
 #处理每个时间的筛选
 #shindex_week = shindex_week['1996/']
-xxs = shindex_week['2015-08-22']
+xxs = shindex_week['1996/']
 xxs = xxs[xxs$stage!=4]
 end = index(xxs)
 
@@ -80,6 +80,7 @@ ld = lapply(end,function(x){
     })
 
 l = Filter(function(x){ ll = x[[1]]
+                        ll = Filter(function(x){!is.null(x[[1]])},ll)
                         length(ll)!=0},ld)
 names(l)=sapply(l,function(x){return(names(x))})
 print(now())
@@ -94,21 +95,21 @@ for(i in 1:length(l))
   print(i)
   p = l[[i]]
   pdate = names(p) 
-  
+  print(pdate)
   p = p[[1]]
  sdays =  sapply(p,function(x,pdate){
     pname = x[[1]]
-   # print(pname)
-    sep = findtimeGapWhengrowToSomeDegree(pname,pdate,0.5)
+    print(pname)
+    sep =findtimeGapWhengrowToSomeDegree(pname,pdate,0.05)# afterNdaysProfit(pname,pdate,10)#
     return(sep)
   },pdate)
- 
+ print(sdays)
  sepdays = c(sdays,sepdays)
  
 }
 sepdays =  unlist(sepdays)
 sepdays = sepdays[!is.na(sepdays)]
-length(sepdays[sepdays<20]) / length(sepdays)
+length(sepdays[sepdays<10 & sepdays>0]) / length(sepdays)
 
 seps = list()
 # look for good 

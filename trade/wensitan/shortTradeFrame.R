@@ -20,19 +20,52 @@ sourceDir('D:/Rcode/code/RSTOCK_TRAIL/trade/wensitan/analysis')
 
 shindex = readSHindex()
 allcodes = readallstockforday()
-mg = mget(lookups)
+mg = mget(allcodes)
+print(now())
 
-xxs = shindex['2015']
+xxs = shindex['2015-08-27/']
 end = index(xxs)
 ld = lapply(end,function(x){
   print(x)
   l = filterDaoChuizi(as.character(x),mg)
-  l = list(l)
-  names(l) = as.character(x)
-  return(l)
+  l=Filter(function(x){!is.null(x)},l)
+  if(length(l) > 0)
+  {
+    l = list(l)
+    names(l) = as.character(x)
+    return(l)
+  }
+  return(NULL)
 })
+print(now())
+
 l = Filter(function(x){ ll = x[[1]]
                         length(ll)!=0},ld)
 names(l)=sapply(l,function(x){return(names(x))})
+names(l) = strftime(names(l),"%Y-%m-%d")
+save(l,file='cuizi.Rdata')
 
+#测试list里面的每个选项
+sepdays = c()
+
+for(i in 1:length(l))
+{
+  p = l[[i]]
+  pdate = names(p) 
+  print(pdate)
+  
+  p = p[[1]]
+  sdays =  sapply(p,function(x,pdate){
+    pname = x[[1]]
+    print(pname)
+    sep =afterNdaysProfit(pname,pdate,5)# findtimeGapWhengrowToSomeDegree(pname,pdate,0.02)# 
+    return(sep)
+  },pdate)
+  print(sdays)
+  sepdays = c(sdays,sepdays)
+  
+}
+sepdays =  unlist(sepdays)
+sepdays = sepdays[!is.na(sepdays)]
+length(sepdays[sepdays<5 & sepdays>0]) / length(sepdays)
 
