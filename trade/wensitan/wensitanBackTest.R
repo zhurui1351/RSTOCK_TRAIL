@@ -65,7 +65,7 @@ colnames(shindex_week) = c('Open','Hign','Low','Close','Volume','sma30','stage',
 
 #处理每个时间的筛选
 #shindex_week = shindex_week['1996/']
-xxs = shindex_week['1996/']
+xxs = shindex_week['20150828']
 xxs = xxs[xxs$stage!=4]
 end = index(xxs)
 

@@ -23,7 +23,7 @@ allcodes = readallstockforday()
 mg = mget(allcodes)
 print(now())
 
-xxs = shindex['2015-08-27/']
+xxs = shindex['2015-08-28/']
 end = index(xxs)
 ld = lapply(end,function(x){
   print(x)
@@ -45,7 +45,7 @@ names(l)=sapply(l,function(x){return(names(x))})
 names(l) = strftime(names(l),"%Y-%m-%d")
 save(l,file='cuizi.Rdata')
 
-#测试list里面的每个选项
+#统计list里面的每个选项的一些分布特征
 sepdays = c()
 
 for(i in 1:length(l))
@@ -69,3 +69,33 @@ sepdays =  unlist(sepdays)
 sepdays = sepdays[!is.na(sepdays)]
 length(sepdays[sepdays<5 & sepdays>0]) / length(sepdays)
 
+#产生回测记录
+
+records = list()
+print(now())
+for(i in 1:length(l))
+{
+  p = l[[i]]
+  pdate = names(p) 
+  print(pdate)
+  
+  p = p[[1]]
+  trades =  lapply(p,function(x,pdate){
+    pname = x[[1]]
+    print(pname)
+    record =afterNatrExit(pname,pdate,1,0.5)
+    return(record)
+  },pdate)
+  records = append(records,trades)
+ # print(trades)
+}
+
+records = as.data.frame(do.call('rbind',records))
+records = subset(records,!is.na(records[,'code']))
+print(now())
+
+profit = as.numeric(records[,'Close']) - as.numeric(records[,'Open'])
+sum(profit)
+max(profit)
+min(profit)
+length(profit[profit>0]) / length(profit)
