@@ -146,4 +146,48 @@ lone = Filter(function(x){ ll = x[[1]]
 names(lone)=sapply(lone,function(x){return(names(x))})
 
 #exit and portofolio management
+#产生回测记录
 
+records = list()
+print(now())
+for(i in 1:length(l))
+{
+  p = l[[i]]
+  pdate = names(p) 
+  print(pdate)
+  
+  p = p[[1]]
+  trades =  lapply(p,function(x,pdate){
+    pname = x[[1]]
+    print(pname)
+    record =afterNatrExit(pname,pdate,3,2,1)
+    return(record)
+  },pdate)
+  records = append(records,trades)
+  # print(trades)
+}
+
+records = as.data.frame(do.call('rbind',records))
+records = subset(records,!is.na(records[,'code']))
+print(now())
+
+profit = as.numeric(records[,'Close']) - as.numeric(records[,'Open'])
+sum(profit)
+max(profit)
+min(profit)
+length(profit[profit>0]) / length(profit)
+
+sub = subset(records,(ymd(opdate)-ymd('2000-01-01'))>=0)
+
+sub[,'opdate'] = ymd(sub[,'opdate'] )
+sub[,'cldate'] =  ymd(sub[,'cldate'] )
+sepweeks=ceiling(as.numeric((ymd(sub[,'cldate']) - ymd(sub[,'opdate']))) / 7)
+sub = cbind(sub,sepweeks)
+
+profit = as.numeric(sub[,'Close']) - as.numeric(sub[,'Open'])
+sub = cbind(sub,profit)
+
+x=aggregate(profit~opdate,data=sub[,c(2,8)],function(x){n=sample(1:length(x),1)
+                                                        return(x[n])})
+head(x[order(x$opdate),])
+sum(x[,2])
