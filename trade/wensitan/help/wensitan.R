@@ -1,6 +1,6 @@
 require("quantmod")
 
-filterBasicOneDay = function(daydate,mg,indexp)
+filterBasicOneDay = function(daydate,mg,indexp,lastn=10)
 {
   #daydate = '2013-01-18'
  # print(daydate)
@@ -14,10 +14,10 @@ filterBasicOneDay = function(daydate,mg,indexp)
     {
       
       i = which(index(n) == date)
-      if(i < 6 ) return(NULL)
-      allZero = all(n[(i-5):(i-1)]$stage==0)
+      if(i < lastn ) return(NULL)
+      allZero = all(n[(i-lastn):(i-1)]$stage==0)
       #first jump cross sma30
-      allexcess = (n[(i-5):(i-1)]$Close - n[(i-5):(i-1)]$sma30)
+      allexcess = (n[(i-lastn):(i-1)]$Close - n[(i-lastn):(i-1)]$sma30)
       allexcess = all(allexcess <= 0 )
       
       #current bigger than 0.1

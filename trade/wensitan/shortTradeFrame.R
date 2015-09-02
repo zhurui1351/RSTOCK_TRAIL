@@ -83,7 +83,7 @@ for(i in 1:length(l))
   trades =  lapply(p,function(x,pdate){
     pname = x[[1]]
     print(pname)
-    record =afterNatrExit(pname,pdate,0.5,0.5)
+    record =afterNatrExit(pname,pdate,3,2,1)
     return(record)
   },pdate)
   records = append(records,trades)

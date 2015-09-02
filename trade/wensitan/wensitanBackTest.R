@@ -34,13 +34,13 @@ shindex_week$mvSma10 = lag(SMA(shindex_week$meanVolume,10),1)
 shindex_week$mvratio = shindex_week$meanVolume  / shindex_week$mvSma10 
 shindex_week = na.omit(shindex_week)
 #读入所有行业
-lookups_hy = readallHy()
+lookups_hy = readallHy(sman=30)
 
 #读入行业代码
 codeTable = readHycode()
 
 #读入所有数据
-lookups = readallstock(codeTable,shindex_week)
+lookups = readallstock(codeTable,shindex_week,sman=30)
 #形成列表
 mg = mget(lookups)
 mgl=lapply(mg,function(x){x$volatile})
@@ -65,7 +65,7 @@ colnames(shindex_week) = c('Open','Hign','Low','Close','Volume','sma30','stage',
 
 #处理每个时间的筛选
 #shindex_week = shindex_week['1996/']
-xxs = shindex_week['20150828']
+xxs = shindex_week['2011']
 xxs = xxs[xxs$stage!=4]
 end = index(xxs)
 
@@ -73,7 +73,8 @@ print(now())
 
 allcodes = names(mg)
 ld = lapply(end,function(x){
-  l = filterBasicOneDay(as.character(x),mg,shindex_week)
+  print(x)
+  l = filterBasicOneDay(as.character(x),mg,shindex_week,lastn=5)
   l = list(l)
   names(l) = as.character(x)
   return(l)
@@ -160,7 +161,7 @@ for(i in 1:length(l))
   trades =  lapply(p,function(x,pdate){
     pname = x[[1]]
     print(pname)
-    record =afterNatrExit(pname,pdate,3,2,1)
+    record =afterNatrExit(pname,pdate,3,1,0.5)
     return(record)
   },pdate)
   records = append(records,trades)
@@ -171,23 +172,34 @@ records = as.data.frame(do.call('rbind',records))
 records = subset(records,!is.na(records[,'code']))
 print(now())
 
-profit = as.numeric(records[,'Close']) - as.numeric(records[,'Open'])
+profit = as.numeric(records[,'profit'])
 sum(profit)
 max(profit)
 min(profit)
 length(profit[profit>0]) / length(profit)
 
-sub = subset(records,(ymd(opdate)-ymd('2000-01-01'))>=0)
+everyyear = year(ymd(records[,'opdate']))
+
+aggregate(x=profit,by=list(everyyear),sum)
+
+sub = subset(records,year(ymd(opdate))==2011 & Open > 10 & Open<30)
 
 sub[,'opdate'] = ymd(sub[,'opdate'] )
 sub[,'cldate'] =  ymd(sub[,'cldate'] )
 sepweeks=ceiling(as.numeric((ymd(sub[,'cldate']) - ymd(sub[,'opdate']))) / 7)
 sub = cbind(sub,sepweeks)
 
-profit = as.numeric(sub[,'Close']) - as.numeric(sub[,'Open'])
+profit = as.numeric(sub[,'profit'])
 sub = cbind(sub,profit)
 
 x=aggregate(profit~opdate,data=sub[,c(2,8)],function(x){n=sample(1:length(x),1)
                                                         return(x[n])})
 head(x[order(x$opdate),])
 sum(x[,2])
+
+#分析记录 绘图
+x=get('600423')
+plot(Cl(x['201010/201107']))
+points(x['201010/201107']$sma30,type='l',col='red')
+plot(Cl(shindex_week['201010/201107']))
+points(shindex_week['201010/201107']$sma30,type='l',col='red')

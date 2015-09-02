@@ -1,11 +1,11 @@
 
-judegeStage = function(smaData)
+judegeStage = function(smaData,ln=10,sn=3,lpratio=4,spratio=2,lnratio=-4,snratio=-2)
 {
  
   deltratio = na.omit(Delt(smaData) * 100)
-  deltratioSlideLong = na.omit(runSum(deltratio,n=10))
+  deltratioSlideLong = na.omit(runSum(deltratio,n=ln))
   
-  deltratioSlideShort = na.omit(runSum(deltratio,n=3))
+  deltratioSlideShort = na.omit(runSum(deltratio,n=sn))
   
   deltratioSlide = na.omit(merge(deltratioSlideLong,deltratioSlideShort))
   alldata = na.omit(merge(smaData,deltratioSlide))
@@ -16,8 +16,8 @@ judegeStage = function(smaData)
       return(-1)
     else
     {
-      if(x['deltratioSlideLong']<= -4 && x['deltratioSlideShort'] <= -2) { return(4) }
-      else if(x['deltratioSlideLong']>= 4 && x['deltratioSlideShort'] >= 2) {return(2)} 
+      if(x['deltratioSlideLong']<= lnratio && x['deltratioSlideShort'] <= snratio) { return(4) }
+      else if(x['deltratioSlideLong']>= lpratio && x['deltratioSlideShort'] >= spratio) {return(2)} 
       else {return(0)}
     }
     
