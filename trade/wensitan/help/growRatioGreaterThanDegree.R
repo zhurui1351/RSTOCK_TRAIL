@@ -5,9 +5,8 @@ growRatioGreaterThanDegree = function(daydate,mg,ratio=0.08)
     # print(p)
     n = mg[[p]]
     current = n[date]
-    if(nrow(current)==1 && !is.na(current$volatile) && current$volatile > 0)
+    if(nrow(current)==1 && !is.na(current$volatile) && current$volatile > ratio)
     {
-      print(p)
       return(p)
     }
     else

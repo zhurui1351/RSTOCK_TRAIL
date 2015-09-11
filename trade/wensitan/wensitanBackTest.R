@@ -65,7 +65,7 @@ colnames(shindex_week) = c('Open','Hign','Low','Close','Volume','sma30','stage',
 
 #处理每个时间的筛选
 #shindex_week = shindex_week['1996/']
-xxs = shindex_week['2014-01-24']
+xxs = shindex_week['2008']
 #xxs = xxs[xxs$stage!=4]
 end = index(xxs)
 
@@ -74,14 +74,22 @@ print(now())
 allcodes = names(mg)
 ld = lapply(end,function(x){
   print(x)
-  l = growRatioGreaterThanDegree(as.character(x),mg,ratio=0.05)#filterBasicOneDay(as.character(x),mg,shindex_week,lastn=5)
-  l = list(l)
-  names(l) = as.character(x)
-  return(l)
+  l = growRatioGreaterThanDegree(as.character(x),mg,ratio=0.07)#filterBasicOneDay(as.character(x),mg,shindex_week,lastn=5)#
+  l=Filter(function(x){!is.null(x)},l)
+  if(length(l) > 0)
+  {
+    l = list(l)
+    names(l) = as.character(x)
+    return(l)
+  }
+  return(NULL)
     })
 
+#l = Filter(function(x){ ll = x[[1]]
+ #                       ll = Filter(function(x){!is.null(x[[1]])},ll)
+  #                      length(ll)!=0},ld[1:2])
+
 l = Filter(function(x){ ll = x[[1]]
-                        ll = Filter(function(x){!is.null(x[[1]])},ll)
                         length(ll)!=0},ld)
 names(l)=sapply(l,function(x){return(names(x))})
 print(now())
@@ -160,8 +168,8 @@ for(i in 1:length(l))
   p = p[[1]]
   trades =  lapply(p,function(x,pdate){
     pname = x[[1]]
-    print(pname)
-    record =afterNatrExit(pname,pdate,3,1,0.5)
+    #print(pname)
+    record =afterNatrExit(pname,pdate,1,0.5,0.5)
     return(record)
   },pdate)
   records = append(records,trades)
