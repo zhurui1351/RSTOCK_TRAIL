@@ -65,8 +65,8 @@ colnames(shindex_week) = c('Open','Hign','Low','Close','Volume','sma30','stage',
 
 #处理每个时间的筛选
 #shindex_week = shindex_week['1996/']
-xxs = shindex_week['2011']
-xxs = xxs[xxs$stage!=4]
+xxs = shindex_week['2014-01-24']
+#xxs = xxs[xxs$stage!=4]
 end = index(xxs)
 
 print(now())
@@ -74,7 +74,7 @@ print(now())
 allcodes = names(mg)
 ld = lapply(end,function(x){
   print(x)
-  l = filterBasicOneDay(as.character(x),mg,shindex_week,lastn=5)
+  l = growRatioGreaterThanDegree(as.character(x),mg,ratio=0.05)#filterBasicOneDay(as.character(x),mg,shindex_week,lastn=5)
   l = list(l)
   names(l) = as.character(x)
   return(l)
@@ -203,3 +203,6 @@ plot(Cl(x['201010/201107']))
 points(x['201010/201107']$sma30,type='l',col='red')
 plot(Cl(shindex_week['201010/201107']))
 points(shindex_week['201010/201107']$sma30,type='l',col='red')
+
+
+
