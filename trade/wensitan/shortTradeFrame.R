@@ -23,11 +23,11 @@ allcodes = readallstockforday()
 mg = mget(allcodes)
 print(now())
 
-xxs = shindex['2015-08-28/']
+xxs = shindex['2006/']
 end = index(xxs)
 ld = lapply(end,function(x){
   print(x)
-  l = filterDaoChuizi(as.character(x),mg)
+  l = growRatioGreaterThanDegree(as.character(x),mg,ratio=0.07)#filterDaoChuizi(as.character(x),mg)#
   l=Filter(function(x){!is.null(x)},l)
   if(length(l) > 0)
   {
@@ -43,7 +43,7 @@ l = Filter(function(x){ ll = x[[1]]
                         length(ll)!=0},ld)
 names(l)=sapply(l,function(x){return(names(x))})
 names(l) = strftime(names(l),"%Y-%m-%d")
-save(l,file='cuizi.Rdata')
+save(l,file='short.Rdata')
 
 #统计list里面的每个选项的一些分布特征
 sepdays = c()
@@ -82,8 +82,8 @@ for(i in 1:length(l))
   p = p[[1]]
   trades =  lapply(p,function(x,pdate){
     pname = x[[1]]
-    print(pname)
-    record =afterNatrExit(pname,pdate,3,2,1)
+  #  print(pname)
+    record =afterNatrExit(pname,pdate,1,0.5,0.5)
     return(record)
   },pdate)
   records = append(records,trades)

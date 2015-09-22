@@ -24,6 +24,7 @@ shindex = readSHindex()
 shindex_week = to.weekly(shindex)
 shindex_week$sma30 = SMA(Cl(shindex_week),n=30)
 shindex_week = na.omit(shindex_week)
+shindex_week$volatile = (Cl(shindex_week)-Op(shindex_week))/Op(shindex_week)
 
 shindex_week$stage = judegeStage(shindex_week$sma30)
 shindex_week = na.omit(shindex_week)
@@ -74,7 +75,7 @@ print(now())
 allcodes = names(mg)
 ld = lapply(end,function(x){
   print(x)
-  l = growRatioGreaterThanDegree(as.character(x),mg,ratio=0.07)#filterBasicOneDay(as.character(x),mg,shindex_week,lastn=5)#
+  l = growRatioGreaterThanDegreeWithIndex(as.character(x),mg,ratio=0.07,shindex_week)#filterBasicOneDay(as.character(x),mg,shindex_week,lastn=5)#
   l=Filter(function(x){!is.null(x)},l)
   if(length(l) > 0)
   {

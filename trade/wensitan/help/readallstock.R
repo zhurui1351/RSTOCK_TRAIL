@@ -105,6 +105,7 @@ readallstockforday = function()
     pricedata$stage30 = judegeStage(pricedata$sma30)
     pricedata$stage5 = judegeStage(pricedata$sma5)
     pricedata$atr = ATR(pricedata,n=5)[,'atr']
+    pricedata$volatile = (Cl(pricedata)-Op(pricedata))/Op(pricedata)
     
     fname = strsplit(f,'.',fixed=T)[[1]][1]
     fname = substr(fname,3,8)
