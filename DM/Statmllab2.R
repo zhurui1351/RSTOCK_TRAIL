@@ -103,13 +103,10 @@ knn.pred=knn(train.X,test.X,train.Y,k=1)
 mean(test.Y!=knn.pred)
 mean(test.Y!="No")
 table(knn.pred,test.Y)
-9/(68+9)
 knn.pred=knn(train.X,test.X,train.Y,k=3)
 table(knn.pred,test.Y)
-5/26
 knn.pred=knn(train.X,test.X,train.Y,k=5)
 table(knn.pred,test.Y)
-4/15
 glm.fit=glm(Purchase~.,data=Caravan,family=binomial,subset=-test)
 glm.probs=predict(glm.fit,Caravan[test,],type="response")
 glm.pred=rep("No",1000)
@@ -118,4 +115,3 @@ table(glm.pred,test.Y)
 glm.pred=rep("No",1000)
 glm.pred[glm.probs>.25]="Yes"
 table(glm.pred,test.Y)
-11/(22+11)

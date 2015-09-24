@@ -60,13 +60,13 @@ uplist = xts(uplist,index(mm))
 tempdata = apply.weekly(uplist,mean)
 shindex_week = merge(shindex_week,tempdata)
 shindex_week = na.omit(shindex_week)
-colnames(shindex_week) = c('Open','Hign','Low','Close','Volume','sma30','stage','meanVolume','mvSma10','mvratio','upratio')
+colnames(shindex_week) = c('Open','Hign','Low','Close','Volume','sma30','volatile','stage','meanVolume','mvSma10','mvratio','upratio')
 
 
 
 #处理每个时间的筛选
 #shindex_week = shindex_week['1996/']
-xxs = shindex_week['2008']
+xxs = shindex_week['1996/']
 #xxs = xxs[xxs$stage!=4]
 end = index(xxs)
 
@@ -75,7 +75,7 @@ print(now())
 allcodes = names(mg)
 ld = lapply(end,function(x){
   print(x)
-  l = growRatioGreaterThanDegreeWithIndex(as.character(x),mg,ratio=0.07,shindex_week)#filterBasicOneDay(as.character(x),mg,shindex_week,lastn=5)#
+  l = filterBasicOneDay(as.character(x),mg,shindex_week,lastn=5)#growRatioGreaterThanDegreeWithIndex(as.character(x),mg,ratio=0.07,shindex_week)#
   l=Filter(function(x){!is.null(x)},l)
   if(length(l) > 0)
   {
@@ -95,7 +95,7 @@ l = Filter(function(x){ ll = x[[1]]
 names(l)=sapply(l,function(x){return(names(x))})
 print(now())
 
-save(l,file='result01.Rdata')
+save(l,file='wensitan.Rdata')
 
 sepdays = c()
 
@@ -213,5 +213,41 @@ points(x['201010/201107']$sma30,type='l',col='red')
 plot(Cl(shindex_week['201010/201107']))
 points(shindex_week['201010/201107']$sma30,type='l',col='red')
 
+#ml learning
+dt =unlist(records[,'opdate'])
+indexsh = index(shindex_week)
+indexinfo = lapply(dt, function(x){
+  p = which(indexsh == x)
+  if(length(p) == 0)
+  {
+    print(x)
+    p = findInterval(as.Date(x),indexsh)
+  }
+  else
+  {
+    p = p - 1
+  }
+  
+  currentp = coredata(shindex_week[p,])
+  return(list(stage=currentp[,'stage'],volatile=currentp[,'volatile']))
+})
 
 
+indexinfo = as.data.frame(do.call('rbind',indexinfo))
+stage = unlist(indexinfo$stage)
+stage = as.factor(stage)
+votile = unlist(indexinfo$volatile)
+profit = unlist(records$profit)
+profitflags = ifelse(profit>0,'good','bad')
+recordsinfo = cbind(records,stage)
+recordsinfo = cbind(recordsinfo,votile)
+recordsinfo = cbind(recordsinfo,profitflags)
+for(i in colnames(recordsinfo))
+{
+  recordsinfo[,i] = unlist(recordsinfo[,i])
+}
+
+require(e1071)
+model <- glm(profitflags ~ Open + stage + votile  + initStop,data = recordsinfo,family = 'binomial',control=list(maxit=100))
+
+model <- glm(profitflags ~ Open+initStop,data = recordsinfo,family = 'binomial')
