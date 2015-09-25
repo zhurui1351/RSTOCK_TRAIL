@@ -250,4 +250,23 @@ for(i in colnames(recordsinfo))
 require(e1071)
 model <- glm(profitflags ~ Open + stage + votile  + initStop,data = recordsinfo,family = 'binomial',control=list(maxit=100))
 
-model <- glm(profitflags ~ Open+initStop,data = recordsinfo,family = 'binomial')
+#model <- glm(profitflags ~ Open+initStop,data = recordsinfo,family = 'binomial')
+
+year = 1996:2015
+testindex = sample(1:20,10)
+testyear = year[testindex]
+trainyear = year[-testindex]
+testset = recordsinfo[which(as.numeric(substr(recordsinfo$opdate,1,4)) %in% testyear),]
+trainset = recordsinfo[which(as.numeric(substr(recordsinfo$opdate,1,4)) %in% trainyear),]
+
+model <- svm(profitflags ~ Open + stage + votile  + initStop,data = testset)
+model <- glm(profitflags ~ Open + stage + votile  + initStop,data = testset,family = 'binomial',control=list(maxit=100))
+
+profitpredict = predict(model,subset(trainset,select=c(Open,stage,votile,initStop)),type='response')
+profitpredict = ifelse(profitpredict>0.7,'good','bad')
+table(trainset[,'profitflags'],profitpredict)
+
+truemodel = model <- glm(profitflags ~ Open + stage + votile  + initStop,data = recordsinfo,family = 'binomial',control=list(maxit=100))
+profitpredict = predict(truemodel,type='response')
+profitpredict = ifelse(profitpredict>0.7,'good','bad')
+table(recordsinfo[,'profitflags'],profitpredict)
