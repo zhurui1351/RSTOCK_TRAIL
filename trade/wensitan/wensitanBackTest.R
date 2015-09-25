@@ -268,5 +268,5 @@ table(trainset[,'profitflags'],profitpredict)
 
 truemodel = model <- glm(profitflags ~ Open + stage + votile  + initStop,data = recordsinfo,family = 'binomial',control=list(maxit=100))
 profitpredict = predict(truemodel,type='response')
-profitpredict = ifelse(profitpredict>0.7,'good','bad')
+profitpredict = ifelse(profitpredict>0.9,'good','bad')
 table(recordsinfo[,'profitflags'],profitpredict)
