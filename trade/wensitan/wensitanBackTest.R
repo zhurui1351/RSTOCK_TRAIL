@@ -62,11 +62,11 @@ shindex_week = merge(shindex_week,tempdata)
 shindex_week = na.omit(shindex_week)
 colnames(shindex_week) = c('Open','Hign','Low','Close','Volume','sma30','volatile','stage','meanVolume','mvSma10','mvratio','upratio')
 
-
+save(list=append(lookups,c('shindex_week','lookups')),file='allStock.Rdata')
 
 #处理每个时间的筛选
 #shindex_week = shindex_week['1996/']
-xxs = shindex_week['1996/']
+xxs = shindex_week['20150925']
 #xxs = xxs[xxs$stage!=4]
 end = index(xxs)
 
@@ -200,7 +200,7 @@ sub = cbind(sub,sepweeks)
 
 profit = as.numeric(sub[,'profit'])
 sub = cbind(sub,profit)
-
+#如果同天有多笔交易，随机挑选一笔
 x=aggregate(profit~opdate,data=sub[,c(2,8)],function(x){n=sample(1:length(x),1)
                                                         return(x[n])})
 head(x[order(x$opdate),])
@@ -213,7 +213,7 @@ points(x['201010/201107']$sma30,type='l',col='red')
 plot(Cl(shindex_week['201010/201107']))
 points(shindex_week['201010/201107']$sma30,type='l',col='red')
 
-#ml learning
+#ml learning 机器学习筛选条件框架
 dt =unlist(records[,'opdate'])
 indexsh = index(shindex_week)
 indexinfo = lapply(dt, function(x){
@@ -248,25 +248,41 @@ for(i in colnames(recordsinfo))
 }
 
 require(e1071)
+require(randomForest)
 model <- glm(profitflags ~ Open + stage + votile  + initStop,data = recordsinfo,family = 'binomial',control=list(maxit=100))
 
 #model <- glm(profitflags ~ Open+initStop,data = recordsinfo,family = 'binomial')
 
 year = 1996:2015
 testindex = sample(1:20,10)
-testyear = year[testindex]
-trainyear = year[-testindex]
+testyear = 1996:2010
+trainyear = c(2011)#year[-testindex]
 testset = recordsinfo[which(as.numeric(substr(recordsinfo$opdate,1,4)) %in% testyear),]
 trainset = recordsinfo[which(as.numeric(substr(recordsinfo$opdate,1,4)) %in% trainyear),]
 
-model <- svm(profitflags ~ Open + stage + votile  + initStop,data = testset)
-model <- glm(profitflags ~ Open + stage + votile  + initStop,data = testset,family = 'binomial',control=list(maxit=100))
+model <- randomForest(profitflags ~ Open +  stage + votile  + initStop,data = testset)
+model <- svm(profitflags ~ Open + stage + votile  + initStop,data = testset,gamma = 0.5)
+model <- glm(profitflags ~ Open + initStop  ,data = testset,family = 'binomial',control=list(maxit=100))
 
 profitpredict = predict(model,subset(trainset,select=c(Open,stage,votile,initStop)),type='response')
-profitpredict = ifelse(profitpredict>0.7,'good','bad')
+#profitpredict = ifelse(profitpredict>0.7,'good','bad')
 table(trainset[,'profitflags'],profitpredict)
 
 truemodel = model <- glm(profitflags ~ Open + stage + votile  + initStop,data = recordsinfo,family = 'binomial',control=list(maxit=100))
+truemodel <- randomForest(profitflags ~ Open +  stage + votile  + initStop,data = recordsinfo)
 profitpredict = predict(truemodel,type='response')
-profitpredict = ifelse(profitpredict>0.9,'good','bad')
+#profitpredict = ifelse(profitpredict>0.9,'good','bad')
 table(recordsinfo[,'profitflags'],profitpredict)
+
+predicttrade = which(profitpredict == 'good')
+predicttrade = trainset[predicttrade,]
+profit = as.numeric(predicttrade[,'profit'])
+sum(profit)
+max(profit)
+min(profit)
+length(profit[profit>0]) / length(profit)
+
+everyyear = year(ymd(predicttrade[,'opdate']))
+
+aggregate(x=profit,by=list(everyyear),sum)
+subset(predicttrade,substr(opdate,1,4)==2008)
