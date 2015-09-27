@@ -5,7 +5,8 @@ require(TTR)
 require('dygraphs')
 require('lubridate')
 require('dplyr')
-
+require(e1071)
+require(randomForest)
 sourceDir <- function(path, trace = TRUE, ...) {
   for (nm in list.files(path, pattern = "[.][RrSsQq]$")) {
     if(trace) cat(nm,":")
@@ -232,7 +233,7 @@ indexinfo = lapply(dt, function(x){
   return(list(stage=currentp[,'stage'],volatile=currentp[,'volatile']))
 })
 
-
+#添加交易周内的上证信息并将交易盈亏进行标示
 indexinfo = as.data.frame(do.call('rbind',indexinfo))
 stage = unlist(indexinfo$stage)
 stage = as.factor(stage)
@@ -242,13 +243,38 @@ profitflags = ifelse(profit>0,'good','bad')
 recordsinfo = cbind(records,stage)
 recordsinfo = cbind(recordsinfo,votile)
 recordsinfo = cbind(recordsinfo,profitflags)
+#寻找前一个交易日的信息，避免look ahead
+preinfo = apply(records,MARGIN=1,FUN=function(rowdata)
+  {
+  code = as.character(rowdata['code'])
+  pdate =as.Date(unlist(rowdata[2]))
+  pdata = get(code)
+  pindex = which(index(pdata) == pdate) 
+  preindex = pindex-1
+  predata = pdata[preindex,]
+  preclose = as.numeric(Cl(predata))
+  presma30 = as.numeric(predata[,'sma30'])
+  prevolatile = as.numeric(predata[,'volatile'])
+  
+  while(is.na(preclose))
+  {
+    preindex = preindex-1
+    predata = pdata[preindex,]
+    preclose = as.numeric(Cl(predata))
+    presma30 = as.numeric(predata[,'sma30'])
+    prevolatile = as.numeric(predata[,'volatile'])
+  }
+  return(list(preclose=preclose,presma30=presma30,prevolatile=prevolatile))  
+})
+preinfoframe = as.data.frame(do.call('rbind',preinfo))
+recordsinfo = cbind(recordsinfo,preinfoframe)
+#处理data.frame的列格式
 for(i in colnames(recordsinfo))
 {
   recordsinfo[,i] = unlist(recordsinfo[,i])
 }
 
-require(e1071)
-require(randomForest)
+#建模区分好坏交易
 model <- glm(profitflags ~ Open + stage + votile  + initStop,data = recordsinfo,family = 'binomial',control=list(maxit=100))
 
 #model <- glm(profitflags ~ Open+initStop,data = recordsinfo,family = 'binomial')
@@ -260,19 +286,20 @@ trainyear = c(2011)#year[-testindex]
 testset = recordsinfo[which(as.numeric(substr(recordsinfo$opdate,1,4)) %in% testyear),]
 trainset = recordsinfo[which(as.numeric(substr(recordsinfo$opdate,1,4)) %in% trainyear),]
 
-model <- randomForest(profitflags ~ Open +  stage + votile  + initStop,data = testset)
-model <- svm(profitflags ~ Open + stage + votile  + initStop,data = testset,gamma = 0.5)
-model <- glm(profitflags ~ Open + initStop  ,data = testset,family = 'binomial',control=list(maxit=100))
+model <- randomForest(profitflags ~ stage + votile  + initStop + preclose,data = testset)
+#model <- svm(profitflags ~ preclose + stage + votile  + initStop,data = testset,gamma = 0.5)
+model <- glm(profitflags ~ preclose + initStop  ,data = testset,family = 'binomial')
 
-profitpredict = predict(model,subset(trainset,select=c(Open,stage,votile,initStop)),type='response')
+profitpredict = predict(model,subset(trainset,select=c(preclose,stage,votile,initStop)),type='response')
 #profitpredict = ifelse(profitpredict>0.7,'good','bad')
 table(trainset[,'profitflags'],profitpredict)
 
-truemodel = model <- glm(profitflags ~ Open + stage + votile  + initStop,data = recordsinfo,family = 'binomial',control=list(maxit=100))
-truemodel <- randomForest(profitflags ~ Open +  stage + votile  + initStop,data = recordsinfo)
+#truemodel = model <- glm(profitflags ~ preclose + stage + votile  + initStop,data = recordsinfo,family = 'binomial',control=list(maxit=100))
+truemodel <- randomForest(profitflags ~ preclose +  stage + votile  + initStop,data = recordsinfo)
 profitpredict = predict(truemodel,type='response')
-#profitpredict = ifelse(profitpredict>0.9,'good','bad')
+#profitpredict = ifelse(profitpredict>0.7,'good','bad')
 table(recordsinfo[,'profitflags'],profitpredict)
+trainset = recordsinfo
 
 predicttrade = which(profitpredict == 'good')
 predicttrade = trainset[predicttrade,]
