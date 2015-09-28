@@ -13,7 +13,8 @@ afterNatrExit = function(pname,pdate,initStopRatio=2,stepratio=0.5,stopratio=0.5
   atr = as.numeric(p[pdate]$atr)
   if(is.na(atr)) return(NA)
   
-  stopprice = enter - initStopRatio*atr
+  initstopprice = enter - initStopRatio*atr
+  stopprice = initstopprice
   
   if((j+2) >= length(index(p))) return(NA)
   
@@ -30,7 +31,7 @@ afterNatrExit = function(pname,pdate,initStopRatio=2,stepratio=0.5,stopratio=0.5
       i = i + 1
       closedate = as.character(index(p)[i])
       cur = p[i,]
-      record = list(code=pname,opdate=enterdate,cldate=closedate,Open=enter,Close=as.numeric(Lo(cur)),profit=as.numeric(Lo(cur))-enter,initStop=stopprice,type='clean')
+      record = list(code=pname,opdate=enterdate,cldate=closedate,Open=enter,Close=as.numeric(Lo(cur)),profit=as.numeric(Lo(cur))-enter,initStop=initstopprice,stopprice=stopprice,type='clean')
     #  print(i)
       return(record)
     }
@@ -45,6 +46,6 @@ afterNatrExit = function(pname,pdate,initStopRatio=2,stepratio=0.5,stopratio=0.5
     }
   }
   closedate = as.character(index(p)[i])
-  record = list(code=pname,opdate=enterdate,cldate=closedate,Open=enter,Close=as.numeric(Cl(cur)),profit=as.numeric(Lo(cur))-enter,initStop=stopprice,type='float')
+  record = list(code=pname,opdate=enterdate,cldate=closedate,Open=enter,Close=as.numeric(Cl(cur)),profit=as.numeric(Lo(cur))-enter,initStop=initstopprice,stopprice=stopprice,type='float')
   return(record)
 }

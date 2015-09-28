@@ -171,7 +171,7 @@ for(i in 1:length(l))
   trades =  lapply(p,function(x,pdate){
     pname = x[[1]]
     #print(pname)
-    record =afterNatrExit(pname,pdate,1,0.5,0.5)
+    record =afterNatrExit(pname,pdate,3,1,1)
     return(record)
   },pdate)
   records = append(records,trades)
@@ -255,6 +255,11 @@ preinfo = apply(records,MARGIN=1,FUN=function(rowdata)
   preclose = as.numeric(Cl(predata))
   presma30 = as.numeric(predata[,'sma30'])
   prevolatile = as.numeric(predata[,'volatile'])
+  preatr = as.numeric(predata[,'atr'])
+  premeanvo = as.numeric(predata[,'meanVolume'])
+  premvratio = as.numeric(predata[,'mvratio'])
+  prers = as.numeric(predata[,'rs'])
+  
   
   while(is.na(preclose))
   {
@@ -263,8 +268,13 @@ preinfo = apply(records,MARGIN=1,FUN=function(rowdata)
     preclose = as.numeric(Cl(predata))
     presma30 = as.numeric(predata[,'sma30'])
     prevolatile = as.numeric(predata[,'volatile'])
+    preatr = as.numeric(predata[,'atr'])
+    premeanvo = as.numeric(predata[,'meanVolume'])
+    premvratio = as.numeric(predata[,'mvratio'])
+    prers = as.numeric(predata[,'rs'])
   }
-  return(list(preclose=preclose,presma30=presma30,prevolatile=prevolatile))  
+  return(list(preclose=preclose,presma30=presma30,prevolatile=prevolatile,preatr=preatr
+              ,premeanvo=premeanvo, premvratio=premvratio,prers=prers))  
 })
 preinfoframe = as.data.frame(do.call('rbind',preinfo))
 recordsinfo = cbind(recordsinfo,preinfoframe)

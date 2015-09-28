@@ -1,5 +1,6 @@
 mlModelValidationForwensitan = function(recordsinfo)
 { 
+  profitframe = data.frame()
   for( i in 2003:2014)
   {
     print(i)
@@ -7,8 +8,13 @@ mlModelValidationForwensitan = function(recordsinfo)
     trainyear = c(i+1)
     testset = recordsinfo[which(as.numeric(substr(recordsinfo$opdate,1,4)) %in% testyear),]
     trainset = recordsinfo[which(as.numeric(substr(recordsinfo$opdate,1,4)) %in% trainyear),]
-    model <- svm(profitflags ~ stage + votile  + initStop + preclose + prevolatile,data = testset)
-    profitpredict = predict(model,subset(trainset,select=c(prevolatile,preclose,stage,votile,initStop)),type='response')
+    model <- nnet(profitflags ~ stage + votile  + preatr + prevolatile + presma30
+                          +premeanvo+premvratio+prers,data = testset,size=2)
+    model <- glm(profitflags ~ Open + stage +  prevolatile + presma30
+                 +premeanvo+prers,data = testset,family = 'binomial')
+    profitpredict = predict(model,subset(trainset,select=c(Open, stage,votile,preatr,prevolatile,presma30
+                                                            ,premeanvo,premvratio,prers)),type='class')
+    profitpredict = ifelse(profitpredict>0.2,'good','bad')
     dt = table(trainset[,'profitflags'],profitpredict)
     predicttrade = which(profitpredict == 'good')
     predicttrade = trainset[predicttrade,]
@@ -18,7 +24,8 @@ mlModelValidationForwensitan = function(recordsinfo)
     minprofit = min(profit)
     maxprofit = max(profit)
     winratio = length(profit[profit>0]) / length(profit)
-    print(data.frame(year=(i+1),totaltrades=totaltrades,totalprofit=totalprofit,winratio=winratio,
-                        minprofit=minprofit,maxprofit=maxprofit))
+    profitframe = rbind(profitframe,data.frame(year=(i+1),totaltrades=totaltrades,totalprofit=totalprofit,winratio=winratio,
+                                 minprofit=minprofit,maxprofit=maxprofit))
   }
+  print(profitframe)
 }
