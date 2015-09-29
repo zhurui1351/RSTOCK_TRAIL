@@ -23,11 +23,11 @@ allcodes = readallstockforday()
 mg = mget(allcodes)
 print(now())
 
-xxs = shindex['2006/']
+xxs = shindex['201101']
 end = index(xxs)
 ld = lapply(end,function(x){
   print(x)
-  l = growRatioGreaterThanDegree(as.character(x),mg,ratio=0.07)#filterDaoChuizi(as.character(x),mg)#
+  l = bounceAfterFall(as.character(x),mg,ratio = -0.1,shindex=shindex)#growRatioGreaterThanDegree(as.character(x),mg,ratio=0.07)#filterDaoChuizi(as.character(x),mg)#
   l=Filter(function(x){!is.null(x)},l)
   if(length(l) > 0)
   {
@@ -58,7 +58,7 @@ for(i in 1:length(l))
   sdays =  sapply(p,function(x,pdate){
     pname = x[[1]]
     print(pname)
-    sep =afterNdaysProfit(pname,pdate,5)# findtimeGapWhengrowToSomeDegree(pname,pdate,0.02)# 
+    sep =afterNdaysProfit(pname,pdate,1)# findtimeGapWhengrowToSomeDegree(pname,pdate,0.02)# 
     return(sep)
   },pdate)
   print(sdays)
@@ -83,7 +83,7 @@ for(i in 1:length(l))
   trades =  lapply(p,function(x,pdate){
     pname = x[[1]]
   #  print(pname)
-    record =afterNatrExit(pname,pdate,1,0.5,0.5)
+    record =afterNPeriod(pname,pdate,n=2)#afterNatrExit(pname,pdate,0.5,0.5,0.5)#
     return(record)
   },pdate)
   records = append(records,trades)
@@ -91,7 +91,9 @@ for(i in 1:length(l))
 }
 
 records = as.data.frame(do.call('rbind',records))
-records = subset(records,!is.na(records[,'code']))
+records = subset(records,!is.na(records[,'code']) & Open>0 & Close>0)
+#records = subset(records, Open>10 & Open < 20)
+
 print(now())
 
 profit = as.numeric(records[,'Close']) - as.numeric(records[,'Open'])

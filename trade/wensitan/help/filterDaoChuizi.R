@@ -25,6 +25,7 @@ filterDaoChuizi = function(daydate,mg)
     
   }
   ,daydate)
+  return(l)
   
 }
 

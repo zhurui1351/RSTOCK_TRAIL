@@ -49,3 +49,27 @@ afterNatrExit = function(pname,pdate,initStopRatio=2,stepratio=0.5,stopratio=0.5
   record = list(code=pname,opdate=enterdate,cldate=closedate,Open=enter,Close=as.numeric(Cl(cur)),profit=as.numeric(Lo(cur))-enter,initStop=initstopprice,stopprice=stopprice,type='float')
   return(record)
 }
+
+afterNPeriod = function(pname,pdate,n=1)
+{
+  p = get(pname)
+  p = subset(p,!is.na(Open) & !is.na(Close))
+  j = which(index(p) == pdate)
+  enterdate = as.character(index(p)[j+1])
+  if(is.na(enterdate)) return(NA)
+  enterp = p[enterdate]
+  
+  enter = as.numeric(enterp[,'High'])
+  if(is.na(enter)) return(NA)
+ 
+  outdate = as.character(index(p)[j+1+n])
+  if(is.na(enterdate)) return(NA)
+  
+  outp = p[outdate]
+  out = as.numeric(outp[,'Low'])
+  if(is.na(out)) return(NA)
+  
+  record = list(code=pname,opdate=enterdate,cldate=outdate,Open=enter,Close=out,profit=as.numeric(out-enter),initStop=0,stopprice=0,type='clean')
+  return(record)
+}
+  
