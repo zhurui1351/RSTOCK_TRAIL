@@ -23,7 +23,9 @@ allcodes = readallstockforday()
 mg = mget(allcodes)
 print(now())
 
-xxs = shindex['201101']
+save(list=append(allcodes,c('shindex','allcodes')),file='allStockday.Rdata')
+
+xxs = shindex['1996/']
 end = index(xxs)
 ld = lapply(end,function(x){
   print(x)
