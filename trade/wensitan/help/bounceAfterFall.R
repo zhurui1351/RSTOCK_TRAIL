@@ -1,4 +1,4 @@
-bounceAfterFall = function(daydate,mg,ratio=-0.08,nday=3,shindex=NULL)
+bounceAfterFall = function(daydate,mg,ratio=-0.08,everdayratio=-0.2,nday=3,shindex=NULL)
 {
   allcodes = names(mg)
   l = lapply(allcodes,function(p,date){
@@ -11,7 +11,7 @@ bounceAfterFall = function(daydate,mg,ratio=-0.08,nday=3,shindex=NULL)
       if(i < (nday+1) ) return(NULL)
       if(is.na(n[i-nday]$volatile) || n[i-nday]$volatile < 0) return(NULL)
       #刚好跌倒第n天
-      allfall = all(n[(i-nday+1):i]$volatile < 0)
+      allfall = all(n[(i-nday+1):i]$volatile < everdayratio)
       allfallratio = sum(n[(i-nday+1):i]$volatile)
       
       if(!is.null(shindex))
@@ -37,4 +37,52 @@ bounceAfterFall = function(daydate,mg,ratio=-0.08,nday=3,shindex=NULL)
     
   }
   ,daydate)
+  return(l)
+}
+
+
+
+followAfterUp = function(daydate,mg,ratio=0.08,everdayratio=0.2,nday=3,shindex=NULL)
+{
+  allcodes = names(mg)
+  l = lapply(allcodes,function(p,date){
+    #print(p)
+    n = mg[[p]]
+    current = n[date]
+    if(nrow(current)==1 && !is.na(current$volatile))
+    {
+      i = which(index(n) == date)
+      if(i < (nday+1) ) return(NULL)
+      if(is.na(n[i-nday]$volatile) || n[i-nday]$volatile > 0) return(NULL)
+      #刚好涨到第n天
+      allup = all(n[(i-nday+1):i]$volatile > everdayratio)
+      allupratio = sum(n[(i-nday+1):i]$volatile)
+      
+      if(!is.null(shindex))
+      {
+        j = which(index(shindex) == date)
+        allfall = all(shindex[(j-nday+1):j]$volatile < 0)
+        fallratio =(Cl(shindex[j]) - Cl(shindex[j-nday+1])) / Cl(shindex[(j-nday+1)])
+        
+        #if(!allfall) return(NULL)
+        if(!is.na(fallratio) && length(fallratio) == 1 && fallratio < -0.05) return(NULL)
+      }
+      
+      if(!is.na(allup) && !is.na(allupratio) &&allup && allupratio > ratio)
+      {
+        return(p)
+      }
+      else
+      {
+        return(NULL)
+      }
+    }
+    else
+    {
+      return(NULL)
+    }
+    
+  }
+  ,daydate)
+  return(l)
 }

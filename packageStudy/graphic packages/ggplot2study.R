@@ -128,3 +128,42 @@ summary(p)
 #load("plot.rdata")
 # 将图片保存成png格式
 #ggsave("plot.png", width = 5, height = 5) 
+
+## 通过ggplot创建图形对象 aes中放入图形属性映射信息,此时无法显示需要加入一个图层，包含几何对象
+p <- ggplot(diamonds, aes(carat, price, colour = cut))
+## 添加“点”几何对象
+p <- p + layer(geom = "point")
+
+## 例：手动创建图形对象并添加图层
+p <- ggplot(diamonds, aes(x = carat))
+p <- p + layer(geom = "bar", geom_params = list(fill = "steelblue"), stat = "bin", 
+               stat_params = list(binwidth = 2))
+p
+#以上代码过于细致，可以用现成的函数生成一定统计变换或几何对象的默认图层
+## 应用“快捷函数”，得到与上例相同的图形
+p + geom_histogram(binwidth = 2, fill = "steelblue")
+
+# 在用ggplot创建的图形对象上添加图层
+ggplot(msleep, aes(sleep_rem/sleep_total, awake)) + geom_point()
+# 等价于
+qplot(sleep_rem/sleep_total, awake, data = msleep)
+
+# 也可以给qplot添加图层
+qplot(sleep_rem/sleep_total, awake, data = msleep) + geom_smooth()
+# 等价于
+qplot(sleep_rem/sleep_total, awake, data = msleep, geom = c("point", "smooth"))
+# 或
+ggplot(msleep, aes(sleep_rem/sleep_total, awake)) + geom_point() + geom_smooth()
+
+## 例：summary给出图形对象的默认设置和每个图层的信息
+p <- ggplot(msleep, aes(sleep_rem/sleep_total, awake))
+summary(p)
+p <- p + geom_point()
+summary(p)
+## 例：用不同的数据初始化后添加相同的图层
+library(scales)
+bestfit <- geom_smooth(method = "lm", se = F, colour = alpha("steelblue", 0.5), 
+                       size = 2)
+qplot(sleep_rem, sleep_total, data = msleep) + bestfit
+qplot(awake, brainwt, data = msleep, log = "y") + bestfit
+qplot(bodywt, brainwt, data = msleep, log = "xy") + bestfit

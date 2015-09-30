@@ -25,11 +25,11 @@ print(now())
 
 save(list=append(allcodes,c('shindex','allcodes')),file='allStockday.Rdata')
 
-xxs = shindex['1996/']
+xxs = shindex['201101']
 end = index(xxs)
 ld = lapply(end,function(x){
   print(x)
-  l = bounceAfterFall(as.character(x),mg,ratio = -0.1,shindex=shindex)#growRatioGreaterThanDegree(as.character(x),mg,ratio=0.07)#filterDaoChuizi(as.character(x),mg)#
+  l = followAfterUp(as.character(x),mg,ratio = 0.08,everdayratio = 0,shindex=shindex)#growRatioGreaterThanDegree(as.character(x),mg,ratio=0.07)#filterDaoChuizi(as.character(x),mg)#
   l=Filter(function(x){!is.null(x)},l)
   if(length(l) > 0)
   {
