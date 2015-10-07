@@ -25,11 +25,11 @@ print(now())
 
 save(list=append(allcodes,c('shindex','allcodes')),file='allStockday.Rdata')
 
-xxs = shindex['201101']
+xxs = shindex['2006/']
 end = index(xxs)
 ld = lapply(end,function(x){
   print(x)
-  l = followAfterUp(as.character(x),mg,ratio = 0.08,everdayratio = 0,shindex=shindex)#growRatioGreaterThanDegree(as.character(x),mg,ratio=0.07)#filterDaoChuizi(as.character(x),mg)#
+  l = followAfterUp(as.character(x),mg,ratio = 0.12,everdayratio = 0.05,upratio = 0.08,shindex=shindex,shfallratio=-0.10)#growRatioGreaterThanDegree(as.character(x),mg,ratio=0.07)#filterDaoChuizi(as.character(x),mg)#
   l=Filter(function(x){!is.null(x)},l)
   if(length(l) > 0)
   {
@@ -45,7 +45,7 @@ l = Filter(function(x){ ll = x[[1]]
                         length(ll)!=0},ld)
 names(l)=sapply(l,function(x){return(names(x))})
 names(l) = strftime(names(l),"%Y-%m-%d")
-save(l,file='short.Rdata')
+save(l,file='short_bounceAfterFall.Rdata')
 
 #统计list里面的每个选项的一些分布特征
 sepdays = c()
@@ -60,7 +60,7 @@ for(i in 1:length(l))
   sdays =  sapply(p,function(x,pdate){
     pname = x[[1]]
     print(pname)
-    sep =afterNdaysProfit(pname,pdate,1)# findtimeGapWhengrowToSomeDegree(pname,pdate,0.02)# 
+    sep =afterNdaysProfit(pname,pdate,2)# findtimeGapWhengrowToSomeDegree(pname,pdate,0.02)# 
     return(sep)
   },pdate)
   print(sdays)
@@ -85,7 +85,7 @@ for(i in 1:length(l))
   trades =  lapply(p,function(x,pdate){
     pname = x[[1]]
   #  print(pname)
-    record =afterNPeriod(pname,pdate,n=2)#afterNatrExit(pname,pdate,0.5,0.5,0.5)#
+    record =afterNPeriod(pname,pdate,n=1)#afterNatrExit(pname,pdate,0.5,0.5,0.5)#
     return(record)
   },pdate)
   records = append(records,trades)
@@ -94,7 +94,7 @@ for(i in 1:length(l))
 
 records = as.data.frame(do.call('rbind',records))
 records = subset(records,!is.na(records[,'code']) & Open>0 & Close>0)
-#records = subset(records, Open>10 & Open < 20)
+records = subset(records, Open>10 & Open < 20)
 
 print(now())
 
@@ -103,4 +103,5 @@ sum(profit)
 max(profit)
 min(profit)
 length(profit[profit>0]) / length(profit)
-
+everyyear = year(ymd_hms(records[,'opdate']))
+aggregate(x=profit,by=list(everyyear),sum)

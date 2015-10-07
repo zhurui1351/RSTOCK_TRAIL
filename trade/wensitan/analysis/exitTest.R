@@ -59,14 +59,14 @@ afterNPeriod = function(pname,pdate,n=1)
   if(is.na(enterdate)) return(NA)
   enterp = p[enterdate]
   
-  enter = as.numeric(enterp[,'High'])
+  enter = as.numeric(enterp[,'Open'])
   if(is.na(enter)) return(NA)
  
   outdate = as.character(index(p)[j+1+n])
   if(is.na(enterdate)) return(NA)
   
   outp = p[outdate]
-  out = as.numeric(outp[,'Low'])
+  out = as.numeric(outp[,'Open'])
   if(is.na(out)) return(NA)
   
   record = list(code=pname,opdate=enterdate,cldate=outdate,Open=enter,Close=out,profit=as.numeric(out-enter),initStop=0,stopprice=0,type='clean')
