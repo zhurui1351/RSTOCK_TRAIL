@@ -117,3 +117,36 @@ readallstockforday = function()
   print(now())
   return(lookups)
 }
+
+readallpuredata = function(period='days')
+{
+  require('dplyr')
+  print(now())
+  e =parent.env(environment())
+  lookups = c()
+  indexlookups =  1
+  path = "D:/data/stock/dest"
+  files = dir(path)
+  rm(list=files,envir=e)
+  lookups = c()
+  indexlookups =  1
+  
+  for(f in files)
+  {
+    fname = file.path(path,f)
+    pricedata = read.zoo(fname,header=FALSE, format = "%m/%d/%Y",sep=",",index.column=1) 
+    if(nrow(pricedata) < 500){ next}
+    colnames(pricedata)<-c("Open","High","Low","Close","Volume","Amount")
+    time(pricedata)=as.POSIXct(time(pricedata))
+    pricedata=as.xts(pricedata)
+    pricedata = to.period(pricedata,period)
+    fname = strsplit(f,'.',fixed=T)[[1]][1]
+    fname = substr(fname,3,8)
+    #print(fname)
+    assign(fname,pricedata,envir=e)
+    lookups[indexlookups] =fname
+    indexlookups = indexlookups + 1
+  } 
+  print(now())
+  return(lookups)
+}
