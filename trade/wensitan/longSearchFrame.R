@@ -21,18 +21,21 @@ sourceDir('D:/Rcode/code/RSTOCK_TRAIL/trade/wensitan/analysis')
 shindex = readSHindex()
 shindex_year = to.yearly(shindex)
 allcodes = readallpuredata(period='years')
+
+omit=lapply(allcodes,function(x){
+  e = parent.env(environment())
+  price = get(x)
+  price$volatile = (Cl(price) - Op(price) ) / Cl(price)
+  assign(x,price,envir=e)
+})
+
 mg = mget(allcodes)
 
-years = as.character(1990:2015) 
+
+years = as.character(1995:2015) 
 ld = lapply(years,function(x){
   print(x)
-  l = followAfterUp(as.character(x),mg,ratio = 0.12,everdayratio = 0.05,upratio = 0.08,shindex=shindex,shfallratio=-0.10)
-  l=Filter(function(x){!is.null(x)},l)
-  if(length(l) > 0)
-  {
-    l = list(l)
-    names(l) = as.character(x)
-    return(l)
-  }
-  return(NULL)
+  l = sortBeststocks(as.character(x),mg)
+  return(l)
 })
+names(ld) = years
