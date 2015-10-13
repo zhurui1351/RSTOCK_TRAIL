@@ -12,6 +12,6 @@ findSnStock = function()
   
   slm =  Filter(function(x){ ratio = x[[3]]
                              month = x[[2]]
-                             ratio>=0.8 && month==9 },lm)
+                             ratio>=0.75 && month==11 },lm)
   
 }

@@ -2,7 +2,7 @@ sortBeststocks = function(daydate,mg)
 {
   allcodes = names(mg)
   l = sapply(allcodes,function(p,date){
-   # print(p)
+    print(p)
     n = mg[[p]]
     current = n[date]
     if(nrow(current)==1 && !is.na(current$volatile))
