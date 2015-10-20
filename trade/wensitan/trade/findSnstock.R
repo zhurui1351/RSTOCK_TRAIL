@@ -71,9 +71,9 @@ snTestFrame = function()
   x=aggregate(profit~opdate,data=records[,c('opdate','profit')],function(x){n=sample(1:length(x),1)
                                                          return(x[n])})
   uniquedate =  as.character(unique(records[,'opdate']))
-  subrecords = subset(records,substr(opdate,1,4) == '2015') 
+  subrecords = subset(records1,substr(opdate,1,5) == '20078') 
  
-  subrecords = subset(records,Open < 25 & substr(code,1,1)!='3') 
+  records1 = subset(records,Open < 25 & substr(code,1,1)!='3') 
   
   randomtrade = lapply(uniquedate,function(x,records){
     subrecords = subset(records,opdate == x)
@@ -84,9 +84,9 @@ snTestFrame = function()
       n = sample(1:nrow(subrecords),5)
       return(subrecords[n,])
     }
-  },subrecords)
+  },records)
   randomtrade = do.call('rbind',randomtrade)
-  anlysisProfit(randomtrade)
+  anlysisProfit(randomtrade,aggregatecontrol = 4)
 }
 
 
@@ -129,7 +129,7 @@ testinenvir = function()
 }
 
 
-anlysisProfit = function(records)
+anlysisProfit = function(records,aggregatecontrol=4)
 {
   profit = as.numeric(records[,'profit'])
   print('total nums:')
@@ -142,7 +142,7 @@ anlysisProfit = function(records)
   print(min(profit))
   print('win ratio:')
   print( length(profit[profit>0]) / length(profit))
-  everyyear = substr(records[,'opdate'],1,4)
+  everyyear = substr(records[,'opdate'],1,aggregatecontrol)
   each_profit=aggregate(x=profit,by=list(everyyear),sum)
   each_count=aggregate(x=profit,by=list(everyyear),length)
   each_ratio = aggregate(x=profit,by=list(everyyear),function(x){length(x[x>0])/length(x)})
@@ -152,3 +152,18 @@ anlysisProfit = function(records)
   print('every year:')
   print(each_year)
 }
+
+
+codes = sapply(slm,function(x){x$code})
+l=lapply(codes, function(x){
+  p = readOneStock(x)
+  p = to.monthly(p)
+  p =Delt(Cl(p))
+  p = p['2010/2014']
+  return(p)
+})
+names(l) = codes
+m = do.call('cbind',l)
+colnames(m) = codes
+
+mcor = cor(m,use='na.or.complete')
