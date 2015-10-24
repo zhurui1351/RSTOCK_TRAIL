@@ -71,7 +71,7 @@ snTestFrame = function()
   x=aggregate(profit~opdate,data=records[,c('opdate','profit')],function(x){n=sample(1:length(x),1)
                                                          return(x[n])})
   uniquedate =  as.character(unique(records[,'opdate']))
-  subrecords = subset(records1,substr(opdate,1,5) == '20078') 
+  subrecords = subset(records1,substr(opdate,1,4) == '2015') 
  
   records1 = subset(records,Open < 25 & substr(code,1,1)!='3') 
   
@@ -86,7 +86,7 @@ snTestFrame = function()
     }
   },records)
   randomtrade = do.call('rbind',randomtrade)
-  anlysisProfit(randomtrade,aggregatecontrol = 4)
+  anlysisProfit(randomtrade,aggregatecontrol = 6)
 }
 
 
@@ -103,7 +103,7 @@ testinenvir = function()
       #筛选满足条件的记录
       slm =  Filter(function(x){ ratio = x[[3]]
                                  month = x[[2]]
-                                 ratio>=0.7 && month==i },lm)
+                                 ratio>=0.8 && month==i },lm)
       if(length(slm)!=0)
       {
         #生成测试记录
@@ -167,3 +167,6 @@ m = do.call('cbind',l)
 colnames(m) = codes
 
 mcor = cor(m,use='na.or.complete')
+mcor[lower.tri(mcor)] = 1
+msort=sort(as.vector(mcor))[1:5]
+l=lapply(msort, function(x){which(mcor==x,arr.ind = T)})
