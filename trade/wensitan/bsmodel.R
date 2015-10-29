@@ -1,10 +1,11 @@
 rm(list=ls(all=T))
-require(quantmod)
-require(TTR)
+require('quantmod')
+require('TTR')
 require('dygraphs')
 require('lubridate')
 require('dplyr')
-
+require('data.table')
+require('e1071')
 sourceDir <- function(path, trace = TRUE, ...) {
   for (nm in list.files(path, pattern = "[.][RrSsQq]$")) {
     if(trace) cat(nm,":")
@@ -22,23 +23,23 @@ clflag = ifelse(cl < 0 ,'down','up')
 leadclflag = shift(clflag,n=1,type='lead')
 analysedata = merge(leadclflag,clflag)
 
-smashort =SMA(Cl(pricedata),n=5)
-smalong =SMA(Cl(pricedata),n=3)
+smashort =SMA(Cl(pricedata),n=10)
+smalong =SMA(Cl(pricedata),n=5)
 smasignal = (function(smalong,smashort){
   smashort$preshort = lag(smashort,1)
   smalong$prelong = lag(smalong,1)
   signal = ifelse( smashort$preshort < smalong$prelong & smashort$SMA >= smalong$SMA,'long',
                ifelse(smashort$preshort > smalong$prelong & smashort$SMA <= smalong$SMA,'short','hold'))
   return(signal)
-  })(sma20,sma3)
+  })(smalong,smashort)
   
 analysedata$smasignal = smasignal
 
-cci = CCI(HLC(pricedata),n=5)
+cci = CCI(HLC(pricedata),n=10)
 ccisignal = ifelse(cci > 100,'long',ifelse(cci< -100,'short','hold'))
 analysedata$ccisignal = ccisignal
 
-rsi = RSI(Cl(pricedata),n=5)
+rsi = RSI(Cl(pricedata),n=10)
 rsisignal = ifelse(rsi > 70,'short',ifelse(rsi< 30,'long','hold'))
 analysedata$rsisignal = rsisignal
 
@@ -51,7 +52,7 @@ macdsignal = (function(macd){
   })(macd)
 analysedata$macdsignal = macdsignal
 
-adx = ADX(HLC(pricedata))
+adx = ADX(HLC(pricedata),n=10)
 adxsignal = (function(adx)
   {
     adx$predip = lag(adx$DIp,n=1)
@@ -61,7 +62,7 @@ adxsignal = (function(adx)
     })(adx)
 analysedata$adxsignal = adxsignal
 
-mfi = MFI(HLC(pricedata),Vo(pricedata),n=5)
+mfi = MFI(HLC(pricedata),Vo(pricedata),n=10)
 mfisignal = (function(mfi){
   mfi$premfi = lag(mfi,1)
   signal = ifelse(mfi$premfi < 20 & mfi$mfi >= 20,'long',ifelse(mfi$premfi > 80 & mfi$mfi <=80,'short','hold'))
@@ -71,36 +72,33 @@ analysedata$mfisignal = mfisignal
 
 
 # prepare dataset
-analysedata_train = as.data.frame(analysedata['1995/2014'])
+analysedata_train = as.data.frame(analysedata['1995/2007'])
 analysedata_train = na.omit(analysedata_train)
+analysedata_train[analysedata_train == 'hold'] = NA
 
-analysedata_test = as.data.frame(analysedata['2015'])
+analysedata_test = as.data.frame(analysedata['2008'])
 analysedata_test = na.omit(analysedata_test)
+analysedata_test[analysedata_test == 'hold'] = NA
 
 #naiveBayes
-model = naiveBayes(leadclflag ~ .,data=analysedata_train,laplace=1)
+model = naiveBayes(leadclflag ~ .,
+                   data=analysedata_train,na.action = na.pass)
 
 pr = predict(model,analysedata_test,type = 'raw')
 
 predictvalue = ifelse(pr[,1] > 0.55 ,'down',ifelse(pr[,2] > 0.55,'up','unkown'))
  
-judege = data.frame(leadflag = analysedata_test[,1],predict = predictvalue)
-result =apply(judege, MARGIN = 1, FUN=function(x){
- if(x[1] == x[2])
- {
-   return('y')
- }
-  if(x[1] != x[2] && x[2] != 'unkown')
-  {
-    return('n')
-  }
-  else
-  {
-    return('unkown')
-  }
-}
-  )
+table(analysedata_test[,1],predictvalue)
 
-length(result)
-sum(result=='y')
-sum(result == 'n')
+index_num = c()
+ for(i in 1 : nrow(analysedata_test))
+ {
+    rowdata = analysedata_test[i,]
+    if(sum(is.na(rowdata)) < 4)
+      index_num = c(index_num,i)
+ }
+#analysedata_test[index_num,]
+pr = predict(model,analysedata_test[index_num,],type = 'raw')
+predictvalue = ifelse(pr[,1] > 0.6 ,'down',ifelse(pr[,2] > 0.6,'up','unkown'))
+
+table(analysedata_test[index_num,1],predictvalue)
