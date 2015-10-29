@@ -99,6 +99,6 @@ index_num = c()
  }
 #analysedata_test[index_num,]
 pr = predict(model,analysedata_test[index_num,],type = 'raw')
-predictvalue = ifelse(pr[,1] > 0.6 ,'down',ifelse(pr[,2] > 0.6,'up','unkown'))
+predictvalue = ifelse(pr[,1] > 0.55 ,'down',ifelse(pr[,2] > 0.55,'up','unkown'))
 
 table(analysedata_test[index_num,1],predictvalue)
