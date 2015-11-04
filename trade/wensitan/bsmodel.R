@@ -28,7 +28,7 @@ analysedata = merge(leadclflag,clflag)
 
 #添加指标集合
 smashort =SMA(Cl(pricedata),n=3)
-smalong =SMA(Cl(pricedata),n=12)
+smalong =SMA(Cl(pricedata),n=10)
 smasignal = (function(smalong,smashort){
   smashort$preshort = lag(smashort,1)
   smalong$prelong = lag(smalong,1)

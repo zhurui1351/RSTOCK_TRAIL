@@ -43,6 +43,8 @@ optimSMA = function(pricedata,analysedata,start,end,longpara,shortpara)
       result = rbind(result,r)
     }
   }
+  if(nrow(result) == 0) return(NA)
+  
   s = subset(result,abs==max(result$abs))[1,]
   
   smashort =SMA(Cl(pricedata),n=s$short)
@@ -97,6 +99,8 @@ optimCCI = function(pricedata,analysedata,start,end,npara,uppara,downpara)
       }
     }
   }
+  if(nrow(result) == 0) return(NA)
+  
   s = subset(result,abs==max(result$abs))[1,]
   cci = CCI(HLC(pricedata),n=s$n)
   cci = cci[period]
@@ -149,17 +153,70 @@ optimRSI = function(pricedata,analysedata,start,end,npara,uppara,downpara)
       }
     }
   }
+  if(nrow(result) == 0) return(NA)
+  
   s = subset(result,abs==max(result$abs))[1,]
   rsi = RSI(Cl(pricedata),n=s$n)
   rsi = rsi[period]
   rsisignal = getsignal(rsi,s$up,s$down)
+  
   return(ccisignal)
 }
 
-
-optimMACD = function()
+#最优化macd nfastpara =6:14 nslowpara =  15:30 nsigpara=5:12 seppara=seq(-20,20,5)
+optimMACD = function(pricedata,analysedata,start,end,nfastpara,nslowpara,nsigpara,seppara)
 {
+  getsignal = function(macd,sep){
+    macd$premacd = lag(macd$macd,1)
+    #向上穿越0线，发出long，向下穿越0线，发出short，其余为hold
+    signal = ifelse(macd$premacd < sep & macd$macd >sep,'long',ifelse(macd$premacd > sep & macd$macd< sep,'short','hold'))
+    return(signal)
+  }
   
+  period = paste(start,end,sep='/')
+  analysedata_train = analysedata[period]
+  result = data.frame()
+  for(nfast in nfastpara)
+  {
+    for(nslow in nslowpara)
+    {
+      for(nsig in nsigpara)
+      {
+        for( sep in seppara)
+        {
+          if(nfast > nslow) next
+          if(nsig <nfast || nsig > nslow) next
+          macd = MACD(Cl(pricedata),nfast,nslow,nsig)
+          macd = macd[period]
+          macdsignal = getsignal(macd,sep)
+          colnames(macdsignal) ='signal'
+          
+          p = merge(analysedata_train[,'leadclflag'],macdsignal)
+          p[p=='hold'] = NA
+          
+          #有效信号占比小于10% 过滤
+          effecratio = length(p[,2][!is.na(p[,2])]) / length(p[,2])
+          if(effecratio < 0.02) next
+          
+          tb = naiveBayes(leadclflag~signal,data=as.data.frame(p))
+          
+          a1 = tb$tables[[1]][1,1]
+          a2 = tb$tables[[1]][2,1]
+          #同时大于或小于0.5 则不考虑
+          if(sign(a1-0.5) == sign(a2 - 0.5)) next
+          #找出距离最大的参数
+          r = data.frame(a1=a1,a2=a2,nslow=nslow,nfast=nfast,nsig=nsig,sep=sep,abs=abs(a1 - a2))
+          result = rbind(result,r)
+        }
+      }
+    }
+  }
+  if(nrow(result) == 0) return(NA)
+  s = subset(result,abs==max(result$abs))[1,]
+  macd = MACD(Cl(pricedata),nFast=s$nfast,nSlow=s$nslow,nSig=s$nsig)
+  macd = macd[period]
+  macd = getsignal(macd,s$sep)
+  return(ccisignal)
 }
 
 
