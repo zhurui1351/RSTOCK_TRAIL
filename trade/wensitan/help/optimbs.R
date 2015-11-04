@@ -49,9 +49,8 @@ optimSMA = function(pricedata,analysedata,start,end,longpara,shortpara)
   
   smashort =SMA(Cl(pricedata),n=s$short)
   smalong =SMA(Cl(pricedata),n=s$long)
-  smashort = smashort[period]
-  smalong = smalong[period]
   smasignal = getsignal(smalong,smashort)
+  smasignal = smasignal[period]
   #可能需要衡量下不为hold的数量
   return(smasignal)
 }
@@ -103,8 +102,8 @@ optimCCI = function(pricedata,analysedata,start,end,npara,uppara,downpara)
   
   s = subset(result,abs==max(result$abs))[1,]
   cci = CCI(HLC(pricedata),n=s$n)
-  cci = cci[period]
   ccisignal = getsignal(cci,s$up,s$down)
+  ccisignal = ccisignal[period]
   return(ccisignal)
 }
 
@@ -157,13 +156,12 @@ optimRSI = function(pricedata,analysedata,start,end,npara,uppara,downpara)
   
   s = subset(result,abs==max(result$abs))[1,]
   rsi = RSI(Cl(pricedata),n=s$n)
-  rsi = rsi[period]
   rsisignal = getsignal(rsi,s$up,s$down)
-  
+  rsisignal = rsisignal[period]
   return(ccisignal)
 }
 
-#最优化macd nfastpara =6:14 nslowpara =  15:30 nsigpara=5:12 seppara=seq(-20,20,5)
+#最优化macd nfastpara =seq(3,16,by=2)  nslowpara = seq(15,30,by=2) nsigpara=seq(5,12,by=2) seppara=seq(-20,20,5)
 optimMACD = function(pricedata,analysedata,start,end,nfastpara,nslowpara,nsigpara,seppara)
 {
   getsignal = function(macd,sep){
@@ -185,7 +183,7 @@ optimMACD = function(pricedata,analysedata,start,end,nfastpara,nslowpara,nsigpar
         for( sep in seppara)
         {
           if(nfast > nslow) next
-          if(nsig <nfast || nsig > nslow) next
+          if(nsig <= nfast || nsig >= nslow) next
           macd = MACD(Cl(pricedata),nfast,nslow,nsig)
           macd = macd[period]
           macdsignal = getsignal(macd,sep)
@@ -214,9 +212,9 @@ optimMACD = function(pricedata,analysedata,start,end,nfastpara,nslowpara,nsigpar
   if(nrow(result) == 0) return(NA)
   s = subset(result,abs==max(result$abs))[1,]
   macd = MACD(Cl(pricedata),nFast=s$nfast,nSlow=s$nslow,nSig=s$nsig)
-  macd = macd[period]
-  macd = getsignal(macd,s$sep)
-  return(ccisignal)
+  macdsignal = getsignal(macd,s$sep)
+  macdsignal = macdsignal[period]
+  return(macdsignal)
 }
 
 
