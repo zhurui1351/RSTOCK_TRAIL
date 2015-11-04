@@ -1,4 +1,4 @@
-findSnStock = function(from='1990',to='2015')
+findSnStock = function(from='1990',to='2014')
 {
   allcodes = names(mg)
   lm=lapply(allcodes,FUN=function(x){
@@ -103,7 +103,7 @@ testinenvir = function()
       #筛选满足条件的记录
       slm =  Filter(function(x){ ratio = x[[3]]
                                  month = x[[2]]
-                                 ratio>=0.8 && month==i },lm)
+                                 ratio>=0.75 && month==i },lm)
       if(length(slm)!=0)
       {
         #生成测试记录
@@ -159,7 +159,7 @@ l=lapply(codes, function(x){
   p = readOneStock(x)
   p = to.monthly(p)
   p =Delt(Cl(p))
-  p = p['2010/2014']
+  p = p['2012/2015']
   return(p)
 })
 names(l) = codes
@@ -170,3 +170,9 @@ mcor = cor(m,use='na.or.complete')
 mcor[lower.tri(mcor)] = 1
 msort=sort(as.vector(mcor))[1:5]
 l=lapply(msort, function(x){which(mcor==x,arr.ind = T)})
+
+code1=rownames(mcor)[l[[4]][1]]
+code2=colnames(mcor)[l[[4]][2]]
+
+testMonthPeriod(code=code1,from='1990',to='2014')
+testMonthPeriod(code=code2,from='1990',to='2014')
