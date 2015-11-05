@@ -1,0 +1,4 @@
+getBsoptimsignal = function()
+{
+  
+}

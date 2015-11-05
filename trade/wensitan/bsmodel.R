@@ -324,7 +324,7 @@ for(y in testdate)
   analysedata_test = na.omit(analysedata_test)
   analysedata_test[analysedata_test == 'hold'] = NA
   #建模
-  model = naiveBayes(leadclflag ~ . - rsisignal - macdsignal - obvsignal,
+  model = naiveBayes(leadclflag ~ . - rsisignal - macdsignal - obvsignal - ccisignal,
                      data=analysedata_train,na.action = na.pass)
   #预测
   pr = predict(model,analysedata_test,type = 'raw')
