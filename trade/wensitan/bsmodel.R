@@ -28,7 +28,7 @@ analysedata = merge(leadclflag,clflag)
 
 #添加指标集合
 smashort =SMA(Cl(pricedata),n=3)
-smalong =SMA(Cl(pricedata),n=10)
+smalong =SMA(Cl(pricedata),n=12)
 smasignal = (function(smalong,smashort){
   smashort$preshort = lag(smashort,1)
   smalong$prelong = lag(smalong,1)
@@ -40,7 +40,7 @@ smasignal = (function(smalong,smashort){
   
 analysedata$smasignal = smasignal
 
-cci = CCI(HLC(pricedata),n=5)
+cci = CCI(HLC(pricedata),n=10)
 ccisignal = (function(cci){
   cci$precci = lag(cci,1)
   #向上穿越100 向下穿越-100 发出信号
@@ -209,10 +209,10 @@ obvsignal = (function(obv,close){
 })(obv,OpCl(pricedata))
 analysedata$obvsignal = obvsignal
 
-cmo = CMO(Cl(pricedata),n=10)
+cmo = CMO(Cl(pricedata),n=19)
 cmosignal = (function(cmo){
   names(cmo) = 'cmo'
-  cmo$sma = SMA(cmo,5)
+  cmo$sma = SMA(cmo,15)
   cmo$precmo = lag(cmo$cmo,1)
   cmo$presma = lag(cmo$sma,1)
   #上下穿越其均线，发出信号
@@ -324,7 +324,7 @@ for(y in testdate)
   analysedata_test = na.omit(analysedata_test)
   analysedata_test[analysedata_test == 'hold'] = NA
   #建模
-  model = naiveBayes(leadclflag ~ .,
+  model = naiveBayes(leadclflag ~ . - rsisignal - macdsignal - obvsignal,
                      data=analysedata_train,na.action = na.pass)
   #预测
   pr = predict(model,analysedata_test,type = 'raw')
