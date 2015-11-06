@@ -26,8 +26,8 @@ clflag = ifelse(cl < 0 ,'down','up')
 leadclflag = shift(clflag,n=1,type='lead')
 analysedata = merge(leadclflag,clflag)
 
-#添加指标集合
-smashort =SMA(Cl(pricedata),n=3)
+#添加指标集合 3, 12
+smashort =SMA(Cl(pricedata),n=9)
 smalong =SMA(Cl(pricedata),n=12)
 smasignal = (function(smalong,smashort){
   smashort$preshort = lag(smashort,1)
@@ -39,13 +39,13 @@ smasignal = (function(smalong,smashort){
   })(smalong,smashort)
   
 analysedata$smasignal = smasignal
-
-cci = CCI(HLC(pricedata),n=10)
+# 5, 100 , -100
+cci = CCI(HLC(pricedata),n=5)
 ccisignal = (function(cci){
   cci$precci = lag(cci,1)
   #向上穿越100 向下穿越-100 发出信号
-  ccisignal = ifelse((cci$precci < 100 & cci$cci > 100) | (cci$precci < -100 & cci$cci > -100),'long',
-                     ifelse((cci$precci > 100 & cci$cci < 100) | (cci$precci > -100 & cci$cci < -100),'short','hold'))
+  ccisignal = ifelse((cci$precci < 80 & cci$cci > 80) | (cci$precci < -100 & cci$cci > -100),'long',
+                     ifelse((cci$precci > 80 & cci$cci < 80) | (cci$precci > -100 & cci$cci < -100),'short','hold'))
   return(ccisignal)
 })(cci)
  analysedata$ccisignal = ccisignal
