@@ -27,7 +27,7 @@ leadclflag = shift(clflag,n=1,type='lead')
 analysedata = merge(leadclflag,clflag)
 
 #添加指标集合 3, 12
-smashort =SMA(Cl(pricedata),n=9)
+smashort =SMA(Cl(pricedata),n=3)
 smalong =SMA(Cl(pricedata),n=12)
 smasignal = (function(smalong,smashort){
   smashort$preshort = lag(smashort,1)
@@ -44,8 +44,8 @@ cci = CCI(HLC(pricedata),n=5)
 ccisignal = (function(cci){
   cci$precci = lag(cci,1)
   #向上穿越100 向下穿越-100 发出信号
-  ccisignal = ifelse((cci$precci < 80 & cci$cci > 80) | (cci$precci < -100 & cci$cci > -100),'long',
-                     ifelse((cci$precci > 80 & cci$cci < 80) | (cci$precci > -100 & cci$cci < -100),'short','hold'))
+  ccisignal = ifelse((cci$precci < 100 & cci$cci > 100) | (cci$precci < -100 & cci$cci > -100),'long',
+                     ifelse((cci$precci > 100 & cci$cci < 100) | (cci$precci > -100 & cci$cci < -100),'short','hold'))
   return(ccisignal)
 })(cci)
  analysedata$ccisignal = ccisignal
@@ -267,41 +267,6 @@ analysedata$williamsadsignal = williamsadsignal
 #analysedata$weekdays = shift(weekdays(index(analysedata)),n=1,type='lead')
 #analysedata$months = months(index(analysedata))
 
-#测试代码  划分训练集和测试集 测试一年的数据
-# analysedata_train = as.data.frame(analysedata['1995/2008'])
-# analysedata_train = na.omit(analysedata_train)
-# analysedata_train[analysedata_train == 'hold'] = NA
-# 
-# analysedata_test = as.data.frame(analysedata['2009'])
-# analysedata_test = na.omit(analysedata_test)
-# analysedata_test[analysedata_test == 'hold'] = NA
-
-#建模验证
-# model = naiveBayes(leadclflag ~ . - Close,
-#                    data=analysedata_train,na.action = na.pass)
-# 
-# pr = predict(model,analysedata_test,type = 'raw')
-
-#划定概率范围
-# predictvalue = ifelse(pr[,1] > 0.55 ,'down',ifelse(pr[,2] > 0.55,'up','unkown'))
-#  
-# table(analysedata_test[,1],predictvalue)
-
-#当天有多于n个指标时 才进行预测
-# nindex = 3
-# index_num = c()
-#  for(i in 1 : nrow(analysedata_test))
-#  {
-#     rowdata = analysedata_test[i,]
-#     if(sum(!is.na(rowdata)) > nindex)
-#       index_num = c(index_num,i)
-#  }
-# 
-# pr = predict(model,analysedata_test[index_num,],type = 'raw')
-# predictvalue = ifelse(pr[,1] > 0.55 ,'down',ifelse(pr[,2] > 0.55,'up','unkown'))
-# 
-# table(analysedata_test[index_num,1],predictvalue)
-
 
 #回测,产生交易记录 
 #每年更新模型，使用前n年的数据
@@ -324,7 +289,7 @@ for(y in testdate)
   analysedata_test = na.omit(analysedata_test)
   analysedata_test[analysedata_test == 'hold'] = NA
   #建模
-  model = naiveBayes(leadclflag ~ . - rsisignal - macdsignal - obvsignal - ccisignal,
+  model = naiveBayes(leadclflag ~ . ,
                      data=analysedata_train,na.action = na.pass)
   #预测
   pr = predict(model,analysedata_test,type = 'raw')
@@ -343,7 +308,7 @@ for(y in testdate)
     
     numerindex = analysedata[tradetime][,2:ncol(analysedata)]
     numerindex = sum(numerindex != 'hold')
-    if(numerindex < 4) next;
+    if(numerindex < 3) next;
     
     enter = as.numeric(Op(pricedata[tradetime]))
     out = as.numeric(Cl(pricedata[tradetime]))

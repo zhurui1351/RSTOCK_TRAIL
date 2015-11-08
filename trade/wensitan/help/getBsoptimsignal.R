@@ -6,19 +6,19 @@ getBsoptimsignal = function(pricedata,analysedata,starttrain,endtrain,updatestar
   
   
   #添加最优指标信号
-#  smap = optimSMA(pricedata,analysedata,starttrain,endtrain,longpara = seq(5,21,3),shortpara = seq(3,10,2))
-#  if(!is.null(nrow(smap)))
- # {
-   # analysedata_train$smasignal = getSMAsignal(pricedata,smap$short,smap$long,updateperiod)
-    analysedata_train$smasignal = getSMAsignal(pricedata,3,10,updateperiod)
-#  }
+  smap = optimSMA(pricedata,analysedata,starttrain,endtrain,longpara =c(5,10,15,20,30),shortpara = c(3,5,10))
+  if(!is.null(nrow(smap)))
+  {
+    analysedata_train$smasignal = getSMAsignal(pricedata,smap$short,smap$long,updateperiod)
+   # analysedata_train$smasignal = getSMAsignal(pricedata,3,10,updateperiod)
+  }
   
-#  ccip = optimCCI(pricedata,analysedata,starttrain,endtrain,npara = 3 : 20,uppara = seq(80,120,by=10),downpara= seq(-80 , -120,by=-10))
- # if(!is.null(nrow(ccip)))
-#  {
-   # analysedata_train$ccisignal = getCCIsignal(pricedata,ccip$n,ccip$up,ccip$down,updateperiod)
-    analysedata_train$ccisignal = getCCIsignal(pricedata,5,100,-100,updateperiod)
- # }
+  ccip = optimCCI(pricedata,analysedata,starttrain,endtrain,npara = c(3,5,10,15,20,30),uppara = seq(80,120,by=10),downpara= seq(-80 , -120,by=-10))
+  if(!is.null(nrow(ccip)))
+  {
+    analysedata_train$ccisignal = getCCIsignal(pricedata,ccip$n,ccip$up,ccip$down,updateperiod)
+   # analysedata_train$ccisignal = getCCIsignal(pricedata,5,100,-100,updateperiod)
+  }
   
   rsip = optimRSI(pricedata,analysedata,starttrain,endtrain, npara = 3 : 15,uppara = seq(60,90,by=10),downpara= seq(50 , 10,by=-10))
   if(!is.null(nrow(rsip))) 
@@ -45,13 +45,13 @@ getBsoptimsignal = function(pricedata,analysedata,starttrain,endtrain,updatestar
     analysedata_train$mfisignal = getMFIsignal(pricedata,mfip$n,mfip$up,mfip$down,updateperiod)
   }   
   
-  bbandp =optimBBANDS(pricedata,analysedata,starttrain,endtrain,n = 3:20)
+  bbandp =optimBBANDS(pricedata,analysedata,starttrain,endtrain,n = c(3,5,10,15,20))
   if(!is.null(nrow(bbandp)))
   {
     analysedata_train$bbandssignal = getBBANDSsignal(pricedata,bbandp$n,updateperiod)
   }  
   
-  rocp = optimROC(pricedata,analysedata,starttrain,endtrain,npara = seq(3,21,2),seppara = seq(-20,20,10))
+  rocp = optimROC(pricedata,analysedata,starttrain,endtrain,npara = c(3,5,10,15,20),seppara = seq(-20,20,10))
   if(!is.null(nrow(rocp)))
   {
     analysedata_train$rocsignal = getROCsignal(pricedata,rocp$n,rocp$sep,updateperiod)
@@ -111,11 +111,11 @@ getBsoptimsignal = function(pricedata,analysedata,starttrain,endtrain,updatestar
     analysedata_train$cmfsignal = getCMFsignal(pricedata,cmfp$n,cmfp$sep,updateperiod)
   }
 
-  emvp = optimEMV(pricedata,analysedata,starttrain,endtrain,npara = seq(3,21,2),seppara = seq(10,-10,-5))
-  if(!is.null(nrow(emvp))) 
-  {
-    analysedata_train$emvsignal = getEMVsignal(pricedata,emvp$n,emvp$sep,updateperiod)
-  }
+  #emvp = optimEMV(pricedata,analysedata,starttrain,endtrain,npara = seq(3,21,2),seppara = seq(10,-10,-5))
+  #if(!is.null(nrow(emvp))) 
+  #{
+   # analysedata_train$emvsignal = getEMVsignal(pricedata,emvp$n,emvp$sep,updateperiod)
+  #}
   
   trixp = optimTRIX(pricedata,analysedata,starttrain,endtrain,npara = seq(3,21,2),sigpara = seq(3,10,2))
   if(!is.null(nrow(trixp)))
