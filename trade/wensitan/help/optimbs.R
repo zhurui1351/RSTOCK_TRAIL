@@ -20,7 +20,7 @@ optimSMA = function(pricedata,analysedata,start,end,longpara,shortpara)
       p[p=='hold'] = NA
       #有效信号占比小于10% 过滤
       effecratio = length(p[,2][!is.na(p[,2])]) / length(p[,2])
-      if(effecratio < 0.1) next
+      if(effecratio < 0.05) next
       
       tb = naiveBayes(leadclflag~signal,data=as.data.frame(p))
       a1 = tb$tables[[1]][1,1]
@@ -28,7 +28,7 @@ optimSMA = function(pricedata,analysedata,start,end,longpara,shortpara)
       #同时大于或小于0.5 则不考虑
       if(sign(a1-0.5) == sign(a2 - 0.5)) next
       #if(a1 > 0.5 || a2 < 0.5) next
-      if(abs(a1-a2) < 0.03) next
+     # #if(abs(a1-a2) < 0.03) next
       #找出距离最大的参数
       r = data.frame(a1=a1,a2=a2,short=short,long=long,abs=abs(a1 - a2))
       result = rbind(result,r)
@@ -46,7 +46,6 @@ optimSMA = function(pricedata,analysedata,start,end,longpara,shortpara)
 #如uppara = seq(80,120,by=10) downpara= seq(-80 , -120,by=-10)  npara = 5 : 10
 optimCCI = function(pricedata,analysedata,start,end,npara,uppara,downpara)
 {
- 
   period = paste(start,end,sep='/')
   analysedata_train = analysedata[period]
   result = data.frame()
@@ -72,7 +71,7 @@ optimCCI = function(pricedata,analysedata,start,end,npara,uppara,downpara)
         #同时大于或小于0.5 则不考虑
         if(sign(a1-0.5) == sign(a2 - 0.5)) next
         #if(a1 > 0.5 || a2 < 0.5) next
-        if(abs(a1-a2) < 0.03) next
+        ##if(abs(a1-a2) < 0.03) next
         #找出距离最大的参数
         r = data.frame(a1=a1,a2=a2,n=n,up=up,down=down,abs=abs(a1 - a2))
         result = rbind(result,r)
@@ -115,7 +114,7 @@ optimRSI = function(pricedata,analysedata,start,end,npara,uppara,downpara)
         #同时大于或小于0.5 则不考虑
         if(sign(a1-0.5) == sign(a2 - 0.5)) next
         # if(a1 > 0.5 || a2 < 0.5) next
-        if(abs(a1-a2) < 0.03) next
+        ##if(abs(a1-a2) < 0.03) next
         #找出距离最大的参数
         r = data.frame(a1=a1,a2=a2,n=n,up=up,down=down,abs=abs(a1 - a2))
         result = rbind(result,r)
@@ -163,7 +162,7 @@ optimMACD = function(pricedata,analysedata,start,end,nfastpara,nslowpara,nsigpar
           #同时大于或小于0.5 则不考虑
           if(sign(a1-0.5) == sign(a2 - 0.5)) next
           #if(a1 > 0.5 || a2 < 0.5) next
-          if(abs(a1-a2) < 0.03) next
+          ##if(abs(a1-a2) < 0.03) next
           #找出距离最大的参数
           r = data.frame(a1=a1,a2=a2,nslow=nslow,nfast=nfast,nsig=nsig,sep=sep,abs=abs(a1 - a2))
           result = rbind(result,r)
@@ -178,7 +177,6 @@ optimMACD = function(pricedata,analysedata,start,end,nfastpara,nslowpara,nsigpar
 #npara = seq(3,20,by=2)
  optimADX = function(pricedata,analysedata,start,end,npara)
  {
-  
    period = paste(start,end,sep='/')
    analysedata_train = analysedata[period]
    result = data.frame()
@@ -193,15 +191,13 @@ optimMACD = function(pricedata,analysedata,start,end,nfastpara,nslowpara,nsigpar
      #有效信号占比小于10% 过滤
      effecratio = length(p[,2][!is.na(p[,2])]) / length(p[,2])
      if(effecratio < 0.1) next
-     
      tb = naiveBayes(leadclflag~signal,data=as.data.frame(p))
-     
      a1 = tb$tables[[1]][1,1]
      a2 = tb$tables[[1]][2,1]
      #同时大于或小于0.5 则不考虑
      if(sign(a1-0.5) == sign(a2 - 0.5)) next
      #if(a1 > 0.5 || a2 < 0.5) next
-     if(abs(a1-a2) < 0.03) next
+     ##if(abs(a1-a2) < 0.03) next
      #找出距离最大的参数
      r = data.frame(a1=a1,a2=a2,n=n,abs=abs(a1 - a2))
      result = rbind(result,r)
@@ -242,7 +238,7 @@ optimMFI =function(pricedata,analysedata,start,end,npara,uppara,downpara)
         #同时大于或小于0.5 则不考虑
         if(sign(a1-0.5) == sign(a2 - 0.5)) next
       # if(a1 > 0.5 || a2 < 0.5) next
-      if(abs(a1-a2) < 0.03) next
+      ##if(abs(a1-a2) < 0.03) next
         #找出距离最大的参数
         r = data.frame(a1=a1,a2=a2,n=n,up=up,down=down,abs=abs(a1 - a2))
         result = rbind(result,r)
@@ -282,7 +278,7 @@ optimBBANDS = function(pricedata,analysedata,start,end,npara)
     #同时大于或小于0.5 则不考虑
     if(sign(a1-0.5) == sign(a2 - 0.5)) next
     #if(a1 > 0.5 || a2 < 0.5) next
-   if(abs(a1-a2) < 0.03) next
+   ##if(abs(a1-a2) < 0.03) next
     #找出距离最大的参数
     r = data.frame(a1=a1,a2=a2,n=n,abs=abs(a1 - a2))
     result = rbind(result,r)
@@ -322,7 +318,7 @@ optimROC = function(pricedata,analysedata,start,end,npara,seppara)
       #同时大于或小于0.5 则不考虑
       if(sign(a1-0.5) == sign(a2 - 0.5)) next
       #if(a1 > 0.5 || a2 < 0.5) next
-     if(abs(a1-a2) < 0.03) next
+     ##if(abs(a1-a2) < 0.03) next
       #找出距离最大的参数
       r = data.frame(a1=a1,a2=a2,n=n,sep=sep,abs=abs(a1 - a2))
       result = rbind(result,r)
@@ -361,7 +357,7 @@ optimSAR = function(pricedata,analysedata,start,end,a1para,a2para)
       #同时大于或小于0.5 则不考虑
       if(sign(a1-0.5) == sign(a2 - 0.5)) next
       #if(a1 > 0.5 || a2 < 0.5) next
-     if(abs(a1-a2) < 0.03) next
+     ##if(abs(a1-a2) < 0.03) next
       #找出距离最大的参数
       r = data.frame(a1=a1,a2=a2,ac1=ac1,ac2=ac2,abs=abs(a1 - a2))
       result = rbind(result,r)
@@ -401,7 +397,7 @@ optimWPR = function(pricedata,analysedata,start,end,npara,uppara,downpara)
         #同时大于或小于0.5 则不考虑
         if(sign(a1-0.5) == sign(a2 - 0.5)) next
         #if(a1 > 0.5 || a2 < 0.5) next
-      if(abs(a1-a2) < 0.03) next
+      ##if(abs(a1-a2) < 0.03) next
         #找出距离最大的参数
         r = data.frame(a1=a1,a2=a2,n=n,up=up,down=down,abs=abs(a1 - a2))
         result = rbind(result,r)
@@ -443,7 +439,7 @@ optimKDJ = function(pricedata,analysedata,start,end,nfkpara,nfdpara,nsdpara)
         #同时大于或小于0.5 则不考虑
         if(sign(a1-0.5) == sign(a2 - 0.5)) next
         #if(a1 > 0.5 || a2 < 0.5) next
-      if(abs(a1-a2) < 0.03) next
+      #if(abs(a1-a2) < 0.03) next
         #找出距离最大的参数
         r = data.frame(a1=a1,a2=a2,nfk=nfk,nfd=nfd,nsd=nsd,abs=abs(a1 - a2))
         result = rbind(result,r)
@@ -484,7 +480,7 @@ optimTDI = function(pricedata,analysedata,start,end,npara,seppara)
       #同时大于或小于0.5 则不考虑
       if(sign(a1-0.5) == sign(a2 - 0.5)) next
       #if(a1 > 0.5 || a2 < 0.5) next
-    if(abs(a1-a2) < 0.03) next
+    #if(abs(a1-a2) < 0.03) next
       #找出距离最大的参数
       r = data.frame(a1=a1,a2=a2,n=n,sep=sep,abs=abs(a1 - a2))
       result = rbind(result,r)
@@ -521,7 +517,7 @@ optimKST = function(pricedata,analysedata,start,end,npara)
     #同时大于或小于0.5 则不考虑
     if(sign(a1-0.5) == sign(a2 - 0.5)) next
     #if(a1 > 0.5 || a2 < 0.5) next
-  if(abs(a1-a2) < 0.03) next
+  #if(abs(a1-a2) < 0.03) next
     #找出距离最大的参数
     r = data.frame(a1=a1,a2=a2,n=n,abs=abs(a1 - a2))
     result = rbind(result,r)
@@ -568,7 +564,7 @@ optimOBV = function(pricedata,analysedata,start,end,seppara)
     #同时大于或小于0.5 则不考虑
     if(sign(a1-0.5) == sign(a2 - 0.5)) next
     #if(a1 > 0.5 || a2 < 0.5) next
-  if(abs(a1-a2) < 0.03) next
+  #if(abs(a1-a2) < 0.03) next
     #找出距离最大的参数
     r = data.frame(a1=a1,a2=a2,sep=sep,abs=abs(a1 - a2))
     result = rbind(result,r)
@@ -605,7 +601,7 @@ optimCMO = function(pricedata,analysedata,start,end,npara,n1para)
       #同时大于或小于0.5 则不考虑
       if(sign(a1-0.5) == sign(a2 - 0.5)) next
       #if(a1 > 0.5 || a2 < 0.5) next
-    if(abs(a1-a2) < 0.03) next
+    #if(abs(a1-a2) < 0.03) next
       #找出距离最大的参数
       r = data.frame(a1=a1,a2=a2,n=n,n1=n1,abs=abs(a1 - a2))
       result = rbind(result,r)
@@ -645,7 +641,7 @@ optimCMF = function(pricedata,analysedata,start,end,npara,seppara)
       #同时大于或小于0.5 则不考虑
       if(sign(a1-0.5) == sign(a2 - 0.5)) next
   #if(a1 > 0.5 || a2 < 0.5) next
-  if(abs(a1-a2) < 0.03) next
+  #if(abs(a1-a2) < 0.03) next
       #找出距离最大的参数
       r = data.frame(a1=a1,a2=a2,n=n,sep=sep,abs=abs(a1 - a2))
       result = rbind(result,r)
@@ -686,7 +682,7 @@ optimEMV = function(pricedata,analysedata,start,end,npara,seppara)
       #同时大于或小于0.5 则不考虑
       if(sign(a1-0.5) == sign(a2 - 0.5)) next
       #if(a1 > 0.5 || a2 < 0.5) next
-    if(abs(a1-a2) < 0.03) next
+    #if(abs(a1-a2) < 0.03) next
       #找出距离最大的参数
       r = data.frame(a1=a1,a2=a2,n=n,sep=sep,abs=abs(a1 - a2))
       result = rbind(result,r)
@@ -725,7 +721,7 @@ optimTRIX = function(pricedata,analysedata,start,end,npara,sigpara)
       #同时大于或小于0.5 则不考虑
       if(sign(a1-0.5) == sign(a2 - 0.5)) next
       #if(a1 > 0.5 || a2 < 0.5) next
-    if(abs(a1-a2) < 0.03) next
+    #if(abs(a1-a2) < 0.03) next
       #找出距离最大的参数
       r = data.frame(a1=a1,a2=a2,n=n,sig=sig,abs=abs(a1 - a2))
       result = rbind(result,r)
@@ -762,7 +758,7 @@ optimWilliamsAD = function(pricedata,analysedata,start,end,seppara)
     #同时大于或小于0.5 则不考虑
     if(sign(a1-0.5) == sign(a2 - 0.5)) next
     #if(a1 > 0.5 || a2 < 0.5) next
-  if(abs(a1-a2) < 0.03) next
+  #if(abs(a1-a2) < 0.03) next
     #找出距离最大的参数
     r = data.frame(a1=a1,a2=a2,sep=sep,abs=abs(a1 - a2))
     result = rbind(result,r)

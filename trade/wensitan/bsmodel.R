@@ -27,8 +27,8 @@ leadclflag = shift(clflag,n=1,type='lead')
 analysedata = merge(leadclflag,clflag)
 
 #添加指标集合 3, 12
-smashort =SMA(Cl(pricedata),n=3)
-smalong =SMA(Cl(pricedata),n=12)
+smashort =SMA(Cl(pricedata),n=5)
+smalong =SMA(Cl(pricedata),n=10)
 smasignal = (function(smalong,smashort){
   smashort$preshort = lag(smashort,1)
   smalong$prelong = lag(smalong,1)
@@ -40,7 +40,7 @@ smasignal = (function(smalong,smashort){
   
 analysedata$smasignal = smasignal
 # 5, 100 , -100
-cci = CCI(HLC(pricedata),n=5)
+cci = CCI(HLC(pricedata),n=10)
 ccisignal = (function(cci){
   cci$precci = lag(cci,1)
   #向上穿越100 向下穿越-100 发出信号
@@ -81,11 +81,11 @@ adxsignal = (function(adx)
     })(adx)
 analysedata$adxsignal = adxsignal
 
-mfi = MFI(HLC(pricedata),Vo(pricedata),n=5)
+mfi = MFI(HLC(pricedata),Vo(pricedata),n=3)
 mfisignal = (function(mfi){
   mfi$premfi = lag(mfi,1)
   #向上穿越20发出弄信号 向下穿越80发出short信号 其余为hold信号
-  signal = ifelse(mfi$premfi < 20 & mfi$mfi >= 20,'long',ifelse(mfi$premfi > 80 & mfi$mfi <=80,'short','hold'))
+  signal = ifelse(mfi$premfi < 20 & mfi$mfi >= 20,'long',ifelse(mfi$premfi > 90 & mfi$mfi <=90,'short','hold'))
   return(signal)
   })(mfi)
 analysedata$mfisignal = mfisignal
@@ -100,7 +100,7 @@ arosignal = (function(aro){
 })(aro)
 analysedata$arosignal = arosignal
 
-bbands = BBands(HLC(pricedata),n=5)
+bbands = BBands(HLC(pricedata),n=3)
 bbandssignal = (function(bbands,Close){
   bdata = merge(bbands,Close)
   bdata$precl = lag(bdata$Close,1)
@@ -278,7 +278,7 @@ for(y in testdate)
 {
   print(y)
   endtraindate = as.character(as.numeric(y) - 1)
-#  starttrainyear = as.character(as.numeric(y) - 6)
+  starttrainyear = as.character(as.numeric(y) - 10)
   analysedata_train = as.data.frame(analysedata[paste(starttrainyear,endtraindate,sep='/')])
   #最后一期的数据不参与建模，比如20141231那天是无法知道2015第一个交易日的涨跌
   analysedata_train = analysedata_train[1:(nrow(analysedata_train) - 1),]
@@ -289,7 +289,13 @@ for(y in testdate)
   analysedata_test = na.omit(analysedata_test)
   analysedata_test[analysedata_test == 'hold'] = NA
   #建模
-  model = naiveBayes(leadclflag ~ . ,
+  
+  vars1 = paste0(colnames(analysedata_train[2:ncol(analysedata_train)]),collapse='+')
+  varset = c('ccisignal','smasignal','mfisignal','rocsignal','sarsignal','wprsignal','cmfsignal','trixsignal')
+  vars = paste(varset,collapse = '+')
+ 
+  f = formula(paste('leadclflag ~ ',vars))
+  model = naiveBayes(f ,
                      data=analysedata_train,na.action = na.pass)
   #预测
   pr = predict(model,analysedata_test,type = 'raw')
@@ -306,9 +312,9 @@ for(y in testdate)
     pv = pr[i,]
     tradetime = rownames(analysedata_test[i,])
     
-    numerindex = analysedata[tradetime][,2:ncol(analysedata)]
+    numerindex = analysedata[tradetime][,varset]
     numerindex = sum(numerindex != 'hold')
-    if(numerindex < 3) next;
+   # if(numerindex < 2) next;
     
     enter = as.numeric(Op(pricedata[tradetime]))
     out = as.numeric(Cl(pricedata[tradetime]))

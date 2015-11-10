@@ -18,11 +18,11 @@ sourceDir <- function(path, trace = TRUE, ...) {
 sourceDir('D:/Rcode/code/RSTOCK_TRAIL/trade/wensitan/help')
 
 #读入数据
-getSymbols("^GSPC",from="1900-01-01")
-pricedata = adjustOHLC(GSPC)
-load('GSPC.Rdata')
-colnames(pricedata) = gsub('GSPC.','',colnames(pricedata))
-#pricedata = readSHindex()
+#getSymbols("^GSPC",from="1900-01-01")
+#pricedata = adjustOHLC(GSPC)
+#load('GSPC.Rdata')
+#colnames(pricedata) = gsub('GSPC.','',colnames(pricedata))
+pricedata = readSHindex()
 pricedata = na.omit(pricedata)
 #处理待预测数据，用lead提前一天，把头天的涨跌加入预测变量
 cl = Cl(pricedata) - Op(pricedata)
@@ -33,13 +33,19 @@ analysedata = merge(leadclflag,clflag)
 start = head(index(analysedata),1)
 end = tail(index(analysedata),1)
 
-testdate = substr(as.character(index(to.yearly(pricedata['1990/2015']))),1,4)
+testdate = substr(as.character(index(to.yearly(pricedata['2000/2015']))),1,4)
 starttraindate = as.character(1995)
-records = data.frame()
-#c(4,6,11)
+
+vars1 = paste0(colnames(analysedata_train[2:ncol(analysedata_train)]),collapse='+')
+varset = c('ccisignal','smasignal','mfisignal','rocsignal','sarsignal','wprsignal','cmfsignal','trixsignal')
+vars = paste(varset,collapse = '+')
+
+f = formula(paste('leadclflag ~ ',vars))
+#c(4,6,11,16)
 # 回测期间测试 4表示用前4年到前年的共计3年数据进行测试
-for(longtotest in c(4,6,11,16))
+for(longtotest in c(3))
 {
+  records = data.frame()
   ##print(longtotest)
   for(y in testdate)
   {
@@ -57,7 +63,7 @@ for(longtotest in c(4,6,11,16))
     #根据测试期间的参数 更新整个数据 比如测试期间最优sma参数是 3 10 则用该参数重算sma信号
     analysedata_update = getBsoptimsignal(pricedata,analysedata,starttrain,endtrain,start,end)
     
-    filename = paste('gspc',longtotest,sep='')
+    filename = paste('sh',longtotest,sep='')
     filename = paste(filename,y,sep='')
     filename =  paste(filename,'Rdata',sep='.')
     save(analysedata_update,file=filename)
@@ -72,8 +78,12 @@ for(longtotest in c(4,6,11,16))
     analysedata_test[analysedata_test == 'hold'] = NA
     
     
+    #records = data.frame()
+    
     #建模
-    model = naiveBayes(leadclflag ~ . - Close ,data = as.data.frame(analysedata_train),na.action = na.pass)
+    
+    model = naiveBayes(f,
+                       data=as.data.frame(analysedata_train),na.action = na.pass)
     
     #预测
     pr = predict(model,as.data.frame(analysedata_test),type = 'raw')
@@ -93,7 +103,7 @@ for(longtotest in c(4,6,11,16))
       numerindex = analysedata_update[tradetime][,3:ncol(analysedata_update)]
       #判断多少个信号有效
       numerindex = sum(numerindex != 'hold')
-      if(numerindex < 4) next;
+    #  if(numerindex < 3) next;
       
       enter = as.numeric(Op(pricedata[tradetime]))
       out = as.numeric(Cl(pricedata[tradetime]))
@@ -102,13 +112,16 @@ for(longtotest in c(4,6,11,16))
         record = data.frame(code='index',opdate=tradetime,cldate=tradetime,Open=enter,Close=out,profit=as.numeric(out-enter),initStop=0,stopprice=0,type='short')
         records = rbind(records,record)
       }
-      if(pv['up'] > 0.55)
+      else if(pv['up'] > 0.55)
       {
         record = data.frame(code='index',opdate=tradetime,cldate=tradetime,Open=enter,Close=out,profit=as.numeric(out-enter),initStop=0,stopprice=0,type='long')
         records = rbind(records,record)
       }
     }
     #  save(records,file='bsrecords.Rdata')
+    bsloganalysis(records)
+    
   }
+  bsloganalysis(records)
   
 }

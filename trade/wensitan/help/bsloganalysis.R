@@ -63,3 +63,13 @@ bsloganalysis = function(records)
   e$total = e$profitlong + e$profitshort
   print(e)
 }
+
+deepanalysys = function()
+{
+  winlongrecords = subset(records, (profit >0 & type =='long' ) )
+  winshortrecords = subset(records, (profit < 0 & type =='short' ) )
+  
+  losslongrecords = subset(records, (profit < 0 & type =='long' ) )
+  lossshortrecords = subset(records, (profit > 0 & type =='short' ) )
+  
+}
