@@ -81,15 +81,24 @@ profitjudge = function(records)
   es = aggregate(x=shortprofit,by=list(everyyearshort),sum)
   colnames(es) = c('year','profitshort')
   
-  if(sum(es[,'profitshort'] < 0) > 0)
-  {
-    print(es)
-    return(FALSE)
-  }
+  e = merge(el,es)
+  e$total = e$profitlong + e$profitshort
   
-  if(sum(el[,'profitlong'] < 0) > 0)
+#   if(sum(es[,'profitshort'] < 0) > 0)
+#   {
+#     print(es)
+#     return(FALSE)
+#   }
+#   
+#   if(sum(el[,'profitlong'] < 0) > 0)
+#   {
+#     print(el)
+#     return(FALSE)
+#   }
+  
+  if(sum(e[,'total'] < 0) > 0)
   {
-    print(el)
+    print(e)
     return(FALSE)
   }
   

@@ -63,7 +63,7 @@ testindex  = function(comb,f,testdate,pricedata,analysedata,start,end)
 {
   #c(4,6,11,16)
   # 回测期间测试 4表示用前4年到前年的共计3年数据进行测试
-  for(longtotest in c(11))
+  for(longtotest in c(6))
   {
     records = data.frame()
     for(y in testdate)
