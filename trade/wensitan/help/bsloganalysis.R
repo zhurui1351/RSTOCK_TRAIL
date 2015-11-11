@@ -64,12 +64,24 @@ bsloganalysis = function(records)
   print(e)
 }
 
-deepanalysys = function()
+profitjudge = function(records)
 {
-  winlongrecords = subset(records, (profit >0 & type =='long' ) )
-  winshortrecords = subset(records, (profit < 0 & type =='short' ) )
+ 
+  shorttrade = subset(records,type=='short')
+  longtrade = subset(records,type=='long')
   
-  losslongrecords = subset(records, (profit < 0 & type =='long' ) )
-  lossshortrecords = subset(records, (profit > 0 & type =='short' ) )
+  shortprofit = -shorttrade$profit
+  longprofit = longtrade$profit
   
+  if(sum(shortprofit < 0) > 0)
+  {
+    return(FALSE)
+  }
+  
+  if(sum(longprofit < 0) > 0)
+  {
+    return(FALSE)
+  }
+  
+  return(TRUE)
 }
