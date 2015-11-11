@@ -66,22 +66,38 @@ bsloganalysis = function(records)
 
 profitjudge = function(records)
 {
- 
+  
   shorttrade = subset(records,type=='short')
   longtrade = subset(records,type=='long')
   
   shortprofit = -shorttrade$profit
   longprofit = longtrade$profit
   
-  everyyearlong = substr(longtrade[,'opdate'],1,4)
-  el = aggregate(x=longprofit,by=list(everyyearlong),sum)
-  colnames(el) = c('year','profitlong')
+  if(nrow(longtrade) > 0)
+  {
+    everyyearlong = substr(longtrade[,'opdate'],1,4)
+    el = aggregate(x=longprofit,by=list(everyyearlong),sum)
+    colnames(el) = c('year','profitlong')
+  }
+  else
+  {
+    el = 0
+  }
   
-  everyyearshort = substr(shorttrade[,'opdate'],1,4)
-  es = aggregate(x=shortprofit,by=list(everyyearshort),sum)
-  colnames(es) = c('year','profitshort')
+  if(nrow(shorttrade) > 0)
+  {
+    everyyearshort = substr(shorttrade[,'opdate'],1,4)
+    es = aggregate(x=shortprofit,by=list(everyyearshort),sum)
+    colnames(es) = c('year','profitshort')
+  }
+  else
+  {
+    es = 0
+  }
+  
   
   e = merge(el,es)
+  colnames(e) = c('year','profitlong','profitshort')
   e$total = e$profitlong + e$profitshort
   
 #   if(sum(es[,'profitshort'] < 0) > 0)

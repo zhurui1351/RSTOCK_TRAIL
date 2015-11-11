@@ -37,7 +37,7 @@ testdate = substr(as.character(index(to.yearly(pricedata['2000/2015']))),1,4)
 starttraindate = as.character(1995)
 
 #指标集合
-varset = c('smasignal','ccisignal','rsisignal','macdsignal','adxsignal','mfisignal','bbandssignal','rocsignal',
+varset = c('Close','smasignal','ccisignal','rsisignal','macdsignal','adxsignal','mfisignal','bbandssignal','rocsignal',
            'sarsignal','wprsignal','kdjsignal','tdisignal','kstsignal','chkADsignal','obvsignal','cmosignal',
           'cmfsignal','trixsignal','willimadsignal','emvsignal' )
 #指标组合
