@@ -66,7 +66,12 @@ bsloganalysis = function(records)
 
 profitjudge = function(records)
 {
-  
+  if(nrow(records) == 0)
+  {
+    print('no records')
+    return(F)
+    
+  }
   shorttrade = subset(records,type=='short')
   longtrade = subset(records,type=='long')
   
