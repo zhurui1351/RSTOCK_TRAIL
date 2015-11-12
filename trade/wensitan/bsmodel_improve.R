@@ -33,7 +33,7 @@ analysedata = merge(leadclflag,clflag)
 start = head(index(analysedata),1)
 end = tail(index(analysedata),1)
 
-testdate = substr(as.character(index(to.yearly(pricedata['1996/2014']))),1,4)
+testdate = substr(as.character(index(to.yearly(pricedata['1994/2014']))),1,4)
 #starttraindate = as.character(1995)
 
 #计算指标更新缓存 #c(4,6,11,16)
