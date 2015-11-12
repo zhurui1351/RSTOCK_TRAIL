@@ -95,9 +95,18 @@ profitjudge = function(records)
     es = 0
   }
   
-  
-  e = merge(el,es)
-  colnames(e) = c('year','profitlong','profitshort')
+  if(nrow(longtrade) == 0)
+  {
+     e = merge(es,el)
+     colnames(e) = c('year','profitshort','profitlong')
+     
+  }
+  else
+  {
+    e = merge(el,es)
+    colnames(e) = c('year','profitlong','profitshort')
+  }
+ 
   e$total = e$profitlong + e$profitshort
   
 #   if(sum(es[,'profitshort'] < 0) > 0)
