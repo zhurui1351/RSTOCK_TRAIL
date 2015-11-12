@@ -18,11 +18,11 @@ sourceDir <- function(path, trace = TRUE, ...) {
 sourceDir('D:/Rcode/code/RSTOCK_TRAIL/trade/wensitan/help')
 
 #读入数据
-#getSymbols("^GSPC",from="1900-01-01")
-#pricedata = adjustOHLC(GSPC)
+getSymbols("^N225",from="1900-01-01")
+pricedata = adjustOHLC(N225,use.Adjusted = T)
 #load('GSPC.Rdata')
-#colnames(pricedata) = gsub('GSPC.','',colnames(pricedata))
-pricedata = readSHindex()
+colnames(pricedata) = gsub('N225.','',colnames(pricedata))
+#pricedata = readSHindex()
 pricedata = na.omit(pricedata)
 #处理待预测数据，用lead提前一天，把头天的涨跌加入预测变量
 cl = Cl(pricedata) - Op(pricedata)
@@ -33,14 +33,36 @@ analysedata = merge(leadclflag,clflag)
 start = head(index(analysedata),1)
 end = tail(index(analysedata),1)
 
-testdate = substr(as.character(index(to.yearly(pricedata['2000/2015']))),1,4)
-starttraindate = as.character(1995)
+testdate = substr(as.character(index(to.yearly(pricedata['1990/2010']))),1,4)
+#starttraindate = as.character(1995)
 
+#计算指标更新缓存 #c(4,6,11,16)
+# 回测期间测试 4表示用前4年到前年的共计3年数据进行测试
+
+longtotest = 6
+for(y in testdate)
+{
+  print(y)
+  starttraindate = as.character(as.numeric(y) - longtotest)
+  endtraindate = as.character(as.numeric(y) - 1)
+  analysedata_train = as.data.frame(analysedata[paste(starttraindate,endtraindate,sep='/')])
+  #最后一期的数据不参与建模，比如20141231那天是无法知道2015第一个交易日的涨跌
+  analysedata_train = analysedata_train[1:(nrow(analysedata_train) - 1),]
+  
+  starttrain = head(rownames(analysedata_train),1)
+  endtrain =  tail(rownames(analysedata_train),1)
+  #根据测试期间的参数 更新整个数据 比如测试期间最优sma参数是 3 10 则用该参数重算sma信号
+  temp_analysisdata = getBsoptimsignal(pricedata,analysedata,starttrain,endtrain,start,end)
+  cachename = paste('analysedata',y,longtotest,sep='_')
+  #保存为缓存变量
+  assign(cachename,temp_analysisdata)
+}
+
+#指标组合
 #指标集合
 varset = c('Close','smasignal','ccisignal','rsisignal','macdsignal','adxsignal','mfisignal','bbandssignal','rocsignal',
            'sarsignal','wprsignal','kdjsignal','tdisignal','kstsignal','chkADsignal','obvsignal','cmosignal',
-          'cmfsignal','trixsignal','willimadsignal','emvsignal' )
-#指标组合
+           'cmfsignal','trixsignal','willimadsignal','emvsignal' )
 goodcomb = list(NULL)
 for( i in 3 : length(varset))
 {
@@ -51,7 +73,7 @@ for( i in 3 : length(varset))
     print(comb)
     vars = paste0(comb,collapse = "+")
     f = formula(paste('leadclflag ~ ',vars))
-    judge = testindex(comb,f,testdate,pricedata,analysedata,start,end)
+    judge = testindex(longtotest,comb,f,testdate,pricedata,analysedata,start,end)
     if(is.null(judge)) next
     goodcomb = append(goodcomb,list(comb))
   }
@@ -59,13 +81,10 @@ for( i in 3 : length(varset))
 
 
 
-testindex  = function(comb,f,testdate,pricedata,analysedata,start,end)
+testindex  = function(longtotest,comb,f,testdate,pricedata,analysedata,start,end)
 {
-  #c(4,6,11,16)
-  # 回测期间测试 4表示用前4年到前年的共计3年数据进行测试
-  for(longtotest in c(6))
-  {
-    records = data.frame()
+
+  records = data.frame()
     for(y in testdate)
     {
       print(y)
@@ -80,7 +99,17 @@ testindex  = function(comb,f,testdate,pricedata,analysedata,start,end)
       trainperiod = paste(starttrain,endtrain,sep='/')
       
       #根据测试期间的参数 更新整个数据 比如测试期间最优sma参数是 3 10 则用该参数重算sma信号
-      analysedata_update = getBsoptimsignalinvarset(pricedata,analysedata,starttrain,endtrain,start,end,comb)
+      #analysedata_update = getBsoptimsignalinvarset(pricedata,analysedata,starttrain,endtrain,start,end,comb)
+      cachename = paste('analysedata',y,longtotest,sep='_')
+      analysedata_update = get(cachename)
+
+      isgetallvar = comb %in% colnames(analysedata_update)
+      if(!all(isgetallvar)) 
+      {
+        print(paste(comb[which(!isgetallvar)],'no value'))
+        return(NULL)
+      }
+      
       if(is.null(analysedata_update))
         return(NULL)
       
@@ -136,5 +165,4 @@ testindex  = function(comb,f,testdate,pricedata,analysedata,start,end)
     }
     
     return(T)
-  }
 }
