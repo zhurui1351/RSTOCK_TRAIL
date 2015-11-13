@@ -68,7 +68,7 @@ profitjudge = function(records)
 {
   if(nrow(records) == 0)
   {
-    print('no records')
+   # print('no records')
     return(F)
     
   }
@@ -128,7 +128,7 @@ profitjudge = function(records)
   
   if(sum(e[,'total'] < 0) > 2)
   {
-    print(e)
+  #  print(e)
     return(FALSE)
   }
   
