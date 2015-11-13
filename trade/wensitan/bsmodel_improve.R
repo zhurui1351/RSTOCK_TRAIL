@@ -58,11 +58,23 @@ for(y in testdate)
   assign(cachename,temp_analysisdata)
 }
 
-#指标组合
-#指标集合
 varset = c('Close','smasignal','ccisignal','rsisignal','macdsignal','adxsignal','mfisignal','bbandssignal','rocsignal',
            'sarsignal','wprsignal','kdjsignal','tdisignal','kstsignal','chkADsignal','obvsignal','cmosignal',
            'cmfsignal','trixsignal','willimadsignal','emvsignal' )
+#过滤指标
+for(y in testdate)
+{
+  cachename = paste('analysedata',y,longtotest,sep='_')
+  tempdata = get(cachename)
+  isgetallvar = varset %in% colnames(tempdata)
+  notexistindex = which(!isgetallvar)
+  
+  varset = varset[-notexistindex]
+}
+
+#指标组合
+#指标集合
+
 goodcomb = list(NULL)
 for( i in 3 : length(varset))
 {

@@ -126,7 +126,7 @@ profitjudge = function(records)
 #     return(FALSE)
 #   }
   
-  if(sum(e[,'total'] < 0) > 0)
+  if(sum(e[,'total'] < 0) > 2)
   {
     print(e)
     return(FALSE)
