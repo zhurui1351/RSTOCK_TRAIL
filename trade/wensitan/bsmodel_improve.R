@@ -68,8 +68,11 @@ for(y in testdate)
   tempdata = get(cachename)
   isgetallvar = varset %in% colnames(tempdata)
   notexistindex = which(!isgetallvar)
-  
-  varset = varset[-notexistindex]
+  if(length(notexistindex) > 0)
+  {
+    varset = varset[-notexistindex]
+    
+  }
 }
 
 #指标组合
