@@ -1,5 +1,5 @@
 
-testindex  = function(longtotest,comb,f,testdate,pricedata,analysedata,start,end)
+testindex  = function(longtotest,comb,f,testdate,pricedata,analysedata,start,end,threshold = 0.55,strict=T)
 {
   
   records = data.frame()
@@ -66,21 +66,25 @@ testindex  = function(longtotest,comb,f,testdate,pricedata,analysedata,start,end
       
       enter = as.numeric(Op(pricedata[tradetime]))
       out = as.numeric(Cl(pricedata[tradetime]))
-      if(pv['down'] > 0.55)
+      if(pv['down'] > threshold)
       {    
         record = data.frame(code='index',opdate=tradetime,cldate=tradetime,Open=enter,Close=out,profit=as.numeric(out-enter),initStop=0,stopprice=0,type='short')
         records = rbind(records,record)
       }
-      else if(pv['up'] > 0.55)
+      else if(pv['up'] > threshold)
       {
         record = data.frame(code='index',opdate=tradetime,cldate=tradetime,Open=enter,Close=out,profit=as.numeric(out-enter),initStop=0,stopprice=0,type='long')
         records = rbind(records,record)
       }
     }
-    judge = profitjudge(records)
+    judge = profitjudge(records,ratio=0.55,lossnum =2,strict=strict)
     if(judge == F)
+    {
+      bsloganalysis(records)
+      
       return(NULL)
+    }
   }
-  
+  bsloganalysis(records)
   return(T)
 }

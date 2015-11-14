@@ -64,7 +64,7 @@ bsloganalysis = function(records)
   print(e)
 }
 
-profitjudge = function(records)
+profitjudge = function(records,ratio=0.55,lossnum =2,strict = T)
 {
   if(nrow(records) == 0)
   {
@@ -83,10 +83,13 @@ profitjudge = function(records)
     everyyearlong = substr(longtrade[,'opdate'],1,4)
     el = aggregate(x=longprofit,by=list(everyyearlong),sum)
     colnames(el) = c('year','profitlong')
+    elwration = aggregate(x=longprofit,by=list(everyyearlong),function(x){length(x[x>0])/length(x)})
+    colnames(elwration) = c('year','longwinratio')
   }
   else
   {
     el = 0
+    elwration = 1 
   }
   
   if(nrow(shorttrade) > 0)
@@ -94,17 +97,19 @@ profitjudge = function(records)
     everyyearshort = substr(shorttrade[,'opdate'],1,4)
     es = aggregate(x=shortprofit,by=list(everyyearshort),sum)
     colnames(es) = c('year','profitshort')
+    eswration = aggregate(x=shortprofit,by=list(everyyearshort),function(x){length(x[x>0])/length(x)})
+    colnames(eswration) = c('year','shortwinratio')
   }
   else
   {
     es = 0
+    eswration = 1
   }
   
   if(nrow(longtrade) == 0)
   {
-     e = merge(es,el)
-     colnames(e) = c('year','profitshort','profitlong')
-     
+    e = merge(es,el)
+    colnames(e) = c('year','profitshort','profitlong') 
   }
   else
   {
@@ -126,9 +131,18 @@ profitjudge = function(records)
 #     return(FALSE)
 #   }
   
-  if(sum(e[,'total'] < 0) > 2)
+  if(sum(e[,'total'] < 0) > lossnum)
   {
   #  print(e)
+    if(!strict)
+    {
+      #
+      if(sum(eswration < ratio) <= lossnum || sum( elwration < ratio) <= lossnum)
+      {
+        return(T)
+      }
+      
+    }
     return(FALSE)
   }
   

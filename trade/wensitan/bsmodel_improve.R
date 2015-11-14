@@ -18,8 +18,8 @@ sourceDir <- function(path, trace = TRUE, ...) {
 sourceDir('D:/Rcode/code/RSTOCK_TRAIL/trade/wensitan/help')
 
 #读入数据
-getSymbols("^N225",from="1900-01-01")
-pricedata = adjustOHLC(N225,use.Adjusted = T)
+pricedata = getSymbols("^N225",from="1900-01-01",auto.assign = F)
+pricedata = adjustOHLC(pricedata,use.Adjusted = T)
 #load('GSPC.Rdata')
 colnames(pricedata) = gsub('N225.','',colnames(pricedata))
 #pricedata = readSHindex()
@@ -39,7 +39,7 @@ testdate = substr(as.character(index(to.yearly(pricedata['1994/2014']))),1,4)
 #计算指标更新缓存 #c(4,6,11,16)
 # 回测期间测试 4表示用前4年到前年的共计3年数据进行测试
 
-longtotest = 3
+longtotest = 11
 for(y in testdate)
 {
   print(y)
@@ -89,7 +89,7 @@ for( i in 3 : length(varset))
     print(comb)
     vars = paste0(comb,collapse = "+")
     f = formula(paste('leadclflag ~ ',vars))
-    judge = testindex(longtotest,comb,f,testdate,pricedata,analysedata,start,end)
+    judge = testindex(longtotest,comb,f,testdate,pricedata,analysedata,start,end,strict=F)
     if(is.null(judge)) next
     goodcomb = append(goodcomb,list(comb))
   }
