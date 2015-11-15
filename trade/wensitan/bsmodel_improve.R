@@ -18,10 +18,10 @@ sourceDir <- function(path, trace = TRUE, ...) {
 sourceDir('D:/Rcode/code/RSTOCK_TRAIL/trade/wensitan/help')
 
 #读入数据
-pricedata = getSymbols("^N225",from="1900-01-01",auto.assign = F)
+pricedata = getSymbols("^HSI",from="1900-01-01",auto.assign = F)
 pricedata = adjustOHLC(pricedata,use.Adjusted = T)
 #load('GSPC.Rdata')
-colnames(pricedata) = gsub('N225.','',colnames(pricedata))
+colnames(pricedata) = gsub('HSI.','',colnames(pricedata))
 #pricedata = readSHindex()
 pricedata = na.omit(pricedata)
 #处理待预测数据，用lead提前一天，把头天的涨跌加入预测变量
@@ -39,7 +39,7 @@ testdate = substr(as.character(index(to.yearly(pricedata['1994/2014']))),1,4)
 #计算指标更新缓存 #c(4,6,11,16)
 # 回测期间测试 4表示用前4年到前年的共计3年数据进行测试
 
-longtotest = 11
+longtotest = 6
 for(y in testdate)
 {
   print(y)
@@ -58,9 +58,14 @@ for(y in testdate)
   assign(cachename,temp_analysisdata)
 }
 
-varset = c('Close','smasignal','ccisignal','rsisignal','macdsignal','adxsignal','mfisignal','bbandssignal','rocsignal',
+varsignalset = c('Close','smasignal','ccisignal','rsisignal','macdsignal','adxsignal','mfisignal','bbandssignal','rocsignal',
            'sarsignal','wprsignal','kdjsignal','tdisignal','kstsignal','chkADsignal','obvsignal','cmosignal',
            'cmfsignal','trixsignal','willimadsignal','emvsignal' )
+varstatusset = c('longstatus','shortstatus','smastatus','ccistatus','rsistatus','macdstatus','adxstatus',
+                 'mfistatus','bbandstatus','rocstatus','sarstatus','wprstatus','kdjstatus','tdistatus','kststatus',
+                 'chkVostatus','obvstatus','cmostatus','cmfstatus','emvstatus','trixstatus')
+
+varset = varstatusset
 #过滤指标
 for(y in testdate)
 {

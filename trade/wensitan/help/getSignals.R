@@ -146,6 +146,7 @@ getOBVsignal = function(pricedata,sep,period){
 
 getCMOsignal = function(pricedata,n,n1,period){
   cmo = CMO(Cl(pricedata),n=n)
+  cmo = na.omit(cmo)
   names(cmo) = 'cmo'
   cmo$sma = SMA(cmo,n1)
   cmo$precmo = lag(cmo$cmo,1)

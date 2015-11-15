@@ -1,5 +1,5 @@
 
-testindex  = function(longtotest,comb,f,testdate,pricedata,analysedata,start,end,threshold = 0.55,strict=T)
+testindex  = function(longtotest,comb,f,testdate,pricedata,analysedata,start,end,lossnum=2,threshold = 0.55,winratio=0.55,strict=T)
 {
   
   records = data.frame()
@@ -77,7 +77,7 @@ testindex  = function(longtotest,comb,f,testdate,pricedata,analysedata,start,end
         records = rbind(records,record)
       }
     }
-    judge = profitjudge(records,ratio=0.55,lossnum =2,strict=strict)
+    judge = profitjudge(records,ratio=ratio,lossnum = lossnum,ratio=winratio,strict=strict)
     if(judge == F)
     {
       bsloganalysis(records)
