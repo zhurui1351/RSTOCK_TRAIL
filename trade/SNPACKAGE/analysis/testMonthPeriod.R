@@ -1,6 +1,6 @@
 #pricedata = readOneStock('600390')
 
-testMonthPeriod = function(pricedata=NULL,code,ratio=0.8,from='1990',to='2015')
+testMonthPeriod = function(pricedata=NULL,code,ratio=0.8,from='1990',to='2015',detail=F)
 {
   require(lubridate)
   if(is.null(pricedata))
@@ -16,8 +16,11 @@ testMonthPeriod = function(pricedata=NULL,code,ratio=0.8,from='1990',to='2015')
   xc = data.frame(xa,xb)
   result = aggregate(xb~xa,data=xc,FUN=function(x)(length(x[x>0]) / length(x)))
   maxmonth = subset(result,xb==max(xb))
-#  subset(pricedata_m,month==maxmonth[1,1])
- # sum(subset(pricedata_m,month==maxmonth[1,1],select='votile'))
+  if(detail)
+  {
+    print(subset(pricedata_m,month==maxmonth[1,1]))
+  }
+  # sum(subset(pricedata_m,month==maxmonth[1,1],select='votile'))
   return(list(code=code,month=maxmonth[1,1],ratio=maxmonth[1,2]))
 }
 

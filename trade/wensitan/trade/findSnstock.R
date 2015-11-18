@@ -1,3 +1,24 @@
+rm(list=ls(all=T))
+require(quantmod)
+require(TTR)
+require('dygraphs')
+require('lubridate')
+require('dplyr')
+
+sourceDir <- function(path, trace = TRUE, ...) {
+  for (nm in list.files(path, pattern = "[.][RrSsQq]$")) {
+    if(trace) cat(nm,":")
+    source(file.path(path, nm), ...)
+    if(trace) cat("\n")
+  }
+}
+
+sourceDir('D:/Rcode/code/RSTOCK_TRAIL/trade/wensitan/help')
+sourceDir('D:/Rcode/code/RSTOCK_TRAIL/trade/wensitan/log')
+sourceDir('D:/Rcode/code/RSTOCK_TRAIL/trade/wensitan/trade')
+sourceDir('D:/Rcode/code/RSTOCK_TRAIL/trade/wensitan/analysis')
+source('D:/Rcode/code/RSTOCK_TRAIL/trade/SNPACKAGE/analysis/testMonthPeriod.R')
+
 findSnStock = function(from='1990',to='2014')
 {
   allcodes = names(mg)
@@ -154,6 +175,25 @@ anlysisProfit = function(records,aggregatecontrol=4)
 }
 
 
+
+allcodes = readallpuredata(period='years')
+mg = mget(allcodes)
+
+shindex = readSHindex()
+shindex_week = to.weekly(shindex)
+shindex_week$sma30 = SMA(Cl(shindex_week),n=30)
+shindex_week = na.omit(shindex_week)
+shindex_week$volatile = (Cl(shindex_week)-Op(shindex_week))/Op(shindex_week)
+
+shindex_week$stage = judegeStage(shindex_week$sma30)
+
+lm = findSnStock(from='1990',to='2014')
+
+slm =  Filter(function(x){ ratio = x[[3]]
+month = x[[2]]
+ratio>=0.75 && month==11 },lm)
+
+#计算相关系数
 codes = sapply(slm,function(x){x$code})
 l=lapply(codes, function(x){
   p = readOneStock(x)
@@ -162,17 +202,38 @@ l=lapply(codes, function(x){
   p = p['2012/2015']
   return(p)
 })
+
 names(l) = codes
 m = do.call('cbind',l)
 colnames(m) = codes
 
 mcor = cor(m,use='na.or.complete')
 mcor[lower.tri(mcor)] = 1
-msort=sort(as.vector(mcor))[1:5]
+msort=sort(as.vector(mcor))[1:10]
 l=lapply(msort, function(x){which(mcor==x,arr.ind = T)})
 
 code1=rownames(mcor)[l[[4]][1]]
 code2=colnames(mcor)[l[[4]][2]]
 
-testMonthPeriod(code=code1,from='1990',to='2014')
-testMonthPeriod(code=code2,from='1990',to='2014')
+testMonthPeriod(code=code1,from='1990',to='2014',detail = T)
+testMonthPeriod(code=code2,from='1990',to='2014',detail = T)
+
+
+xx = lapply(slm, function(x)
+  {
+   code = x$code
+  # print(code)
+   p = readOneStock(code)
+   p = to.monthly(p)
+   p = p['201509']
+   if(nrow(p) != 0)
+   {
+     if(as.numeric(Cl(p) - Op(p)) < 0)
+     {
+       print(code)
+       print(paste(Cl(p),Op(p)))
+     }
+   }
+  
+}
+)
