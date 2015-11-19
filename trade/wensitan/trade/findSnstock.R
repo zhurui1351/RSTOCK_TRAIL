@@ -15,7 +15,6 @@ sourceDir <- function(path, trace = TRUE, ...) {
 
 sourceDir('D:/Rcode/code/RSTOCK_TRAIL/trade/wensitan/help')
 sourceDir('D:/Rcode/code/RSTOCK_TRAIL/trade/wensitan/log')
-sourceDir('D:/Rcode/code/RSTOCK_TRAIL/trade/wensitan/trade')
 sourceDir('D:/Rcode/code/RSTOCK_TRAIL/trade/wensitan/analysis')
 source('D:/Rcode/code/RSTOCK_TRAIL/trade/SNPACKAGE/analysis/testMonthPeriod.R')
 
@@ -56,7 +55,7 @@ snTestFrame = function()
       #筛选满足条件的记录
       slm =  Filter(function(x){ ratio = x[[3]]
       month = x[[2]]
-      ratio>=0.8 && month==i },lm)
+      ratio>=0.75 && month==i },lm)
       if(length(slm)!=0)
       {
         #生成测试记录
@@ -107,7 +106,7 @@ snTestFrame = function()
     }
   },records)
   randomtrade = do.call('rbind',randomtrade)
-  anlysisProfit(randomtrade,aggregatecontrol = 6)
+  anlysisProfit(randomtrade,aggregatecontrol = 4)
 }
 
 
@@ -225,15 +224,40 @@ xx = lapply(slm, function(x)
   # print(code)
    p = readOneStock(code)
    p = to.monthly(p)
-   p = p['201509']
+   p = p['201511']
    if(nrow(p) != 0)
    {
      if(as.numeric(Cl(p) - Op(p)) < 0)
      {
        print(code)
-       print(paste(Cl(p),Op(p)))
+       print(OHLC(p))
+       return(code)
      }
    }
   
 }
 )
+
+xx =  Filter(function(x){ !is.null(x)},xx)
+xcor = lapply(xx,function(x,code){
+  xc = readOneStock(code)
+  xc = to.monthly(xc)
+  xc =Delt(Cl(xc))
+  xc = xc['2012/2015']
+  
+  x1 = readOneStock(x)
+  x1 = to.monthly(x1)
+  x1 =Delt(Cl(x1))
+  x1 = x1['2012/2015']
+  
+  co =  cor(cbind(xc,x1),use='na.or.complete')
+  return(c(x,co[2,1]))
+},'600961')
+
+#600234
+#000971
+testMonthPeriod(code='600618',from='1990',to='2014',detail = T)
+testMonthPeriod(code='600995',from='1990',to='2014',detail = T)
+
+getSymbols('600234.ss')
+getSymbols('000971.sz')
