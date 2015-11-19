@@ -5,7 +5,7 @@
 
 # input: stock.code: sh600000 (浦发银行) sz000001 (平安银行)
 # output: a data.frame containing the stock information
-
+require('RCurl')
 get.stock.info <- function (stock.code) {
   
   # get the stock information using http/js interface
@@ -26,7 +26,11 @@ get.stock.info <- function (stock.code) {
   
   # convert string to float, except for the symbol, date, and time
   stock.data[2:(length(stock.info)-2)] <- as.numeric(stock.data[2:(length(stock.info)-2)])
-  
+  colnames(stock.data) = c('name','open','preclose','curprice','high','low','buyprice','sellprice',
+                           'volumn','total','b1amount','b1price','b2amount','b2price',
+                           'b3amount','b3price','b4amount','b4price','b5amount','b5price',
+                           's1amount','s1price','s2amount','s2price','s3amount','s3price',
+                           's4amount','s4price','s5amount','s5price','date','time')
   # return the stock data 
   stock.data
 }
@@ -58,15 +62,20 @@ get.index.info <- function(index.code) {
   index.data[2:length(index.info)] <- as.numeric(index.data[2:length(index.info)])
   
   # return the index data
+  
   index.data
 }
 
-stock.data <- get.stock.info('sh600000')
-cat('stock symbol is: ', stock.data$V1, '\n')
-cat('open price is: ', stock.data$V2, '\n')
-cat('previous close price is: ', stock.data$V3, '\n')              
-cat('current price is: ', stock.data$V4, '\n')     
-
-index.data <- get.index.info('sz399905')
-cat('index symbol is: ', index.data$V1, '\n')          
-cat('current price is: ', index.data$V3, '\n')  
+test_cabage = function()
+{
+  
+  stock.data <- get.stock.info('sh600000')
+  cat('stock symbol is: ', stock.data$V1, '\n')
+  cat('open price is: ', stock.data$V2, '\n')
+  cat('previous close price is: ', stock.data$V3, '\n')              
+  cat('current price is: ', stock.data$V4, '\n')     
+  
+  index.data <- get.index.info('sz399905')
+  cat('index symbol is: ', index.data$V1, '\n')          
+  cat('current price is: ', index.data$V3, '\n')  
+}

@@ -17,7 +17,7 @@ sourceDir('D:/Rcode/code/RSTOCK_TRAIL/trade/wensitan/help')
 sourceDir('D:/Rcode/code/RSTOCK_TRAIL/trade/wensitan/log')
 sourceDir('D:/Rcode/code/RSTOCK_TRAIL/trade/wensitan/analysis')
 source('D:/Rcode/code/RSTOCK_TRAIL/trade/SNPACKAGE/analysis/testMonthPeriod.R')
-
+source('D:/Rcode/code/RSTOCK_TRAIL/scrapdata/stockdata/get.stock.index.info.R')
 findSnStock = function(from='1990',to='2014')
 {
   allcodes = names(mg)
@@ -41,15 +41,15 @@ findSnStock = function(from='1990',to='2014')
 snTestFrame = function()
 {
   records = data.frame()
-  testdate = as.character(2000:2014)
+  testdate = as.character(2001:2015)
   from = '1990'
   for(d in testdate)
   {
-    #print(d)
-    yearnow = as.character(as.numeric(d) + 1)
-    print(yearnow)
-    lm = findSnStock(to=d)
-    assign(paste('lm',yearnow,sep=''),lm)
+    print(d)
+    trainyear = as.character(as.numeric(d) - 1)
+    #print(trainyear)
+    lm = findSnStock(to=trainyear)
+    assign(paste('lm',trainyear,sep=''),lm)
     for(i in 1: 12)
     {
       #筛选满足条件的记录
@@ -68,11 +68,11 @@ snTestFrame = function()
           
           stock = readOneStock(code)
           stock = to.monthly(stock)
-          tradeinfo = stock[paste(yearnow,m,sep='')]
+          tradeinfo = stock[paste(d,m,sep='')]
           if(nrow(tradeinfo)==0) next
           enter = as.numeric(Op(tradeinfo))
           out = as.numeric(Cl(tradeinfo))
-          record = data.frame(code=code,opdate=paste(yearnow,m,sep=''),cldate=paste(yearnow,m,sep=''),Open=enter,Close=out,profit=as.numeric(out-enter),initStop=0,stopprice=0,type='clean')
+          record = data.frame(code=code,opdate=paste(d,m,sep=''),cldate=paste(d,m,sep=''),Open=enter,Close=out,profit=as.numeric(out-enter),initStop=0,stopprice=0,type='clean')
           records = rbind(records,record)
         }
       }
@@ -117,7 +117,8 @@ testinenvir = function()
   for(d in testdate)
   {
     print(d)
-    lm = get(paste('lm',d,sep=''))
+    trainyear = as.character(as.numeric(d) - 1)
+    lm = get(paste('lm',trainyear,sep=''))
     for(i in 1: 12)
     {
       #筛选满足条件的记录
@@ -136,11 +137,13 @@ testinenvir = function()
           
           stock = readOneStock(code)
           stock = to.monthly(stock)
-          tradeinfo = stock[paste(yearnow,m,sep='')]
+          tradeinfo = stock[paste(d,m,sep='')]
           if(nrow(tradeinfo)==0) next
           enter = as.numeric(Op(tradeinfo))
           out = as.numeric(Cl(tradeinfo))
-          record = data.frame(code=code,opdate=paste(d,m,sep=''),cldate=paste(d,m,sep=''),Open=enter,Close=out,profit=as.numeric(out-enter),initStop=0,stopprice=0,type='clean')
+          high = as.numeric(Hi(tradeinfo))
+          low = as.numeric(Lo(tradeinfo))
+          record = data.frame(code=code,opdate=paste(d,m,sep=''),cldate=paste(d,m,sep=''),Open=enter,Close=out,high=high,low=low,profit=as.numeric(out-enter),initStop=0,stopprice=0,type='clean')
           records = rbind(records,record)
         }
       }
@@ -259,5 +262,68 @@ xcor = lapply(xx,function(x,code){
 testMonthPeriod(code='600618',from='1990',to='2014',detail = T)
 testMonthPeriod(code='600995',from='1990',to='2014',detail = T)
 
-getSymbols('600234.ss')
-getSymbols('000971.sz')
+getSymbols('600618.SS')
+getSymbols('000971.SZ')
+
+get.stock.info("sh600618")
+
+code = '000971'
+code_yh = ifelse(substr(code,1,1) == '6',paste(code,'SS',sep='.'),paste(code,'SZ',sep='.'))
+code_sina = ifelse(substr(code,1,1) == '6',paste('sh',code,sep=''),paste('sz',code,sep=''))
+
+tt = sapply(codes, function(x){
+  code = x
+  code_yh = ifelse(substr(code,1,1) == '6',paste(code,'SS',sep='.'),paste(code,'SZ',sep='.'))
+  code_sina = ifelse(substr(code,1,1) == '6',paste('sh',code,sep=''),paste('sz',code,sep=''))
+  e = parent.env(environment())
+#  rm(list = code_yh,envir=e)
+ # print(code_yh)
+  if(!exists(code_yh))
+  {
+    p = suppressWarnings(getSymbols(code_yh,from='1990-01-01',auto.assign = F))
+    p = adjustOHLC(p,use.Adjusted = T)
+    assign(code_yh,p,envir = e)
+    return(code)
+  }
+})
+while(T)
+{
+  date = '20151109'
+ # print(get.stock.info("sh600618"))
+#  print(get.stock.info("sh600961"))
+  for(code in codes)
+  {
+    print(code)
+    
+    code_yh = ifelse(substr(code,1,1) == '6',paste(code,'SS',sep='.'),paste(code,'SZ',sep='.'))
+    code_sina = ifelse(substr(code,1,1) == '6',paste('sh',code,sep=''),paste('sz',code,sep=''))
+    p = get(code_yh)
+    pm = to.monthly(p)
+    pm =pm['201511']
+    p$sma3 = SMA(Cl(p),3)
+    p$sma5 = SMA(Cl(p),5)
+    p$sma30 = SMA(Cl(p),30)
+
+    pd = get.stock.info(code_sina)
+    pd$monthopen = Op(pd)
+    pd$monthhigh = Hi(pd)
+    pd$monthlow = Lo(pd)
+    pd$sma30 = p$sma30[date]
+    pd$sma5 = p$sma5[date]
+    pd$sma3 = p$sma3[date]
+    print(pd[,c(1:6,33:38)])
+  }
+  Sys.sleep(15)
+  
+}
+
+records = data.frame()
+
+for(i in 1:nrow(records1))
+{
+  print(i)
+  r = records1[i,]
+  code = r$code
+  price = readOneStock(code)
+  
+}
