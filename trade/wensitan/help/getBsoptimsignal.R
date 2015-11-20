@@ -4,18 +4,18 @@ getBsoptimsignal = function(pricedata,analysedata,starttrain,endtrain,updatestar
   updateperiod = paste(updatestart,updateend,sep='/')
   analysedata_train = analysedata[updateperiod]
   
-  shortstatus =tryCatch(getClosestatus(pricedata,3,updateperiod),
+  shortstatus =tryCatch(optimClosestatus(pricedata,analysedata,starttrain,endtrain,npara=c(3,5,10,15)),
                       error = function(e){print('shortstatusstatusError');return(NULL)})
   if(!is.null(nrow(shortstatus)))
   {
-    analysedata_train$shortstatus = shortstatus
+    analysedata_train$shortstatus = getClosestatus(pricedata,shortstatus$n,updateperiod)
   }
   
-  longstatus =tryCatch(getClosestatus(pricedata,30,updateperiod),
+  longstatus =tryCatch(optimClosestatus(pricedata,analysedata,starttrain,endtrain,npara=c(30,60,90,180,360)),
                         error = function(e){print('longstatusstatusError');return(NULL)})
   if(!is.null(nrow(longstatus)))
   {
-    analysedata_train$longstatus = longstatus
+    analysedata_train$longstatus = getClosestatus(pricedata,longstatus$n,updateperiod)
   }
   
   #添加最优指标信号
@@ -27,11 +27,11 @@ getBsoptimsignal = function(pricedata,analysedata,starttrain,endtrain,updatestar
    # analysedata_train$smasignal = getSMAsignal(pricedata,3,10,updateperiod)
   }
   
-  smastatus =tryCatch(getSMAstatus(pricedata,3,5,updateperiod),
+  smastatus =tryCatch(optimSMAstatus(pricedata,analysedata,starttrain,endtrain,longpara =c(5,10,15,20,30),shortpara = c(3,5,10)),
                  error = function(e){print('smvstatusError');return(NULL)})
   if(!is.null(nrow(smastatus)))
   {
-    analysedata_train$smastatus = smastatus
+    analysedata_train$smastatus = getSMAstatus(pricedata,smastatus$short,smastatus$long,updateperiod)
   }
   
   ccip = tryCatch(optimCCI(pricedata,analysedata,starttrain,endtrain,npara = c(3,5,10,15,20,30),uppara = seq(80,120,by=10),downpara= seq(-80 , -120,by=-10)),
@@ -42,11 +42,11 @@ getBsoptimsignal = function(pricedata,analysedata,starttrain,endtrain,updatestar
    # analysedata_train$ccisignal = getCCIsignal(pricedata,5,100,-100,updateperiod)
   }
   
-  ccistatus = tryCatch(getCCIstatus(pricedata,5,80,-80,updateperiod),
+  ccistatus = tryCatch(optimCCIstatus(pricedata,analysedata,starttrain,endtrain,npara = c(3,5,10,15,20,30),uppara = seq(80,120,by=10),downpara= seq(-80 , -120,by=-10)),
                   error = function(e){print('ccistatusError');return(NULL)})
   if(!is.null(nrow(ccistatus)))
   {
-    analysedata_train$ccistatus = ccistatus
+    analysedata_train$ccistatus = getCCIstatus(pricedata,ccistatus$n,ccistatus$up,ccistatus$down,updateperiod)
   }
   
   rsip = tryCatch(optimRSI(pricedata,analysedata,starttrain,endtrain, npara = c(3,5,10,15,20),uppara = seq(60,90,by=10),downpara= seq(50 , 10,by=-10)),
@@ -56,13 +56,13 @@ getBsoptimsignal = function(pricedata,analysedata,starttrain,endtrain,updatestar
     analysedata_train$rsisignal = getRSIsignal(pricedata,rsip$n,rsip$up,rsip$down,updateperiod)
     
   }
-  rsistatus = tryCatch(getRSIstatus(pricedata,5,80,20,updateperiod),
+  rsistatus = tryCatch(optimRSIstatus(pricedata,analysedata,starttrain,endtrain, npara = c(3,5,10,15,20),uppara = seq(60,90,by=10),downpara= seq(50 , 10,by=-10)),
                   error = function(e){print('rsistatusError');return(NULL)})
   if(!is.null(nrow(rsistatus))) 
   {
-    analysedata_train$rsistatus = rsistatus
-    
+    analysedata_train$rsistatus = getRSIstatus(pricedata,rsistatus$n,rsistatus$up,rsistatus$down,updateperiod)
   }
+  
   macdp = tryCatch(optimMACD(pricedata,analysedata,starttrain,endtrain,nfastpara =c(3,5,10,15),nslowpara =c(10,15,20,25,30),nsigpara=c(5,8,10,12),seppara=seq(-20,20,5)),
                    error = function(e){print('macdError');return(NULL)})
   if(!is.null(nrow(macdp))) 
@@ -71,11 +71,11 @@ getBsoptimsignal = function(pricedata,analysedata,starttrain,endtrain,updatestar
   }  
   
   
-  macdstatus = tryCatch(getMACDstatus(pricedata,3,10,5,10,updateperiod),
+  macdstatus = tryCatch(optimMACDstatus(pricedata,analysedata,starttrain,endtrain,nfastpara =c(3,5,10,15),nslowpara =c(10,15,20,25,30),nsigpara=c(5,8,10,12),seppara=seq(-20,20,5)),
                    error = function(e){print('macdstatusError');return(NULL)})
   if(!is.null(nrow(macdstatus))) 
   {
-    analysedata_train$macdstatus = macdstatus
+    analysedata_train$macdstatus = getMACDstatus(pricedata,macdstatus$nfast,macdstatus$nslow,macdstatus$nsig,macdstatus$sep,updateperiod)
   }  
   
   adxp = tryCatch(optimADX(pricedata,analysedata,starttrain,endtrain,npara = c(3,5,10,15,20,30)),
@@ -85,11 +85,11 @@ getBsoptimsignal = function(pricedata,analysedata,starttrain,endtrain,updatestar
     analysedata_train$adxsignal = getADXsignal(pricedata,adxp$n,updateperiod)
   } 
   
-  adxstatus = tryCatch(getADXstatus(pricedata,10,updateperiod),
+  adxstatus = tryCatch(optimADXstatus(pricedata,analysedata,starttrain,endtrain,npara = c(3,5,10,15,20,30)),
                   error = function(e){print('adxstatusError');return(NULL)})
   if(!is.null(nrow(adxstatus))) 
   {
-    analysedata_train$adxstatus = adxstatus
+    analysedata_train$adxstatus = getADXstatus(pricedata,adxstatus$n,updateperiod)
   } 
   
   
@@ -100,11 +100,11 @@ getBsoptimsignal = function(pricedata,analysedata,starttrain,endtrain,updatestar
     analysedata_train$mfisignal = getMFIsignal(pricedata,mfip$n,mfip$up,mfip$down,updateperiod)
   }   
   
-  mfistatus =tryCatch(getMFIstatus(pricedata,5,20,70,updateperiod),
+  mfistatus =tryCatch(optimMFIstatus(pricedata,analysedata,starttrain,endtrain,npara = c(3,5,10,15,20,30),uppara = seq(30,0,by=-10),downpara = seq(60,100,by=10)),
                  error = function(e){print('mfistatusError');return(NULL)})
   if(!is.null(nrow(mfistatus)))
   {
-    analysedata_train$mfistatus = mfistatus
+    analysedata_train$mfistatus = getMFIstatus(pricedata,mfistatus$n,mfistatus$up,mfistatus$down,updateperiod)
   }   
   
   bbandp =tryCatch(optimBBANDS(pricedata,analysedata,starttrain,endtrain,n = c(3,5,10,15,20,30)),
@@ -114,11 +114,11 @@ getBsoptimsignal = function(pricedata,analysedata,starttrain,endtrain,updatestar
     analysedata_train$bbandssignal = getBBANDSsignal(pricedata,bbandp$n,updateperiod)
   }  
   
-  bbandstatus =tryCatch(getBBANDSstatus(pricedata,10,updateperiod),
+  bbandstatus =tryCatch(optimBBANDSstatus(pricedata,analysedata,starttrain,endtrain,n = c(3,5,10,15,20,30)),
                    error = function(e){print('bbandstatusError');return(NULL)})
   if(!is.null(nrow(bbandstatus)))
   {
-    analysedata_train$bbandstatus = bbandstatus
+    analysedata_train$bbandstatus = getBBANDSstatus(pricedata,bbandstatus$n,period)
   }  
   
   rocp = tryCatch(optimROC(pricedata,analysedata,starttrain,endtrain,npara = c(3,5,10,15,20,30),seppara = seq(-20,20,10)),
@@ -128,11 +128,11 @@ getBsoptimsignal = function(pricedata,analysedata,starttrain,endtrain,updatestar
     analysedata_train$rocsignal = getROCsignal(pricedata,rocp$n,rocp$sep,updateperiod)
   }  
   
-  rocstatus = tryCatch(getROCstatus(pricedata,10,10,updateperiod),
+  rocstatus = tryCatch(optimROCstatus(pricedata,analysedata,starttrain,endtrain,npara = c(3,5,10,15,20,30),seppara = seq(-20,20,10)),
                   error = function(e){print('rocstatusError');return(NULL)})
   if(!is.null(nrow(rocstatus)))
   {
-    analysedata_train$rocstatus = rocstatus
+    analysedata_train$rocstatus = getROCstatus(pricedata,rocstatus$n,rocstatus$sep,updateperiod)
   }  
   
   sarp = tryCatch(optimSAR(pricedata,analysedata,starttrain,endtrain,a1para = seq(0.01,0.09,0.01),a2para = seq(0.1,0.5,0.1)),
@@ -142,11 +142,11 @@ getBsoptimsignal = function(pricedata,analysedata,starttrain,endtrain,updatestar
     analysedata_train$sarsignal = getSARsignal(pricedata,sarp$ac1,sarp$ac2,updateperiod)
   }
   
-  sarstatus = tryCatch(getSARstatus(pricedata,0.05,0.3,updateperiod),
+  sarstatus = tryCatch(optimSARstatus(pricedata,analysedata,starttrain,endtrain,a1para = seq(0.01,0.09,0.01),a2para = seq(0.1,0.5,0.1)),
                   error = function(e){print('sarstatusError');return(NULL)})
   if(!is.null(nrow(sarstatus)))
   {
-    analysedata_train$sarstatus = sarstatus
+    analysedata_train$sarstatus = getSARstatus(pricedata,sarstatus$ac1,sarstatus$ac2,updateperiod)
   }
   
   wprp = tryCatch(optimWPR(pricedata,analysedata,starttrain,endtrain,npara = c(3,5,10,15,20),uppara = seq(0.6,0.9,0.1),downpara = seq(0.4,0.1,-0.1)),
@@ -156,11 +156,11 @@ getBsoptimsignal = function(pricedata,analysedata,starttrain,endtrain,updatestar
     analysedata_train$wprsignal = getWPRsignal(pricedata,wprp$n,wprp$up,wprp$down,updateperiod)
   }
   
-  wprstatus = tryCatch(getWPRstatus(pricedata,10,0.8,0.2,updateperiod),
+  wprstatus = tryCatch(optimWPRstatus(pricedata,analysedata,starttrain,endtrain,npara = c(3,5,10,15,20),uppara = seq(0.6,0.9,0.1),downpara = seq(0.4,0.1,-0.1)),
                   error = function(e){print('wprstatusError');return(NULL)})
   if(!is.null(nrow(wprstatus))) 
   {
-    analysedata_train$wprstatus = wprstatus
+    analysedata_train$wprstatus = getWPRstatus(pricedata,wprstatus$n,wprstatus$up,wprstatus$down,updateperiod)
   }
   
   kdjp = tryCatch(optimKDJ(pricedata,analysedata,starttrain,endtrain,nfkpara = c(5,10,15,20),nfdpara=c(3,5,10),nsdpara = c(3,5,10)),
@@ -170,11 +170,11 @@ getBsoptimsignal = function(pricedata,analysedata,starttrain,endtrain,updatestar
     analysedata_train$kdjsignal = getKDJsignal(pricedata,kdjp$nfk,kdjp$nfd,kdjp$nsd,updateperiod)
   }
  
-  kdjstatus = tryCatch(getKDJstatus(pricedata,15,5,5,updateperiod),
+  kdjstatus = tryCatch(optimKDJstatus(pricedata,analysedata,starttrain,endtrain,nfkpara = c(5,10,15,20),nfdpara=c(3,5,10),nsdpara = c(3,5,10)),
                   error = function(e){print('kdjstatusError');return(NULL)})
   if(!is.null(nrow(kdjstatus))) 
   {
-    analysedata_train$kdjstatus = kdjstatus
+    analysedata_train$kdjstatus = getKDJstatus(pricedata,kdjstatus$nfk,kdjstatus$nfd,kdjstatus$nsd,updateperiod)
   }
   
   tdip = tryCatch(optimTDI(pricedata,analysedata,starttrain,endtrain,npara = c(3,5,10,15,20,30),seppara =seq(-10,10,5)),
@@ -184,11 +184,11 @@ getBsoptimsignal = function(pricedata,analysedata,starttrain,endtrain,updatestar
     analysedata_train$tdisignal = getTDIsignal(pricedata,tdip$n,tdip$sep,updateperiod)
   }
   
-  tdistatus = tryCatch(getTDIsignal(pricedata,10,10,updateperiod),
+  tdistatus = tryCatch(optimTDIstatus(pricedata,analysedata,starttrain,endtrain,npara = c(3,5,10,15,20,30),seppara =seq(-10,10,5)),
                   error = function(e){print('tdistatusError');return(NULL)})
   if(!is.null(nrow(tdistatus))) 
   {
-    analysedata_train$tdistatus = tdistatus
+    analysedata_train$tdistatus = getTDIstatus(pricedata,tdistatus$n,tdistatus$sep,updateperiod)
   }
   
   kstp = tryCatch(optimKST(pricedata,analysedata,starttrain,endtrain,npara = c(3,5,10,15,20,30)),
@@ -198,11 +198,11 @@ getBsoptimsignal = function(pricedata,analysedata,starttrain,endtrain,updatestar
     analysedata_train$kstsignal = getKSTsignal(pricedata,kstp$n,updateperiod)
   }
   
-  kststatus = tryCatch(getKSTstatus(pricedata,10,updateperiod),
+  kststatus = tryCatch(optimKSTstatus(pricedata,analysedata,starttrain,endtrain,npara = c(3,5,10,15,20,30)),
                   error = function(e){print('kststatusError');return(NULL)})
   if(!is.null(nrow(kstp)))
   {
-    analysedata_train$kststatus = kststatus
+    analysedata_train$kststatus = getKSTstatus(pricedata,kststatus$n,updateperiod)
   }
   
   chkADp = tryCatch(optimChaikinAD(pricedata,analysedata,starttrain,endtrain),
@@ -212,11 +212,11 @@ getBsoptimsignal = function(pricedata,analysedata,starttrain,endtrain,updatestar
     analysedata_train$chkADsignal = getChaikinsignal(pricedata,updateperiod)
   }
   
-  chkVostatus = tryCatch(getChaikinVostatus(pricedata,5,updateperiod),
+  chkVostatus = tryCatch(optimChaikinVostatus(pricedata,analysedata,starttrain,endtrain,npara = c(3,5,10,30)),
                     error = function(e){print('chkvostatusError');return(NULL)})
   if(!is.null(nrow(chkVostatus)))
   {
-    analysedata_train$chkVostatus = chkVostatus
+    analysedata_train$chkVostatus = getChaikinVostatus(pricedata,chkVostatus$n,updateperiod)
   }
   
   
@@ -227,11 +227,11 @@ getBsoptimsignal = function(pricedata,analysedata,starttrain,endtrain,updatestar
     analysedata_train$obvsignal = getOBVsignal(pricedata,obvp$sep,updateperiod)
   }
   
-  obvstatus = tryCatch(getOBVstatus(pricedata,5,updateperiod),
+  obvstatus = tryCatch(optimOBVstatus(pricedata,analysedata,starttrain,endtrain, npara = c(3,5,10,30)),
                   error = function(e){print('obvstatusError');return(NULL)})
   if(!is.null(nrow(obvstatus)))
   {
-    analysedata_train$obvstatus = obvstatus
+    analysedata_train$obvstatus = getOBVstatus(pricedata,obvstatus$n,updateperiod)
   }
   
   cmop = tryCatch(optimCMO(pricedata,analysedata,starttrain,endtrain,npara = c(3,5,10,15,20,30),n1para = c(3,5,10,15,20,30)),
@@ -241,11 +241,11 @@ getBsoptimsignal = function(pricedata,analysedata,starttrain,endtrain,updatestar
     analysedata_train$cmosignal = getCMOsignal(pricedata,cmop$n,cmop$n1,updateperiod)
   }
    
-  cmostatus = tryCatch(getCMOstatus(pricedata,5,5,updateperiod),
+  cmostatus = tryCatch(optimCMOstatus(pricedata,analysedata,starttrain,endtrain,npara = c(3,5,10,15,20,30),n1para = c(3,5,10,15,20,30)),
                   error = function(e){print('cmostatusError');return(NULL)})
   if(!is.null(nrow(cmostatus))) 
   {
-    analysedata_train$cmostatus = cmostatus
+    analysedata_train$cmostatus = getCMOstatus(pricedata,cmostatus$n,cmostatus$n1,updateperiod)
   }
   
   
@@ -256,11 +256,11 @@ getBsoptimsignal = function(pricedata,analysedata,starttrain,endtrain,updatestar
     analysedata_train$cmfsignal = getCMFsignal(pricedata,cmfp$n,cmfp$sep,updateperiod)
   }
 
-  cmfstatus =tryCatch(getCMFstatus(pricedata,10,5,updateperiod),
+  cmfstatus =tryCatch(optimCMFstatus(pricedata,analysedata,starttrain,endtrain,npara = c(3,5,10,15,20,30),seppara = seq(10,-10,-5)),
                  error = function(e){print('cmfstatusError');return(NULL)})
   if(!is.null(nrow(cmfstatus)))
   {
-    analysedata_train$cmfstatus = cmfstatus
+    analysedata_train$cmfstatus = getCMFstatus(pricedata,cmfstatus$n,cmfstatus$sep,updateperiod)
   }
   
   emvp = tryCatch(optimEMV(pricedata,analysedata,starttrain,endtrain,npara = c(3,5,10,15,20,30),seppara = seq(10,-10,-5)),
@@ -270,11 +270,11 @@ getBsoptimsignal = function(pricedata,analysedata,starttrain,endtrain,updatestar
    analysedata_train$emvsignal = getEMVsignal(pricedata,emvp$n,emvp$sep,updateperiod)
   }
   
-  emvstatus = tryCatch(getEMVstatus(pricedata,10,5),
+  emvstatus = tryCatch(optimEMVstatus(pricedata,analysedata,starttrain,endtrain,npara = c(3,5,10,15,20,30),seppara = seq(10,-10,-5)),
                   error = function(e){print('emvstatusError');return(NULL)})
   if(!is.null(nrow(emvstatus))) 
   {
-    analysedata_train$emvsignal = emvstatus
+    analysedata_train$emvsignal = getEMVstatus(pricedata,emvstatus$n,emvstatus$sep,updateperiod) 
   }
   
   trixp = tryCatch(optimTRIX(pricedata,analysedata,starttrain,endtrain,npara = c(3,5,10,15,20,30),sigpara = c(3,5,10)),
@@ -284,11 +284,11 @@ getBsoptimsignal = function(pricedata,analysedata,starttrain,endtrain,updatestar
     analysedata_train$trixsignal = getTRIXsignal(pricedata,trixp$n,trix$sig,updateperiod)
   }
   
-  trixstatus = tryCatch(getTRIXstatis(pricedata,10,5),
+  trixstatus = tryCatch(optimTRIXstatus(pricedata,analysedata,starttrain,endtrain,npara = c(3,5,10,15,20,30),sigpara = c(3,5,10)),
                    error = function(e){print('trixstatusError');return(NULL)})
   if(!is.null(nrow(trixstatus)))
   {
-    analysedata_train$trixstatus = trixstatus
+    analysedata_train$trixstatus = getTRIXstatus(pricedata,trixstatus$n,trixstatus$sig,updateperiod)
   }
   
   
@@ -301,10 +301,6 @@ getBsoptimsignal = function(pricedata,analysedata,starttrain,endtrain,updatestar
     
   return(analysedata_train)
 }
-
-
-
-
 
 #只计算组合中的指标，且必须存在最优值,否则终止计算
 getBsoptimsignalinvarset = function(pricedata,analysedata,starttrain,endtrain,updatestart,updateend,varset)

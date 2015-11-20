@@ -13,9 +13,9 @@ getSMAstatus = function(pricedata,short,long,period){
   return(signal[period])
 }
 
-getCCIstatus = function(pricedata,n,uppara,downpara,period){
+getCCIstatus = function(pricedata,n,up,down,period){
   cci = CCI(HLC(pricedata),n=n)
-  ccisignal = ifelse( cci < downpara,'less',ifelse( cci > uppara,'more','middle'))
+  ccisignal = ifelse( cci < down,'less',ifelse( cci > up,'more','middle'))
   return(ccisignal[period])
 }
 
@@ -79,7 +79,7 @@ getKDJstatus = function(pricedata,nfk,nfd,nsd,period){
   return(signal[period])
 }
 
-getTDIsignal = function(pricedata,n,sep,period){
+getTDIstatus = function(pricedata,n,sep,period){
   tdi = TDI(OHLC(pricedata),n=n)
   signal = ifelse(tdi$tdi > sep,'more','less')
   return(signal[period])
@@ -132,7 +132,7 @@ getEMVstatus = function(pricedata,n,sep,period){
   return(signal[period])
 }
 
-getTRIXstatis = function(pricedata,n,sig,period){
+getTRIXstatus = function(pricedata,n,sig,period){
   trix = TRIX(Cl(pricedata),n = n, nSig = sig)
   signal = ifelse(trix$TRIX > trix$signal,'more','less')
   return(signal[period])

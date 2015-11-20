@@ -221,41 +221,27 @@ testMonthPeriod(code=code1,from='1990',to='2014',detail = T)
 testMonthPeriod(code=code2,from='1990',to='2014',detail = T)
 
 
-xx = lapply(slm, function(x)
-  {
-   code = x$code
-  # print(code)
-   p = readOneStock(code)
-   p = to.monthly(p)
-   p = p['201511']
-   if(nrow(p) != 0)
-   {
-     if(as.numeric(Cl(p) - Op(p)) < 0)
-     {
-       print(code)
-       print(OHLC(p))
-       return(code)
-     }
-   }
-  
-}
-)
 
-xx =  Filter(function(x){ !is.null(x)},xx)
-xcor = lapply(xx,function(x,code){
-  xc = readOneStock(code)
-  xc = to.monthly(xc)
-  xc =Delt(Cl(xc))
-  xc = xc['2012/2015']
-  
-  x1 = readOneStock(x)
-  x1 = to.monthly(x1)
-  x1 =Delt(Cl(x1))
-  x1 = x1['2012/2015']
-  
-  co =  cor(cbind(xc,x1),use='na.or.complete')
-  return(c(x,co[2,1]))
-},'600961')
+
+corbewteenstock = function(xx)
+{
+  xx =  Filter(function(x){ !is.null(x)},xx)
+  xcor = lapply(xx,function(x,code){
+    xc = readOneStock(code)
+    xc = to.monthly(xc)
+    xc =Delt(Cl(xc))
+    xc = xc['2012/2015']
+    
+    x1 = readOneStock(x)
+    x1 = to.monthly(x1)
+    x1 =Delt(Cl(x1))
+    x1 = x1['2012/2015']
+    
+    co =  cor(cbind(xc,x1),use='na.or.complete')
+    return(c(x,co[2,1]))
+  },'600961')
+}
+
 
 #600234
 #000971
@@ -271,59 +257,74 @@ code = '000971'
 code_yh = ifelse(substr(code,1,1) == '6',paste(code,'SS',sep='.'),paste(code,'SZ',sep='.'))
 code_sina = ifelse(substr(code,1,1) == '6',paste('sh',code,sep=''),paste('sz',code,sep=''))
 
-tt = sapply(codes, function(x){
-  code = x
-  code_yh = ifelse(substr(code,1,1) == '6',paste(code,'SS',sep='.'),paste(code,'SZ',sep='.'))
-  code_sina = ifelse(substr(code,1,1) == '6',paste('sh',code,sep=''),paste('sz',code,sep=''))
-  e = parent.env(environment())
-#  rm(list = code_yh,envir=e)
- # print(code_yh)
-  if(!exists(code_yh))
-  {
-    p = suppressWarnings(getSymbols(code_yh,from='1990-01-01',auto.assign = F))
-    p = adjustOHLC(p,use.Adjusted = T)
-    assign(code_yh,p,envir = e)
-    return(code)
-  }
-})
-while(T)
+
+
+monitormonth = function(codes)
 {
-  date = '20151109'
- # print(get.stock.info("sh600618"))
-#  print(get.stock.info("sh600961"))
-  for(code in codes)
-  {
-    print(code)
-    
+  tt = sapply(codes, function(x){
+    code = x
     code_yh = ifelse(substr(code,1,1) == '6',paste(code,'SS',sep='.'),paste(code,'SZ',sep='.'))
     code_sina = ifelse(substr(code,1,1) == '6',paste('sh',code,sep=''),paste('sz',code,sep=''))
-    p = get(code_yh)
-    pm = to.monthly(p)
-    pm =pm['201511']
-    p$sma3 = SMA(Cl(p),3)
-    p$sma5 = SMA(Cl(p),5)
-    p$sma30 = SMA(Cl(p),30)
+    e = parent.env(environment())
+    if(!exists(code_yh))
+    {
+      p = suppressWarnings(getSymbols(code_yh,from='1990-01-01',auto.assign = F))
+      p = adjustOHLC(p,use.Adjusted = T)
+      assign(code_yh,p,envir = e)
+      return(code)
+    }
+  })
+  while(T)
+  {
+    date = '20151109'
+    datem = substr(date,1,6)
 
-    pd = get.stock.info(code_sina)
-    pd$monthopen = Op(pd)
-    pd$monthhigh = Hi(pd)
-    pd$monthlow = Lo(pd)
-    pd$sma30 = p$sma30[date]
-    pd$sma5 = p$sma5[date]
-    pd$sma3 = p$sma3[date]
-    print(pd[,c(1:6,33:38)])
+    for(code in codes)
+    {
+      print(code)
+      
+      code_yh = ifelse(substr(code,1,1) == '6',paste(code,'SS',sep='.'),paste(code,'SZ',sep='.'))
+      code_sina = ifelse(substr(code,1,1) == '6',paste('sh',code,sep=''),paste('sz',code,sep=''))
+      p = get(code_yh)
+      pm = to.monthly(p)
+      pm =pm[datem]
+      p$sma3 = SMA(Cl(p),3)
+      p$sma5 = SMA(Cl(p),5)
+      p$sma30 = SMA(Cl(p),30)
+      
+      pd = get.stock.info(code_sina)
+      pd$monthopen = Op(pd)
+      pd$monthhigh = Hi(pd)
+      pd$monthlow = Lo(pd)
+      pd$sma30 = p$sma30[date]
+      pd$sma5 = p$sma5[date]
+      pd$sma3 = p$sma3[date]
+      print(pd[,c(1:6,33:38)])
+    }
+    Sys.sleep(15)
+    
   }
-  Sys.sleep(15)
-  
 }
 
-records = data.frame()
-
-for(i in 1:nrow(records1))
+monitorinmonth = function(slm)
 {
-  print(i)
-  r = records1[i,]
-  code = r$code
-  price = readOneStock(code)
-  
+  xx = lapply(slm, function(x)
+  {
+    code = x$code
+    # print(code)
+    p = readOneStock(code)
+    p = to.monthly(p)
+    p = p['201511']
+    if(nrow(p) != 0)
+    {
+      if(as.numeric(Cl(p) - Op(p)) < 0)
+      {
+        print(code)
+        print(OHLC(p))
+        return(code)
+      }
+    }
+    
+  }
+  )
 }
