@@ -221,8 +221,6 @@ testMonthPeriod(code=code1,from='1990',to='2014',detail = T)
 testMonthPeriod(code=code2,from='1990',to='2014',detail = T)
 
 
-
-
 corbewteenstock = function(xx)
 {
   xx =  Filter(function(x){ !is.null(x)},xx)
@@ -258,7 +256,7 @@ code_yh = ifelse(substr(code,1,1) == '6',paste(code,'SS',sep='.'),paste(code,'SZ
 code_sina = ifelse(substr(code,1,1) == '6',paste('sh',code,sep=''),paste('sz',code,sep=''))
 
 
-
+#codes = c('600618','600961')
 monitormonth = function(codes)
 {
   tt = sapply(codes, function(x){
@@ -276,7 +274,7 @@ monitormonth = function(codes)
   })
   while(T)
   {
-    date = '20151109'
+    date = '20151120'
     datem = substr(date,1,6)
 
     for(code in codes)
@@ -293,12 +291,12 @@ monitormonth = function(codes)
       p$sma30 = SMA(Cl(p),30)
       
       pd = get.stock.info(code_sina)
-      pd$monthopen = Op(pd)
-      pd$monthhigh = Hi(pd)
-      pd$monthlow = Lo(pd)
-      pd$sma30 = p$sma30[date]
-      pd$sma5 = p$sma5[date]
-      pd$sma3 = p$sma3[date]
+      pd$monthopen = Op(pm)
+      pd$monthhigh = Hi(pm)
+      pd$monthlow = Lo(pm)
+      pd$sma30 = tail(p$sma30,1)
+      pd$sma5 = tail(p$sma5,1)
+      pd$sma3 =  tail(p$sma3,1)
       print(pd[,c(1:6,33:38)])
     }
     Sys.sleep(15)
