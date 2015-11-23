@@ -5,7 +5,7 @@ testindex  = function(longtotest,comb,f,testdate,pricedata,analysedata,start,end
   records = data.frame()
   for(y in testdate)
   {
-  #  print(y)
+    #print(y)
     starttraindate = as.character(as.numeric(y) - longtotest)
     endtraindate = as.character(as.numeric(y) - 1)
     analysedata_train = as.data.frame(analysedata[paste(starttraindate,endtraindate,sep='/')])
@@ -45,11 +45,15 @@ testindex  = function(longtotest,comb,f,testdate,pricedata,analysedata,start,end
                        data=as.data.frame(analysedata_train),na.action = na.pass)
     
     #预测
-    pr = predict(model,as.data.frame(analysedata_test),type = 'raw')
+    pr = tryCatch(predict(model,as.data.frame(analysedata_test),type = 'raw'),
+                  error = function(e){print(paste(paste0(f,collapse = ''),'error'));return(NULL)})
+    if(is.null(nrow(pr))) return(NULL)
     
     #用新模型计算上一个周期最后一个交易日的预测，并更新到预测表
     # 比如2015年1月1日 更新模型后， 用新模型对2014-12-31的数据进行预测 来进行2015年第一个交易日的决策
     pf = predict(model,tail(analysedata_update[endtraindate],1),type='raw')
+                  
+   
     #更新预测表，避免look ahead bias
     pr = rbind(pf,pr[1:(nrow(pr)-1),])
     
@@ -77,10 +81,10 @@ testindex  = function(longtotest,comb,f,testdate,pricedata,analysedata,start,end
         records = rbind(records,record)
       }
     }
-    judge = profitjudge(records,ratio=ratio,lossnum = lossnum,ratio=winratio,strict=strict)
+    judge = profitjudge(records,lossnum = lossnum,ratio=winratio,strict=strict)
     if(judge == F)
     {
-      bsloganalysis(records)
+     # bsloganalysis(records)
       
       return(NULL)
     }

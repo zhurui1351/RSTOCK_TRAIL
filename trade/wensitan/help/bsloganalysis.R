@@ -75,11 +75,10 @@ profitjudge = function(records,ratio=0.55,lossnum =2,strict = T)
   shorttrade = subset(records,type=='short')
   longtrade = subset(records,type=='long')
   
-  shortprofit = -shorttrade$profit
-  longprofit = longtrade$profit
   
   if(nrow(longtrade) > 0)
   {
+    longprofit = longtrade$profit
     everyyearlong = substr(longtrade[,'opdate'],1,4)
     el = aggregate(x=longprofit,by=list(everyyearlong),sum)
     colnames(el) = c('year','profitlong')
@@ -94,6 +93,7 @@ profitjudge = function(records,ratio=0.55,lossnum =2,strict = T)
   
   if(nrow(shorttrade) > 0)
   {
+    shortprofit = -shorttrade$profit
     everyyearshort = substr(shorttrade[,'opdate'],1,4)
     es = aggregate(x=shortprofit,by=list(everyyearshort),sum)
     colnames(es) = c('year','profitshort')

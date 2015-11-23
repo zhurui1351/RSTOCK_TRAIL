@@ -118,7 +118,7 @@ getBsoptimsignal = function(pricedata,analysedata,starttrain,endtrain,updatestar
                    error = function(e){print('bbandstatusError');return(NULL)})
   if(!is.null(nrow(bbandstatus)))
   {
-    analysedata_train$bbandstatus = getBBANDSstatus(pricedata,bbandstatus$n,period)
+    analysedata_train$bbandstatus = getBBANDSstatus(pricedata,bbandstatus$n,updateperiod)
   }  
   
   rocp = tryCatch(optimROC(pricedata,analysedata,starttrain,endtrain,npara = c(3,5,10,15,20,30),seppara = seq(-20,20,10)),
