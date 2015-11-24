@@ -193,10 +193,11 @@ lm = findSnStock(from='1990',to='2014')
 
 slm =  Filter(function(x){ ratio = x[[3]]
 month = x[[2]]
-ratio>=0.75 && month==11 },lm)
+ratio>=0.75 && month==12 },lm)
 
 #计算相关系数
 codes = sapply(slm,function(x){x$code})
+
 l=lapply(codes, function(x){
   p = readOneStock(x)
   p = to.monthly(p)
@@ -304,15 +305,34 @@ monitormonth = function(codes)
   }
 }
 
-monitorinmonth = function(slm)
+monitorinmonth = function(codes)
 {
-  xx = lapply(slm, function(x)
+ 
+  date = '20151120'
+  datem = substr(date,1,6) 
+  tt = sapply(codes, function(x){
+    code = x
+    code_yh = ifelse(substr(code,1,1) == '6',paste(code,'SS',sep='.'),paste(code,'SZ',sep='.'))
+    code_sina = ifelse(substr(code,1,1) == '6',paste('sh',code,sep=''),paste('sz',code,sep=''))
+    e = parent.env(environment())
+    if(!exists(code_yh))
+    {
+      p = suppressWarnings(getSymbols(code_yh,from='1990-01-01',auto.assign = F))
+      p = adjustOHLC(p,use.Adjusted = T)
+      assign(code_yh,p,envir = e)
+      return(code)
+    }
+  })
+  xx = lapply(codes, function(x)
   {
-    code = x$code
+    code = x
     # print(code)
-    p = readOneStock(code)
+    #p = readOneStock(code)
+    code_yh = ifelse(substr(code,1,1) == '6',paste(code,'SS',sep='.'),paste(code,'SZ',sep='.'))
+    code_sina = ifelse(substr(code,1,1) == '6',paste('sh',code,sep=''),paste('sz',code,sep=''))
+    p = get(code_yh)
     p = to.monthly(p)
-    p = p['201511']
+    p = p[datem]
     if(nrow(p) != 0)
     {
       if(as.numeric(Cl(p) - Op(p)) < 0)

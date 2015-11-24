@@ -168,4 +168,114 @@ STAT.par = list(coef = c("(Intercept)" = 43),
   modelstring(bn.B)
   bn.LAT = hc(cbind(dmarks, LAT = latent))
   bn.LAT
+  #基因谱
+  sachs = read.table("D:/sachs.data.txt", header = TRUE)
+  dsachs = discretize(sachs, method = "hartemink",
+                       breaks = 3, ibreaks = 60,
+                       idisc = "quantile")
+  #bootstrap
+  boot = boot.strength(data = dsachs, R = 500,
+                        algorithm = "hc",
+                        algorithm.args = list(score = "bde",
+                                                iss = 10))
   
+  boot[(boot$strength > 0.85) &
+          (boot$direction >= 0.5), ]
+  #建立贝叶斯平均网络
+  avg.boot = averaged.network(boot, threshold = 0.85)
+  #
+  nodes = names(dsachs)
+  #和boost类似，用随机图 然后平均来生成贝叶斯平均网络
+  start = random.graph(nodes = nodes,
+                          method = "ic-dag", num = 500)
+  netlist = lapply(start, function(net) {
+     hc(dsachs,score="bde",iss= 10,start=net)
+     })
+   rnd = custom.strength(netlist, nodes = nodes)
+   rnd[(rnd$strength > 0.85) &
+          (rnd$direction >= 0.5), ]
+   avg.start = averaged.network(rnd, threshold = 0.85)
+   
+   all.equal(cpdag(avg.boot), cpdag(avg.start))
+   score(cextend(cpdag(avg.start)), dsachs,
+          type="bde",iss= 10)
+   #threshold并不敏感
+   all.equal(averaged.network(boot, threshold = 0.50),
+              averaged.network(boot, threshold = 0.70))
+   
+   averaged.network(boot)
+   
+   #时序贝叶斯网
+   
+   library(vars)
+   data(Canada)
+   VAR(Canada, p = 2)
+   summary(VAR(Canada, p = 2))
+   VAR(Canada, p = 2, type = "none")
+   VAR(Canada, p = 2, type = "trend")
+   VAR(Canada, p = 2, type = "both")
+   VAR(Canada, lag.max = 4, ic = "AIC")
+   VAR(Canada, lag.max = 4, ic = "SC")
+   var.2c = VAR(Canada, p = 2, type = "const")
+   stab = stability(var.2c, type = "OLS-CUSUM")
+   plot(stab)
+   normality.test(var.2c)
+   normality.test(var.2c, multivariate.only = FALSE)
+   serial.test(var.2c, lags.pt = 16,
+                type = "PT.adjusted")
+   arch.test(var.2c)
+   library(lars)
+   library(GeneNet)
+   data(arth800)
+   subset = c(60, 141, 260, 333, 365, 424, 441, 512,
+                 521, 578, 789, 799)
+   arth12 = arth800.expr[, subset]
+   x = arth12[1:(nrow(arth12) - 2), ]
+   y = arth12[-(1:2), "265768_at"]
+   lasso.fit = lars(y = y, x = x, type = "lasso")
+   fit.all = lapply(colnames(arth12),
+                     function(gene){
+                       y = arth12[-(1:2), gene]
+                       lars(y = y, x = x, type = "lasso")
+                       })
+   plot(lasso.fit)
+   coef(object)
+   
+   
+   #贝叶斯推理
+   
+   isachs = read.table("d:/sachs.interventional.txt",
+                        header = TRUE, colClasses = "factor")
+   library(gRain)
+   library(bnlearn)
+   val.str = paste("[PKC][PKA|PKC][praf|PKC:PKA]",
+                    "[pmek|PKC:PKA:praf][p44.42|pmek:PKA]",
+                    "[pakts473|p44.42:PKA][P38|PKC:PKA]",
+                    "[pjnk|PKC:PKA][plcg][PIP3|plcg]",
+                    "[PIP2|plcg:PIP3]")
+    val = model2network(val.str)
+    isachs = isachs[, 1:11]
+    for (i in names(isachs))
+      levels(isachs[,i])= c("LOW","AVG","HIGH")
+    fitted = bn.fit(val, isachs, method = "bayes")
+    #精确推理
+    jtree = compile(as.grain(fitted))
+    jprop = setFinding(jtree, nodes = "p44.42",
+                        states = "LOW")
+    querygrain(jtree, nodes = "pakts473")$pakts473
+    querygrain(jprop, nodes = "pakts473")$pakts473
+    querygrain(jtree, nodes = "PKA")$PKA
+    querygrain(jprop, nodes = "PKA")$PKA
+    names(which.max(querygrain(jprop,
+                               nodes = c("PKA"))$PKA))
+    #近似推理
+    particles = cpdist(fitted, nodes = "pakts473",
+                        evidence = (p44.42 == "LOW"))
+    prop.table(table(particles))
+    particles = cpdist(fitted, nodes = "PKA",
+                        evidence = (p44.42 == "LOW"))
+    prop.table(table(particles))
+    cpquery(fitted,
+             event=(pakts473== "LOW")& (PKA!= "HIGH"),
+             evidence= (p44.42== "LOW")| (praf=="LOW"))
+    
