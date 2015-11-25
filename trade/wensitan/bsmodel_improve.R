@@ -18,12 +18,12 @@ sourceDir <- function(path, trace = TRUE, ...) {
 sourceDir('D:/Rcode/code/RSTOCK_TRAIL/trade/wensitan/help')
 
 #读入数据
-pricedata = getSymbols("^N225",from="1900-01-01",auto.assign = F)
-pricedata = adjustOHLC(pricedata,use.Adjusted = T)
+#pricedata = getSymbols("^N225",from="1900-01-01",auto.assign = F)
+#pricedata = adjustOHLC(pricedata,use.Adjusted = T)
 #load('GSPC.Rdata')
 colnames(pricedata) = gsub('N225','',colnames(pricedata))
-#pricedata = readSHindex()
-#pricedata = na.omit(pricedata)
+pricedata = readSHindex()
+pricedata = na.omit(pricedata)
 #处理待预测数据，用lead提前一天，把头天的涨跌加入预测变量
 cl = Cl(pricedata) - Op(pricedata)
 clflag = ifelse(cl < 0 ,'down','up')
@@ -33,7 +33,7 @@ analysedata = merge(leadclflag,clflag)
 start = head(index(analysedata),1)
 end = tail(index(analysedata),1)
 
-testdate = substr(as.character(index(to.yearly(pricedata['1994/2014']))),1,4)
+testdate = substr(as.character(index(to.yearly(pricedata['2000/2014']))),1,4)
 #starttraindate = as.character(1995)
 
 #计算指标更新缓存 #c(4,6,11,16)
@@ -65,7 +65,7 @@ varstatusset = c('longstatus','shortstatus','smastatus','ccistatus','rsistatus',
                  'mfistatus','bbandstatus','rocstatus','sarstatus','wprstatus','kdjstatus','tdistatus','kststatus',
                  'chkVostatus','obvstatus','cmostatus','cmfstatus','emvstatus','trixstatus')
 
-varset = varstatusset
+varset = c(varstatusset,varsignalset)
 #过滤指标
 for(y in testdate)
 {
