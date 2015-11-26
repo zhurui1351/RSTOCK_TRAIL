@@ -1,4 +1,4 @@
-getBsModelCriterion = function(longtotest,f,testdate,pricedata,analysedata,start,end)
+getBsModelCriterion = function(longtotest,f,testdate,pricedata,analysedata)
 {
   signals = data.frame()
   for(y in testdate)

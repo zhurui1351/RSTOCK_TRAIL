@@ -257,7 +257,7 @@ code_yh = ifelse(substr(code,1,1) == '6',paste(code,'SS',sep='.'),paste(code,'SZ
 code_sina = ifelse(substr(code,1,1) == '6',paste('sh',code,sep=''),paste('sz',code,sep=''))
 
 
-codes = c('600618','600961')
+codes = c('600618')
 monitormonth = function(codes)
 {
   tt = sapply(codes, function(x){

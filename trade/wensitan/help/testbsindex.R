@@ -84,7 +84,7 @@ testindex  = function(longtotest,comb,f,testdate,pricedata,analysedata,start,end
     judge = profitjudge(records,lossnum = lossnum,ratio=winratio,strict=strict)
     if(judge == F)
     {
-     # bsloganalysis(records)
+      bsloganalysis(records)
       
       return(NULL)
     }
