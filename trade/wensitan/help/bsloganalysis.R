@@ -62,6 +62,7 @@ bsloganalysis = function(records)
   e = merge(e,esnum)
   e$total = e$profitlong + e$profitshort
   print(e)
+  return(e)
 }
 
 profitjudge = function(records,ratio=0.55,lossnum =2,strict = T)

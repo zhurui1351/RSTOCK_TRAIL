@@ -116,13 +116,6 @@ testrecords  = function(longtotest,comb,f,testdate,pricedata,analysedata,start,e
     #analysedata_update = getBsoptimsignalinvarset(pricedata,analysedata,starttrain,endtrain,start,end,comb)
     cachename = paste('analysedata',y,longtotest,sep='_')
     analysedata_update = get(cachename)
-    #     
-    #     isgetallvar = comb %in% colnames(analysedata_update)
-    #     if(!all(isgetallvar)) 
-    #     {
-    #       print(paste(comb[which(!isgetallvar)],'no value'))
-    #       return(NULL)
-    #     }
     
     if(is.null(analysedata_update))
       return(NULL)
@@ -178,5 +171,6 @@ testrecords  = function(longtotest,comb,f,testdate,pricedata,analysedata,start,e
       }
     }
   }
-  bsloganalysis(records)
+  e=bsloganalysis(records)
+  return(e)
 }
