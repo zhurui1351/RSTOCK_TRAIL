@@ -67,4 +67,5 @@ for(i in 1 : (varset_length - 1))
   bestset = append(bestset,templist[1:5])
 }
 
-bestset = bestset[order(sapply(bestset,function(x){x$precise}),decreasing=TRUE)]
+bestset1 = Filter(function(x){length(x) >0},bestset)
+bestset = bestset[order(sapply(bestset1,function(x){x$precise}),decreasing=TRUE)]
