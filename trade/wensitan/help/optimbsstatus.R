@@ -1,10 +1,4 @@
-fitness = function(tb,p)
-{
-  pr = predict(tb, as.data.frame(p))
-  tt = table(pr, p[,'leadclflag'])
-  precise = (tt[1,1]+tt[2,2]) / sum(tt)
-  return(precise)
-}
+
 
 optimClosestatus = function(pricedata,analysedata,start,end,npara)
 {

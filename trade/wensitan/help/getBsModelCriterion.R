@@ -1,3 +1,4 @@
+require(pROC)
 getBsModelCriterion = function(longtotest,f,testdate,pricedata,analysedata)
 {
   signals = data.frame()
@@ -48,12 +49,23 @@ getBsModelCriterion = function(longtotest,f,testdate,pricedata,analysedata)
     #更新预测表，避免look ahead bias
     pr = rbind(pf,pr[1:(nrow(pr)-1),])
     
-    signal = ifelse(pr[,'down'] > 0.5,'down',ifelse(pr[,'up'] > 0.5,'up',NA))
-    signal = cbind(as.data.frame(analysedata_test[,'leadclflag']),signal=signal)
+   # signal = ifelse(pr[,'down'] > 0.5,'down',ifelse(pr[,'up'] > 0.5,'up',NA))
+   # signal = cbind(as.data.frame(analysedata_test[,'leadclflag']),signal=signal)
+    signal = cbind(pr[,1],as.character(analysedata_test[,'leadclflag']))
     signals = rbind(signals,signal)
   }
   
-  ptable = table(signals)
-  precise = (ptable['down','down'] + ptable['up','up']) / sum(ptable)
-  return(precise)
+  pred <- prediction(as.numeric(signals[,1]), signals[,2])
+  perf <- performance(pred,"tpr")
+  print(perf@y.values[[1]])
+  return(perf@y.values[[1]])
+}
+
+fitness = function(tb,p)
+{
+  pr = predict(tb, as.data.frame(p),type='raw')
+  #tt = table(pr, p[,'leadclflag'])
+  au = auc(as.character(p[,'leadclflag']),as.numeric(pr[,1]))
+  #precise = (tt[1,1]+tt[2,2]) / sum(tt)
+  return(as.numeric(au))
 }

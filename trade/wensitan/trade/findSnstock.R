@@ -195,6 +195,8 @@ slm =  Filter(function(x){ ratio = x[[3]]
 month = x[[2]]
 ratio>=0.75 && month==12 },lm)
 
+lbest = slm[order(sapply(slm,function(x){x$ratio}),decreasing=TRUE)]
+
 #计算相关系数
 codes = sapply(slm,function(x){x$code})
 
@@ -215,8 +217,8 @@ mcor[lower.tri(mcor)] = 1
 msort=sort(as.vector(mcor))[1:10]
 l=lapply(msort, function(x){which(mcor==x,arr.ind = T)})
 
-code1=rownames(mcor)[l[[4]][1]]
-code2=colnames(mcor)[l[[4]][2]]
+code1=rownames(mcor)[l[[2]][1]]
+code2=colnames(mcor)[l[[2]][2]]
 
 testMonthPeriod(code=code1,from='1990',to='2014',detail = T)
 testMonthPeriod(code=code2,from='1990',to='2014',detail = T)
@@ -275,7 +277,7 @@ monitormonth = function(codes)
   })
   while(T)
   {
-    date = '20151120'
+    date = '20151130'
     datem = substr(date,1,6)
 
     for(code in codes)

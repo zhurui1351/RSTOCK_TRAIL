@@ -14,29 +14,33 @@ optimSMA = function(pricedata,analysedata,start,end,longpara,shortpara)
         next
       }
      
-      smasignal = getSMAsignal(pricedata,short,long,period)
-      colnames(smasignal) = 'signal'
-      p = merge(analysedata_train[,'leadclflag'],smasignal)
+      signal = getSMAsignal(pricedata,short,long,period)
+      colnames(signal) = 'signal'
+      p = merge(analysedata_train[,'leadclflag'],signal)
       p[p=='hold'] = NA
       #有效信号占比小于10% 过滤
       effecratio = length(p[,2][!is.na(p[,2])]) / length(p[,2])
-      if(effecratio < 0.05) next
+      if(effecratio < 0.1) next
       
       tb = naiveBayes(leadclflag~signal,data=as.data.frame(p))
-      a1 = tb$tables[[1]][1,1]
-      a2 = tb$tables[[1]][2,1]
+   #   a1 = tb$tables[[1]][1,1]
+    #  a2 = tb$tables[[1]][2,1]
       #同时大于或小于0.5 则不考虑
-      if(sign(a1-0.5) == sign(a2 - 0.5)) next
+    #  if(sign(a1-0.5) == sign(a2 - 0.5)) next
       #if(a1 > 0.5 || a2 < 0.5) next
      # #if(abs(a1-a2) < 0.03) next
       #找出距离最大的参数
-      r = data.frame(a1=a1,a2=a2,short=short,long=long,abs=abs(a1 - a2))
+      
+      precise =  fitness(tb,na.omit(as.data.frame(p)))
+      if(precise < 0.5) next
+      
+      r = data.frame(short=short,long=long,precise=precise)
       result = rbind(result,r)
     }
   }
   if(nrow(result) == 0) return(NA)
   
-  s = subset(result,abs==max(result$abs))[1,]
+  s = subset(result,precise==max(result$precise))[1,]
   
   #可能需要衡量下不为hold的数量
   return(s)
@@ -56,31 +60,35 @@ optimCCI = function(pricedata,analysedata,start,end,npara,uppara,downpara)
       for(down in downpara)
       {
       #  print(paste(n,up,down))
-        ccisignal = getCCIsignal(pricedata,n,up,down,period)
-        colnames(ccisignal) = 'signal'
-        p = merge(analysedata_train[,'leadclflag'],ccisignal)
+        signal = getCCIsignal(pricedata,n,up,down,period)
+        colnames(signal) = 'signal'
+        p = merge(analysedata_train[,'leadclflag'],signal)
         p[p=='hold'] = NA
         #有效信号占比小于10% 过滤
         effecratio = length(p[,2][!is.na(p[,2])]) / length(p[,2])
         if(effecratio < 0.1) next
         
-        tb = naiveBayes(leadclflag~signal,data=as.data.frame(p))
-        
-        a1 = tb$tables[[1]][1,1]
-        a2 = tb$tables[[1]][2,1]
-        #同时大于或小于0.5 则不考虑
-        if(sign(a1-0.5) == sign(a2 - 0.5)) next
+         tb = naiveBayes(leadclflag~signal,data=as.data.frame(p))
+#         
+#         a1 = tb$tables[[1]][1,1]
+#         a2 = tb$tables[[1]][2,1]
+#         #同时大于或小于0.5 则不考虑
+#         if(sign(a1-0.5) == sign(a2 - 0.5)) next
         #if(a1 > 0.5 || a2 < 0.5) next
         ##if(abs(a1-a2) < 0.03) next
         #找出距离最大的参数
-        r = data.frame(a1=a1,a2=a2,n=n,up=up,down=down,abs=abs(a1 - a2))
+      #  r = data.frame(n=n,up=up,down=down,abs=abs(a1 - a2))
+        precise =  fitness(tb,na.omit(as.data.frame(p)))
+        if(precise < 0.5) next
+        
+        r = data.frame(n=n,up=up,down=down,precise=precise)
         result = rbind(result,r)
       }
     }
   }
   if(nrow(result) == 0) return(NA)
   
-  s = subset(result,abs==max(result$abs))[1,]
+  s = subset(result,precise==max(result$precise))[1,]
   return(s)
 }
 
@@ -97,10 +105,10 @@ optimRSI = function(pricedata,analysedata,start,end,npara,uppara,downpara)
     {
       for(down in downpara)
       {
-        rsisignal = getRSIsignal(pricedata,n,up,down,period)
-        colnames(rsisignal) ='signal'
+        signal = getRSIsignal(pricedata,n,up,down,period)
+        colnames(signal) ='signal'
         
-        p = merge(analysedata_train[,'leadclflag'],rsisignal)
+        p = merge(analysedata_train[,'leadclflag'],signal)
         p[p=='hold'] = NA
         
         #有效信号占比小于10% 过滤
@@ -109,21 +117,24 @@ optimRSI = function(pricedata,analysedata,start,end,npara,uppara,downpara)
         
         tb = naiveBayes(leadclflag~signal,data=as.data.frame(p))
         
-        a1 = tb$tables[[1]][1,1]
-        a2 = tb$tables[[1]][2,1]
-        #同时大于或小于0.5 则不考虑
-        if(sign(a1-0.5) == sign(a2 - 0.5)) next
+#         a1 = tb$tables[[1]][1,1]
+#         a2 = tb$tables[[1]][2,1]
+#         #同时大于或小于0.5 则不考虑
+#         if(sign(a1-0.5) == sign(a2 - 0.5)) next
         # if(a1 > 0.5 || a2 < 0.5) next
         ##if(abs(a1-a2) < 0.03) next
         #找出距离最大的参数
-        r = data.frame(a1=a1,a2=a2,n=n,up=up,down=down,abs=abs(a1 - a2))
+        precise =  fitness(tb,na.omit(as.data.frame(p)))
+        if(precise < 0.5) next
+        
+        r = data.frame(n=n,up=up,down=down,precise=precise)
         result = rbind(result,r)
       }
     }
   }
   if(nrow(result) == 0) return(NA)
   
-  s = subset(result,abs==max(result$abs))[1,]
+  s = subset(result,precise==max(result$precise))[1,]
   return(s)
 }
 
@@ -145,10 +156,10 @@ optimMACD = function(pricedata,analysedata,start,end,nfastpara,nslowpara,nsigpar
           if(nfast > nslow) next
           if(nsig <= nfast || nsig >= nslow) next
 
-          macdsignal = getMACDsignal(pricedata,nfast,nslow,nsig,sep,period)
-          colnames(macdsignal) ='signal'
+          signal = getMACDsignal(pricedata,nfast,nslow,nsig,sep,period)
+          colnames(signal) ='signal'
           
-          p = merge(analysedata_train[,'leadclflag'],macdsignal)
+          p = merge(analysedata_train[,'leadclflag'],signal)
           p[p=='hold'] = NA
           
           #有效信号占比小于10% 过滤
@@ -157,21 +168,24 @@ optimMACD = function(pricedata,analysedata,start,end,nfastpara,nslowpara,nsigpar
           
           tb = naiveBayes(leadclflag~signal,data=as.data.frame(p))
           
-          a1 = tb$tables[[1]][1,1]
-          a2 = tb$tables[[1]][2,1]
-          #同时大于或小于0.5 则不考虑
-          if(sign(a1-0.5) == sign(a2 - 0.5)) next
+#           a1 = tb$tables[[1]][1,1]
+#           a2 = tb$tables[[1]][2,1]
+#           #同时大于或小于0.5 则不考虑
+#           if(sign(a1-0.5) == sign(a2 - 0.5)) next
           #if(a1 > 0.5 || a2 < 0.5) next
           ##if(abs(a1-a2) < 0.03) next
           #找出距离最大的参数
-          r = data.frame(a1=a1,a2=a2,nslow=nslow,nfast=nfast,nsig=nsig,sep=sep,abs=abs(a1 - a2))
+          precise = fitness(tb,na.omit(as.data.frame(p)))
+          if(precise < 0.5) next
+          
+          r = data.frame(nslow=nslow,nfast=nfast,nsig=nsig,sep=sep,precise=precise)
           result = rbind(result,r)
         }
       }
     }
   }
   if(nrow(result) == 0) return(NA)
-  s = subset(result,abs==max(result$abs))[1,]
+  s = subset(result,precise==max(result$precise))[1,]
   return(s)
 }
 #npara = seq(3,20,by=2)
@@ -182,28 +196,31 @@ optimMACD = function(pricedata,analysedata,start,end,nfastpara,nslowpara,nsigpar
    result = data.frame()
    for(n in npara)
    {
-     adxsignal = getADXsignal(pricedata,n,period)
-     colnames(adxsignal) ='signal'
+     signal = getADXsignal(pricedata,n,period)
+     colnames(signal) ='signal'
      
-     p = merge(analysedata_train[,'leadclflag'],adxsignal)
+     p = merge(analysedata_train[,'leadclflag'],signal)
      p[p=='hold'] = NA
      
      #有效信号占比小于10% 过滤
      effecratio = length(p[,2][!is.na(p[,2])]) / length(p[,2])
      if(effecratio < 0.1) next
      tb = naiveBayes(leadclflag~signal,data=as.data.frame(p))
-     a1 = tb$tables[[1]][1,1]
-     a2 = tb$tables[[1]][2,1]
-     #同时大于或小于0.5 则不考虑
-     if(sign(a1-0.5) == sign(a2 - 0.5)) next
+#      a1 = tb$tables[[1]][1,1]
+#      a2 = tb$tables[[1]][2,1]
+#      #同时大于或小于0.5 则不考虑
+#      if(sign(a1-0.5) == sign(a2 - 0.5)) next
      #if(a1 > 0.5 || a2 < 0.5) next
      ##if(abs(a1-a2) < 0.03) next
      #找出距离最大的参数
-     r = data.frame(a1=a1,a2=a2,n=n,abs=abs(a1 - a2))
+     precise =  fitness(tb,na.omit(as.data.frame(p)))
+     if(precise < 0.5) next
+     
+     r = data.frame(n=n,precise=precise)
      result = rbind(result,r)
    }
    if(nrow(result) == 0) return(NA)
-   s = subset(result,abs==max(result$abs))[1,]
+   s = subset(result,precise==max(result$precise))[1,]
    return(s)
  }
  
@@ -220,11 +237,10 @@ optimMFI =function(pricedata,analysedata,start,end,npara,uppara,downpara)
     {
       for(down in downpara)
       {
-        mfisignal = getMFIsignal(pricedata,n,up,down,period)
-        mfisignal = mfisignal[period]
-        colnames(mfisignal) = 'signal'
+        signal = getMFIsignal(pricedata,n,up,down,period)
+        colnames(signal) = 'signal'
         
-        p = merge(analysedata_train[,'leadclflag'],mfisignal)
+        p = merge(analysedata_train[,'leadclflag'],signal)
         p[p=='hold'] = NA
         
         #有效信号占比小于10% 过滤
@@ -233,20 +249,25 @@ optimMFI =function(pricedata,analysedata,start,end,npara,uppara,downpara)
         
         tb = naiveBayes(leadclflag~signal,data=as.data.frame(p))
         
-        a1 = tb$tables[[1]][1,1]
-        a2 = tb$tables[[1]][2,1]
-        #同时大于或小于0.5 则不考虑
-        if(sign(a1-0.5) == sign(a2 - 0.5)) next
+        
+#         a1 = tb$tables[[1]][1,1]
+#         a2 = tb$tables[[1]][2,1]
+#         #同时大于或小于0.5 则不考虑
+#         if(sign(a1-0.5) == sign(a2 - 0.5)) next
       # if(a1 > 0.5 || a2 < 0.5) next
       ##if(abs(a1-a2) < 0.03) next
         #找出距离最大的参数
-        r = data.frame(a1=a1,a2=a2,n=n,up=up,down=down,abs=abs(a1 - a2))
+        
+        precise =  fitness(tb,na.omit(as.data.frame(p)))
+        if(precise < 0.5) next
+        
+        r = data.frame(n=n,up=up,down=down,precise=precise)
         result = rbind(result,r)
       }
     }
   }
   if(nrow(result) == 0) return(NA)
-  s = subset(result,abs==max(result$abs))[1,]
+  s = subset(result,precise==max(result$precise))[1,]
   return(s)
 }
 
@@ -259,12 +280,10 @@ optimBBANDS = function(pricedata,analysedata,start,end,npara)
   for(n in npara)
   {
     
-    bbandssignal = getBBANDSsignal(pricedata,n,period)
-    bbandssignal = bbandssignal[period]
+    signal = getBBANDSsignal(pricedata,n,period)
+    colnames(signal) = 'signal'
     
-    colnames(bbandssignal) = 'signal'
-    
-    p = merge(analysedata_train[,'leadclflag'],bbandssignal)
+    p = merge(analysedata_train[,'leadclflag'],signal)
     p[p=='hold'] = NA
     
     #有效信号占比小于10% 过滤
@@ -272,20 +291,23 @@ optimBBANDS = function(pricedata,analysedata,start,end,npara)
     if(effecratio < 0.1) next
     
     tb = naiveBayes(leadclflag~signal,data=as.data.frame(p))
-    
-    a1 = tb$tables[[1]][1,1]
-    a2 = tb$tables[[1]][2,1]
-    #同时大于或小于0.5 则不考虑
-    if(sign(a1-0.5) == sign(a2 - 0.5)) next
+#     
+#     a1 = tb$tables[[1]][1,1]
+#     a2 = tb$tables[[1]][2,1]
+#     #同时大于或小于0.5 则不考虑
+#     if(sign(a1-0.5) == sign(a2 - 0.5)) next
     #if(a1 > 0.5 || a2 < 0.5) next
    ##if(abs(a1-a2) < 0.03) next
     #找出距离最大的参数
-    r = data.frame(a1=a1,a2=a2,n=n,abs=abs(a1 - a2))
+    precise =  fitness(tb,na.omit(as.data.frame(p)))
+    if(precise < 0.5) next
+    
+    r = data.frame(n=n,precise=precise)
     result = rbind(result,r)
     
   }
   if(nrow(result) == 0) return(NA)
-  s = subset(result,abs==max(result$abs))[1,]
+  s = subset(result,precise==max(result$precise))[1,]
   return(s)
 }
 
@@ -300,11 +322,10 @@ optimROC = function(pricedata,analysedata,start,end,npara,seppara)
   {
     for(sep in seppara)
     {
-      rocsignal = getROCsignal(pricedata,n,sep,period)
-      rocsignal = rocsignal[period]
-      colnames(rocsignal) ='signal'
+      signal = getROCsignal(pricedata,n,sep,period)
+      colnames(signal) ='signal'
       
-      p = merge(analysedata_train[,'leadclflag'],rocsignal)
+      p = merge(analysedata_train[,'leadclflag'],signal)
       p[p=='hold'] = NA
       
       #有效信号占比小于10% 过滤
@@ -312,21 +333,23 @@ optimROC = function(pricedata,analysedata,start,end,npara,seppara)
       if(effecratio < 0.1) next
       
       tb = naiveBayes(leadclflag~signal,data=as.data.frame(p))
-      
-      a1 = tb$tables[[1]][1,1]
-      a2 = tb$tables[[1]][2,1]
-      #同时大于或小于0.5 则不考虑
-      if(sign(a1-0.5) == sign(a2 - 0.5)) next
+#       
+#       a1 = tb$tables[[1]][1,1]
+#       a2 = tb$tables[[1]][2,1]
+#       #同时大于或小于0.5 则不考虑
+#       if(sign(a1-0.5) == sign(a2 - 0.5)) next
       #if(a1 > 0.5 || a2 < 0.5) next
      ##if(abs(a1-a2) < 0.03) next
       #找出距离最大的参数
-      r = data.frame(a1=a1,a2=a2,n=n,sep=sep,abs=abs(a1 - a2))
+      precise =  fitness(tb,na.omit(as.data.frame(p)))
+      if(precise < 0.5) next
+      r = data.frame(n=n,sep=sep,precise=precise)
       result = rbind(result,r)
     }
   }
   
   if(nrow(result) == 0) return(NA)
-  s = subset(result,abs==max(result$abs))[1,]
+  s = subset(result,precise==max(result$precise))[1,]
   return(s)
 }
 
@@ -340,10 +363,9 @@ optimSAR = function(pricedata,analysedata,start,end,a1para,a2para)
   {
     for(ac2 in a2para)
     {
-      sarsignal = getSARsignal(pricedata,ac1,ac2,period)
-      sarsignal = sarsignal[period]
-      colnames(sarsignal) ='signal'
-      p = merge(analysedata_train[,'leadclflag'],sarsignal)
+      signal = getSARsignal(pricedata,ac1,ac2,period)
+      colnames(signal) ='signal'
+      p = merge(analysedata_train[,'leadclflag'],signal)
       p[p=='hold'] = NA
       
       #有效信号占比小于10% 过滤
@@ -351,20 +373,22 @@ optimSAR = function(pricedata,analysedata,start,end,a1para,a2para)
       if(effecratio < 0.1) next
       
       tb = naiveBayes(leadclflag~signal,data=as.data.frame(p))
-      
-      a1 = tb$tables[[1]][1,1]
-      a2 = tb$tables[[1]][2,1]
-      #同时大于或小于0.5 则不考虑
-      if(sign(a1-0.5) == sign(a2 - 0.5)) next
+#       
+#       a1 = tb$tables[[1]][1,1]
+#       a2 = tb$tables[[1]][2,1]
+#       #同时大于或小于0.5 则不考虑
+#       if(sign(a1-0.5) == sign(a2 - 0.5)) next
       #if(a1 > 0.5 || a2 < 0.5) next
      ##if(abs(a1-a2) < 0.03) next
       #找出距离最大的参数
-      r = data.frame(a1=a1,a2=a2,ac1=ac1,ac2=ac2,abs=abs(a1 - a2))
+      precise =  fitness(tb,na.omit(as.data.frame(p)))
+      if(precise < 0.5) next
+      r = data.frame(ac1=ac1,ac2=ac2,precise=precise)
       result = rbind(result,r)
     }
   }
   if(nrow(result) == 0) return(NA)
-  s = subset(result,abs==max(result$abs))[1,]
+  s = subset(result,precise==max(result$precise))[1,]
   return(s)
 }
 
@@ -380,10 +404,9 @@ optimWPR = function(pricedata,analysedata,start,end,npara,uppara,downpara)
     {
       for(down in downpara)
       {
-        wprsignal = getWPRsignal(pricedata,n,up,down,period)
-        wprsignal = wprsignal[period]
-        colnames(wprsignal) ='signal'
-        p = merge(analysedata_train[,'leadclflag'],wprsignal)
+        signal = getWPRsignal(pricedata,n,up,down,period)
+        colnames(signal) ='signal'
+        p = merge(analysedata_train[,'leadclflag'],signal)
         p[p=='hold'] = NA
         
         #有效信号占比小于10% 过滤
@@ -392,20 +415,22 @@ optimWPR = function(pricedata,analysedata,start,end,npara,uppara,downpara)
         
         tb = naiveBayes(leadclflag~signal,data=as.data.frame(p))
         
-        a1 = tb$tables[[1]][1,1]
-        a2 = tb$tables[[1]][2,1]
-        #同时大于或小于0.5 则不考虑
-        if(sign(a1-0.5) == sign(a2 - 0.5)) next
+#         a1 = tb$tables[[1]][1,1]
+#         a2 = tb$tables[[1]][2,1]
+#         #同时大于或小于0.5 则不考虑
+#         if(sign(a1-0.5) == sign(a2 - 0.5)) next
         #if(a1 > 0.5 || a2 < 0.5) next
       ##if(abs(a1-a2) < 0.03) next
         #找出距离最大的参数
-        r = data.frame(a1=a1,a2=a2,n=n,up=up,down=down,abs=abs(a1 - a2))
+        precise =  fitness(tb,na.omit(as.data.frame(p)))
+        if(precise < 0.5) next
+        r = data.frame(n=n,up=up,down=down,precise=precise)
         result = rbind(result,r)
       }
     }
   }
   if(nrow(result) == 0) return(NA)
-  s = subset(result,abs==max(result$abs))[1,]
+  s = subset(result,precise==max(result$precise))[1,]
   return(s)
 }
 
@@ -422,32 +447,34 @@ optimKDJ = function(pricedata,analysedata,start,end,nfkpara,nfdpara,nsdpara)
     {
       for(nsd in nsdpara)
       {
-        kdjsignal = getKDJsignal(pricedata,nfk,nfd,nsd,period)
-        colnames(kdjsignal) = 'signal'
+        signal = getKDJsignal(pricedata,nfk,nfd,nsd,period)
+        colnames(signal) = 'signal'
         
-        p = merge(analysedata_train[,'leadclflag'],kdjsignal)
+        p = merge(analysedata_train[,'leadclflag'],signal)
         p[p=='hold'] = NA
         
         #有效信号占比小于10% 过滤
         effecratio = length(p[,2][!is.na(p[,2])]) / length(p[,2])
         if(effecratio < 0.1) next
         
-        tb = naiveBayes(leadclflag~signal,data=as.data.frame(p))
-        
-        a1 = tb$tables[[1]][1,1]
-        a2 = tb$tables[[1]][2,1]
+         tb = naiveBayes(leadclflag~signal,data=as.data.frame(p))
+#         
+#         a1 = tb$tables[[1]][1,1]
+#         a2 = tb$tables[[1]][2,1]
         #同时大于或小于0.5 则不考虑
-        if(sign(a1-0.5) == sign(a2 - 0.5)) next
+        #if(sign(a1-0.5) == sign(a2 - 0.5)) next
         #if(a1 > 0.5 || a2 < 0.5) next
       #if(abs(a1-a2) < 0.03) next
         #找出距离最大的参数
-        r = data.frame(a1=a1,a2=a2,nfk=nfk,nfd=nfd,nsd=nsd,abs=abs(a1 - a2))
+        precise =  fitness(tb,na.omit(as.data.frame(p)))
+        if(precise < 0.5) next
+        r = data.frame(nfk=nfk,nfd=nfd,nsd=nsd,precise=precise)
         result = rbind(result,r)
       }
     }
   }
   if(nrow(result) == 0) return(NA)
-  s = subset(result,abs==max(result$abs))[1,]
+  s = subset(result,precise==max(result$precise))[1,]
   return(s)  
 }
 
@@ -463,10 +490,10 @@ optimTDI = function(pricedata,analysedata,start,end,npara,seppara)
   {
     for(sep in seppara)
     {
-      tdisignal = getTDIsignal(pricedata,n,sep,period)
-      colnames(tdisignal) = 'signal'
+      signal = getTDIsignal(pricedata,n,sep,period)
+      colnames(signal) = 'signal'
       
-      p = merge(analysedata_train[,'leadclflag'],tdisignal)
+      p = merge(analysedata_train[,'leadclflag'],signal)
       p[p=='hold'] = NA
       
       #有效信号占比小于10% 过滤
@@ -475,19 +502,21 @@ optimTDI = function(pricedata,analysedata,start,end,npara,seppara)
       
       tb = naiveBayes(leadclflag~signal,data=as.data.frame(p))
       
-      a1 = tb$tables[[1]][1,1]
-      a2 = tb$tables[[1]][2,1]
-      #同时大于或小于0.5 则不考虑
-      if(sign(a1-0.5) == sign(a2 - 0.5)) next
+#       a1 = tb$tables[[1]][1,1]
+#       a2 = tb$tables[[1]][2,1]
+#       #同时大于或小于0.5 则不考虑
+#       if(sign(a1-0.5) == sign(a2 - 0.5)) next
       #if(a1 > 0.5 || a2 < 0.5) next
     #if(abs(a1-a2) < 0.03) next
       #找出距离最大的参数
-      r = data.frame(a1=a1,a2=a2,n=n,sep=sep,abs=abs(a1 - a2))
+      precise =  fitness(tb,na.omit(as.data.frame(p)))
+      if(precise < 0.5) next
+      r = data.frame(n=n,sep=sep,precise=precise)
       result = rbind(result,r)
     }
   }
   if(nrow(result) == 0) return(NA)
-  s = subset(result,abs==max(result$abs))[1,]
+  s = subset(result,precise==max(result$precise))[1,]
   return(s)
 }
 
@@ -499,11 +528,10 @@ optimKST = function(pricedata,analysedata,start,end,npara)
   result = data.frame()
   for(n in npara)
   {
-    kstsignal = getKSTsignal(pricedata,n,period)
-    kstsignal = kstsignal[period]
-    colnames(kstsignal) = 'signal'
+    signal = getKSTsignal(pricedata,n,period)
+    colnames(signal) = 'signal'
     
-    p = merge(analysedata_train[,'leadclflag'],kstsignal)
+    p = merge(analysedata_train[,'leadclflag'],signal)
     p[p=='hold'] = NA
     
     #有效信号占比小于10% 过滤
@@ -512,18 +540,20 @@ optimKST = function(pricedata,analysedata,start,end,npara)
     
     tb = naiveBayes(leadclflag~signal,data=as.data.frame(p))
     
-    a1 = tb$tables[[1]][1,1]
-    a2 = tb$tables[[1]][2,1]
-    #同时大于或小于0.5 则不考虑
-    if(sign(a1-0.5) == sign(a2 - 0.5)) next
+#     a1 = tb$tables[[1]][1,1]
+#     a2 = tb$tables[[1]][2,1]
+#     #同时大于或小于0.5 则不考虑
+#     if(sign(a1-0.5) == sign(a2 - 0.5)) next
     #if(a1 > 0.5 || a2 < 0.5) next
   #if(abs(a1-a2) < 0.03) next
     #找出距离最大的参数
-    r = data.frame(a1=a1,a2=a2,n=n,abs=abs(a1 - a2))
+    precise =  fitness(tb,na.omit(as.data.frame(p)))
+    if(precise < 0.5) next
+    r = data.frame(n=n,precise=precise)
     result = rbind(result,r)
   }
   if(nrow(result) == 0) return(NA)
-  s = subset(result,abs==max(result$abs))[1,]
+  s = subset(result,precise==max(result$precise))[1,]
   return(s)
 }
 
@@ -546,11 +576,10 @@ optimOBV = function(pricedata,analysedata,start,end,seppara)
   result = data.frame()
   for(sep in seppara)
   {
-    obvsignal = getOBVsignal(pricedata,sep,period)
-    obvsignal = obvsignal[period]
-    colnames(obvsignal) = 'signal'
+    signal = getOBVsignal(pricedata,sep,period)
+    colnames(signal) = 'signal'
     
-    p = merge(analysedata_train[,'leadclflag'],obvsignal)
+    p = merge(analysedata_train[,'leadclflag'],signal)
     p[p=='hold'] = NA
     
     #有效信号占比小于10% 过滤
@@ -559,18 +588,20 @@ optimOBV = function(pricedata,analysedata,start,end,seppara)
     
     tb = naiveBayes(leadclflag~signal,data=as.data.frame(p))
     
-    a1 = tb$tables[[1]][1,1]
-    a2 = tb$tables[[1]][2,1]
-    #同时大于或小于0.5 则不考虑
-    if(sign(a1-0.5) == sign(a2 - 0.5)) next
+#     a1 = tb$tables[[1]][1,1]
+#     a2 = tb$tables[[1]][2,1]
+#     #同时大于或小于0.5 则不考虑
+#     if(sign(a1-0.5) == sign(a2 - 0.5)) next
     #if(a1 > 0.5 || a2 < 0.5) next
   #if(abs(a1-a2) < 0.03) next
     #找出距离最大的参数
-    r = data.frame(a1=a1,a2=a2,sep=sep,abs=abs(a1 - a2))
+    precise =  fitness(tb,na.omit(as.data.frame(p)))
+    if(precise < 0.5) next
+    r = data.frame(sep=sep,precise=precise)
     result = rbind(result,r)
   }
   if(nrow(result) == 0) return(NA)
-  s = subset(result,abs==max(result$abs))[1,]
+  s = subset(result,precise==max(result$precise))[1,]
   return(s)
 }
 
@@ -584,10 +615,10 @@ optimCMO = function(pricedata,analysedata,start,end,npara,n1para)
   {
     for(n1 in n1para)
     {
-      cmosignal = getCMOsignal(pricedata,n,n1,period)
-      colnames(cmosignal) = 'signal'
+      signal = getCMOsignal(pricedata,n,n1,period)
+      colnames(signal) = 'signal'
       
-      p = merge(analysedata_train[,'leadclflag'],cmosignal)
+      p = merge(analysedata_train[,'leadclflag'],signal)
       p[p=='hold'] = NA
       
       #有效信号占比小于10% 过滤
@@ -595,21 +626,23 @@ optimCMO = function(pricedata,analysedata,start,end,npara,n1para)
       if(effecratio < 0.1) next
       
       tb = naiveBayes(leadclflag~signal,data=as.data.frame(p))
-      
-      a1 = tb$tables[[1]][1,1]
-      a2 = tb$tables[[1]][2,1]
-      #同时大于或小于0.5 则不考虑
-      if(sign(a1-0.5) == sign(a2 - 0.5)) next
+#       
+#       a1 = tb$tables[[1]][1,1]
+#       a2 = tb$tables[[1]][2,1]
+#       #同时大于或小于0.5 则不考虑
+#       if(sign(a1-0.5) == sign(a2 - 0.5)) next
       #if(a1 > 0.5 || a2 < 0.5) next
     #if(abs(a1-a2) < 0.03) next
       #找出距离最大的参数
-      r = data.frame(a1=a1,a2=a2,n=n,n1=n1,abs=abs(a1 - a2))
+      precise =  fitness(tb,na.omit(as.data.frame(p)))
+      if(precise < 0.5) next
+      r = data.frame(n=n,n1=n1,precise=precise)
       result = rbind(result,r)
       
     }
   }
   if(nrow(result) == 0) return(NA)
-  s = subset(result,abs==max(result$abs))[1,]
+  s = subset(result,precise==max(result$precise))[1,]
   return(s)
 }
 
@@ -625,9 +658,9 @@ optimCMF = function(pricedata,analysedata,start,end,npara,seppara)
   {
     for(sep in seppara)
     {
-      cmfsignal = getCMFsignal(pricedata,n,sep,period)
-      colnames(cmfsignal) = 'signal'
-      p = merge(analysedata_train[,'leadclflag'],cmfsignal)
+      signal = getCMFsignal(pricedata,n,sep,period)
+      colnames(signal) = 'signal'
+      p = merge(analysedata_train[,'leadclflag'],signal)
       p[p=='hold'] = NA
       
       #有效信号占比小于10% 过滤
@@ -636,20 +669,22 @@ optimCMF = function(pricedata,analysedata,start,end,npara,seppara)
       
       tb = naiveBayes(leadclflag~signal,data=as.data.frame(p))
       
-      a1 = tb$tables[[1]][1,1]
-      a2 = tb$tables[[1]][2,1]
-      #同时大于或小于0.5 则不考虑
-      if(sign(a1-0.5) == sign(a2 - 0.5)) next
+#       a1 = tb$tables[[1]][1,1]
+#       a2 = tb$tables[[1]][2,1]
+#       #同时大于或小于0.5 则不考虑
+#       if(sign(a1-0.5) == sign(a2 - 0.5)) next
   #if(a1 > 0.5 || a2 < 0.5) next
   #if(abs(a1-a2) < 0.03) next
       #找出距离最大的参数
-      r = data.frame(a1=a1,a2=a2,n=n,sep=sep,abs=abs(a1 - a2))
+      precise =  fitness(tb,na.omit(as.data.frame(p)))
+      if(precise < 0.5) next
+      r = data.frame(n=n,sep=sep,precise=precise)
       result = rbind(result,r)
       
     }
   }
   if(nrow(result) == 0) return(NA)
-  s = subset(result,abs==max(result$abs))[1,]
+  s = subset(result,precise==max(result$precise))[1,]
   return(s)
 }
 
@@ -665,10 +700,10 @@ optimEMV = function(pricedata,analysedata,start,end,npara,seppara)
   {
     for(sep in seppara)
     {
-      emvsignal = getEMVsignal(pricedata,n,sep,period) 
-      colnames(emvsignal) = 'signal'
+      signal = getEMVsignal(pricedata,n,sep,period) 
+      colnames(signal) = 'signal'
       
-      p = merge(analysedata_train[,'leadclflag'],emvsignal)
+      p = merge(analysedata_train[,'leadclflag'],signal)
       p[p=='hold'] = NA
       
       #有效信号占比小于10% 过滤
@@ -677,19 +712,21 @@ optimEMV = function(pricedata,analysedata,start,end,npara,seppara)
       
       tb = naiveBayes(leadclflag~signal,data=as.data.frame(p))
       
-      a1 = tb$tables[[1]][1,1]
-      a2 = tb$tables[[1]][2,1]
-      #同时大于或小于0.5 则不考虑
-      if(sign(a1-0.5) == sign(a2 - 0.5)) next
+#       a1 = tb$tables[[1]][1,1]
+#       a2 = tb$tables[[1]][2,1]
+#       #同时大于或小于0.5 则不考虑
+#       if(sign(a1-0.5) == sign(a2 - 0.5)) next
       #if(a1 > 0.5 || a2 < 0.5) next
     #if(abs(a1-a2) < 0.03) next
       #找出距离最大的参数
-      r = data.frame(a1=a1,a2=a2,n=n,sep=sep,abs=abs(a1 - a2))
+      precise =  fitness(tb,na.omit(as.data.frame(p)))
+      if(precise < 0.5) next
+      r = data.frame(n=n,sep=sep,precise=precise)
       result = rbind(result,r)
     }
   }
   if(nrow(result) == 0) return(NA)
-  s = subset(result,abs==max(result$abs))[1,]
+  s = subset(result,precise==max(result$precise))[1,]
   return(s)
    
 }
@@ -704,10 +741,10 @@ optimTRIX = function(pricedata,analysedata,start,end,npara,sigpara)
   {
     for(sig in sigpara)
     {
-      trixsignal = getTRIXsignal(pricedata,n,sig,period)
-      colnames(trixsignal) = 'signal'
+      signal = getTRIXsignal(pricedata,n,sig,period)
+      colnames(signal) = 'signal'
       
-      p = merge(analysedata_train[,'leadclflag'],trixsignal)
+      p = merge(analysedata_train[,'leadclflag'],signal)
       p[p=='hold'] = NA
       
       #有效信号占比小于10% 过滤
@@ -716,19 +753,21 @@ optimTRIX = function(pricedata,analysedata,start,end,npara,sigpara)
       
       tb = naiveBayes(leadclflag~signal,data=as.data.frame(p))
       
-      a1 = tb$tables[[1]][1,1]
-      a2 = tb$tables[[1]][2,1]
-      #同时大于或小于0.5 则不考虑
-      if(sign(a1-0.5) == sign(a2 - 0.5)) next
+#       a1 = tb$tables[[1]][1,1]
+#       a2 = tb$tables[[1]][2,1]
+#       #同时大于或小于0.5 则不考虑
+#       if(sign(a1-0.5) == sign(a2 - 0.5)) next
       #if(a1 > 0.5 || a2 < 0.5) next
     #if(abs(a1-a2) < 0.03) next
       #找出距离最大的参数
-      r = data.frame(a1=a1,a2=a2,n=n,sig=sig,abs=abs(a1 - a2))
+      precise =  fitness(tb,na.omit(as.data.frame(p)))
+      if(precise < 0.5) next
+      r = data.frame(n=n,sig=sig,precise=precise)
       result = rbind(result,r)
     }
   }
   if(nrow(result) == 0) return(NA)
-  s = subset(result,abs==max(result$abs))[1,]
+  s = subset(result,precise==max(result$precise))[1,]
   return(s)
 }
 
@@ -741,10 +780,10 @@ optimWilliamsAD = function(pricedata,analysedata,start,end,seppara)
   
   for(sep in seppara)
   {
-    williamsadsignal = getWilliamADsignal(pricedata,sep,period)
-    colnames(williamsadsignal) = 'signal'
+    signal = getWilliamADsignal(pricedata,sep,period)
+    colnames(signal) = 'signal'
     
-    p = merge(analysedata_train[,'leadclflag'],williamsadsignal)
+    p = merge(analysedata_train[,'leadclflag'],signal)
     p[p=='hold'] = NA
     
     #有效信号占比小于10% 过滤
@@ -753,17 +792,19 @@ optimWilliamsAD = function(pricedata,analysedata,start,end,seppara)
     
     tb = naiveBayes(leadclflag~signal,data=as.data.frame(p))
     
-    a1 = tb$tables[[1]][1,1]
-    a2 = tb$tables[[1]][2,1]
-    #同时大于或小于0.5 则不考虑
-    if(sign(a1-0.5) == sign(a2 - 0.5)) next
+#     a1 = tb$tables[[1]][1,1]
+#     a2 = tb$tables[[1]][2,1]
+#     #同时大于或小于0.5 则不考虑
+#     if(sign(a1-0.5) == sign(a2 - 0.5)) next
     #if(a1 > 0.5 || a2 < 0.5) next
   #if(abs(a1-a2) < 0.03) next
     #找出距离最大的参数
-    r = data.frame(a1=a1,a2=a2,sep=sep,abs=abs(a1 - a2))
+    precise =  fitness(tb,na.omit(as.data.frame(p)))
+    if(precise < 0.5) next
+    r = data.frame(sep=sep,precise=precise)
     result = rbind(result,r)
   }
   if(nrow(result) == 0) return(NA)
-  s = subset(result,abs==max(result$abs))[1,]
+  s = subset(result,precise==max(result$precise))[1,]
   return(s)
 }
