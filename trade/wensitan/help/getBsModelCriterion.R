@@ -56,7 +56,7 @@ getBsModelCriterion = function(longtotest,f,testdate,pricedata,analysedata)
   }
   
   pred <- prediction(as.numeric(signals[,1]), signals[,2])
-  perf <- performance(pred,"tpr")
+  perf <- performance(pred,"auc")
   print(perf@y.values[[1]])
   return(perf@y.values[[1]])
 }

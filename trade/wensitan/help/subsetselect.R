@@ -36,7 +36,7 @@ forwardsubset = function(longtotest,varset,testdate,pricedata,analysedata)
   
   l = l[order(sapply(l,function(x){x$precise}),decreasing=TRUE)]
   
-  bestset = l[1:5]
+  bestset = l[1:10]
   
   for(i in 1: (varset_length - 1))
   {
@@ -65,7 +65,7 @@ forwardsubset = function(longtotest,varset,testdate,pricedata,analysedata)
     
     templist = templist[order(sapply(templist,function(x){x$precise}),decreasing=TRUE)]
     templist = uniquelist(templist)
-    bestset = append(bestset,templist[1:5])
+    bestset = append(bestset,templist[1:10])
   }
   
   bestset1 = Filter(function(x){length(x) >0},bestset)

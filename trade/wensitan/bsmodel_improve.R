@@ -23,6 +23,9 @@ sourceDir('D:/Rcode/code/RSTOCK_TRAIL/trade/wensitan/help')
 #load('GSPC.Rdata')
 #colnames(pricedata) = gsub('N225','',colnames(pricedata))
 pricedata = readSHindex()
+#name = names(pricedata)
+#pricedata = to.weekly(pricedata)
+#names(pricedata) = name[1:5]
 pricedata = na.omit(pricedata)
 #处理待预测数据，用lead提前一天，把头天的涨跌加入预测变量
 cl = Cl(pricedata) - Op(pricedata)
