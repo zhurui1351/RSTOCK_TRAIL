@@ -259,7 +259,7 @@ code_yh = ifelse(substr(code,1,1) == '6',paste(code,'SS',sep='.'),paste(code,'SZ
 code_sina = ifelse(substr(code,1,1) == '6',paste('sh',code,sep=''),paste('sz',code,sep=''))
 
 
-codes = c('600618')
+#codes = c('600618')
 monitormonth = function(codes)
 {
   tt = sapply(codes, function(x){
@@ -267,7 +267,7 @@ monitormonth = function(codes)
     code_yh = ifelse(substr(code,1,1) == '6',paste(code,'SS',sep='.'),paste(code,'SZ',sep='.'))
     code_sina = ifelse(substr(code,1,1) == '6',paste('sh',code,sep=''),paste('sz',code,sep=''))
     e = parent.env(environment())
-    rm(list = code_yh,envir=e)
+ #   rm(list = code_yh,envir=e)
     if(!exists(code_yh))
     {
       p = suppressWarnings(getSymbols(code_yh,from='1990-01-01',auto.assign = F))
@@ -278,7 +278,7 @@ monitormonth = function(codes)
   })
   while(T)
   {
-    date = '20151201'
+    date = '20151209'
     datem = substr(date,1,6)
 
     for(code in codes)
@@ -289,7 +289,7 @@ monitormonth = function(codes)
       code_sina = ifelse(substr(code,1,1) == '6',paste('sh',code,sep=''),paste('sz',code,sep=''))
       p = get(code_yh)
       pm = to.monthly(p)
-      pm =p[datem]
+      pm =pm[datem]
       p$sma3 = SMA(Cl(p),3)
       p$sma5 = SMA(Cl(p),5)
       p$sma30 = SMA(Cl(p),30)

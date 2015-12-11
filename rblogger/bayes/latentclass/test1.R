@@ -1,4 +1,5 @@
 #http://www.r-bloggers.com/example-8-21-latent-class-analysis/
+#http://www.r-bloggers.com/latent-class-modeling-election-data/
 require('poLCA')
 ds = read.csv("http://www.math.smith.edu/r/data/help.csv")
 ds = within(ds, (cesdcut = ifelse(cesd>20, 1, 0)))
@@ -7,6 +8,9 @@ res2 = poLCA(cbind(homeless=homeless+1,
                    linkstatus=linkstatus+1) ~ 1, 
              maxiter=50000, nclass=3, 
              nrep=10, data=ds)
+
+#http://www.r-bloggers.com/latent-class-analysis-with-polca/
+
 
 #http://www.r-bloggers.com/latent-class-modeling-election-data/
 set.seed(1234)
@@ -37,7 +41,7 @@ lca.fit2 <- poLCA(f,raw.flat,nclass=2, nrep=5)
 
 f = cbind(A, B, C)~1
 lca.fit1 <- poLCA(f,raw.flat,nclass=1, nrep=5)
-lca.fit2 <- poLCA(f,raw.flat,nclass=2, nrep=5)
+lca.fit2 <- poLCA(f,raw.flat,nclass=2, nrep=5,graphs=T)
 # Example dataset from the poLCA package
 data(election)
 # build the model with PARTY as the covariate
@@ -137,3 +141,11 @@ m3 = flexmix(~x, data=NPreg, k=2, model=list(FLXMRglm(yn~.+I(x^2)), FLXMRglm(yp~
 summary(m3)
 m4 <- flexmix(yn ~ x + I(x^2) | id2, data = NPreg, k = 2)
 summary(m4)
+
+
+data(carcinoma)
+head(carcinoma)
+f <- cbind(A,B,C,D,E,F,G)~1
+lc2 <- poLCA(f,carcinoma,nclass=2)
+lc3 <- poLCA(f,carcinoma,nclass=3)
+lc4 <- poLCA(f,carcinoma,nclass=4,maxiter=5000)
