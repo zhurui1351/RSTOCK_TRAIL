@@ -1,4 +1,5 @@
 #http://www.r-bloggers.com/lang/chinese/1111
+#http://wenku.baidu.com/link?url=WzBa6fGZ0hUU-36ggr0q1vDnooAjZT9cL2bTC962-wSxS5sIuEC6ZFETbMXCqpD8tWwRjExYcEkpK3F2ZxNmbuAESoGz4XEL7Pr-Ai8bzyW
 h = 20
 c = 10
 d = 10
