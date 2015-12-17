@@ -267,7 +267,7 @@ monitormonth = function(codes)
     code_yh = ifelse(substr(code,1,1) == '6',paste(code,'SS',sep='.'),paste(code,'SZ',sep='.'))
     code_sina = ifelse(substr(code,1,1) == '6',paste('sh',code,sep=''),paste('sz',code,sep=''))
     e = parent.env(environment())
- #   rm(list = code_yh,envir=e)
+    rm(list = code_yh,envir=e)
     if(!exists(code_yh))
     {
       p = suppressWarnings(getSymbols(code_yh,from='1990-01-01',auto.assign = F))
@@ -278,7 +278,7 @@ monitormonth = function(codes)
   })
   while(T)
   {
-    date = '20151209'
+    date = '20151217'
     datem = substr(date,1,6)
 
     for(code in codes)
@@ -311,7 +311,7 @@ monitormonth = function(codes)
 monitorinmonth = function(codes)
 {
  
-  date = '20151120'
+  date = '20151216'
   datem = substr(date,1,6) 
   tt = sapply(codes, function(x){
     code = x
