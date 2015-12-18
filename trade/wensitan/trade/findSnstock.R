@@ -334,14 +334,14 @@ monitorinmonth = function(codes)
     code_yh = ifelse(substr(code,1,1) == '6',paste(code,'SS',sep='.'),paste(code,'SZ',sep='.'))
     code_sina = ifelse(substr(code,1,1) == '6',paste('sh',code,sep=''),paste('sz',code,sep=''))
     p = get(code_yh)
-    p = to.monthly(p)
-    p = p[datem]
-    if(nrow(p) != 0)
+    pm = to.monthly(p)
+    pm = pm[datem]
+    if(nrow(pm) != 0)
     {
-      if(as.numeric(Cl(p) - Op(p)) < 0)
+      if(as.numeric(Cl(pm) - Op(pm)) < 0)
       {
         print(code)
-        print(OHLC(p))
+        print(OHLC(pm))
         return(code)
       }
     }
