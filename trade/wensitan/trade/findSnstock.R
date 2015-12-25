@@ -189,11 +189,11 @@ shindex_week$volatile = (Cl(shindex_week)-Op(shindex_week))/Op(shindex_week)
 
 shindex_week$stage = judegeStage(shindex_week$sma30)
 
-lm = findSnStock(from='1990',to='2014')
+lm = findSnStock(from='1990',to='2015')
 
 slm =  Filter(function(x){ ratio = x[[3]]
 month = x[[2]]
-ratio>=0.75 && month==12 },lm)
+ratio>=0.8 && month==2 },lm)
 
 lbest = slm[order(sapply(slm,function(x){x$ratio}),decreasing=TRUE)]
 
@@ -278,7 +278,7 @@ monitormonth = function(codes)
   })
   while(T)
   {
-    date = '20151217'
+    date = '20151223'
     datem = substr(date,1,6)
 
     for(code in codes)
@@ -311,7 +311,7 @@ monitormonth = function(codes)
 monitorinmonth = function(codes)
 {
  
-  date = '20151216'
+  date = '20151223'
   datem = substr(date,1,6) 
   tt = sapply(codes, function(x){
     code = x

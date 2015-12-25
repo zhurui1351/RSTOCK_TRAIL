@@ -12,7 +12,7 @@ a = cptable(~ A | B + E,values =c(95,5,94,6,29,71,0.1,99.9),levels = yn)
 ma = cptable(~ M | A,values=c(9,1,5,95),levels = yn)
 ja = cptable(~ J | A,values=c(7,3,1,99),levels = yn)
 
-plist <- compileCPT(list(b,e,a,ma,ja))
+plist <- compileCPT(list(b,e,a,ma,ja),details=10)
 gin1 <- grain(plist)
 summary(gin1)
 plot(gin1)

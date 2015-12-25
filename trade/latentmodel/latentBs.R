@@ -1,312 +1,99 @@
 require(igraph)
 
-#初始化图，第一次初始化后都是显变量的节点
-graph = function(nodes)
-{
-  numnodes = length(nodes)
-  g = list()
-  g$nodes = list()
-
-  
-  g$lnodenames = c()
-  g$mnodenames = nodes
-  
-  for( n in nodes)
-  {
-    g$nodes[[n]] = list()
-    g$nodes[[n]]$children = character(0)
-    g$nodes[[n]]$parents = character(0)
-    g$nodes[[n]]$nbr = character(0)
-    
-    g$arcs = matrix(nrow = 0,ncol=2,dimnames = list(NULL,c('from','to')))
+############################
+sourceDir <- function(path, trace = TRUE, ...) {
+  for (nm in list.files(path, pattern = "[.][RrSsQq]$")) {
+    if(trace) cat(nm,":")
+    source(file.path(path, nm), ...)
+    if(trace) cat("\n")
   }
-  return(g)
 }
+sourceDir("D:/Rcode/code/RSTOCK_TRAIL/trade/latentmodel/help")
+######################################
 
-setarc = function(g,from,to)
+getNBformularFromgraph = function(g)
 {
-  nodes = c(g$lnodenames,g$mnodenames)
-  if(!(from %in% nodes && to %in% nodes))
-    print(" error node name in setarc")
-  if(nrow(subset(g$arcs,g$arcs[,'from']==from & g$arcs[,'to']==to)) > 0)
-    return(g)
-  
-  g$arcs = rbind(g$arcs,c(from,to))
- 
-  g$nodes[[to]]$nbr = c(g$nodes[[from]]$children,g$nodes[[to]]$nbr)
-  for(nbr in g$nodes[[to]]$nbr)
+  if( is.null(g$classnode))
   {
-    g$nodes[[nbr]]$nbr = c(g$nodes[[nbr]]$nbr,to)
-  }
-  g$nodes[[to]]$parents = c(g$nodes[[to]]$parents,from)
-  
-  g$nodes[[from]]$children = c(g$nodes[[from]]$children,to)
-  
-  return(g)
-}
-
-deletearc = function(g,from,to)
-{
-  nodes = c(g$lnodenames,g$mnodenames)
-  if(!(from %in% nodes && to %in% nodes))
-  {
-    print('no that node')
-    return(g)
+    stop('no class node')
   }
   
-  lineno = which(g$arcs[,"from"] ==from & g$arcs[,'to'] ==to)
-  lineno = ifelse(length(lineno) == 0,0,lineno)
-  if(lineno == 0)
+  childs = childnodes(g,g$classnode)
+  if(length(childs) == 0)
   {
-    print('no that arcs')
-    return(g)
+    stop('no child node for the class node')
+  }
+  frh = paste(childs,collapse = '+')
+  f = paste(g$classnode,'~',frh)
+  return(as.formula(f))
+}
+
+getLCAformularFromgraph = function(g,nodes)
+{
+  allnodes = c(g$mnodenames,g$classnode,g$lnodenames)
+  if(length(setdiff(nodes,allnodes))>0)
+  {
+    stop('not all the nodes are in the graph')
   }
   
-  g$arcs =g$arcs[-lineno,]
-
-  g$nodes[[from]]$children = g$nodes[[from]]$children[-which(g$nodes[[from]]$children == to)]
-  g$nodes[[to]]$parents =  g$nodes[[to]]$parents[-which( g$nodes[[to]]$parents == from)]
-  
-  for(node in g$nodes[[to]]$nbr)
-  {
-    #查看是否有其他共有父亲节点
-    np = intersect(g$nodes[[node]]$parents,g$nodes[[to]]$parents)
-    if(length(np) > 1)
-    {
-      break
-    }
-    
-    g$nodes[[to]]$nbr =  g$nodes[[to]]$nbr[-which( g$nodes[[to]]$nbr == node)]
-    g$nodes[[node]]$nbr =  g$nodes[[node]]$nbr[-which( g$nodes[[node]]$nbr == to)]
-    
-  }
-  return(g)
+  f1 = paste(nodes,collapse = ',')
+  f2 = paste('cbind(',f1,')','~ 1')
+  f = as.formula(eval(f2))
+  return(f)
 }
 
-setarcs = function(g,arcs)
-{
-  for(i in 1 : nrow(arcs))
-  {
-    g = setarc(g,arcs[i,]['from'],arcs[i,]['to'])
-  }
-  return(g)
-}
+########handy test code to compute HNB
+#初始化为朴素贝叶斯分类器
+mnodes = c('smastatus','ccistatus','cmostatus','shortstatus','longstatus','rocstatus',
+           'sarstatus','wprstatus','kdjstatus','chkVostatus','obvstatus','cmostatus','trixstatus')
+graph0 = graph(mnodes)
+graph0 = assignClassNode(graph0,'leadclflag')
+graph0 = initNBgraph(graph0)
+plot.mygraph(graph0)
+
+#数据准备
+datasubset = analysedata_2000_6[,c('leadclflag',mnodes)]
+data_train = as.data.frame(datasubset['1994/1999'])
+data_train = na.omit(data_train)
+data_test = as.data.frame(datasubset['2001'])
+data_test = na.omit(data_test)
+
+data_train =as.data.frame(ifelse(data_train=='more',1,ifelse(data_train == 'less',2,ifelse(data_train=='up','up','down'))))
+data_test =  as.data.frame(ifelse(data_test=='more',1,ifelse(data_test == 'less',2,ifelse(data_test=='up','up','down'))))
+
+#朴素贝叶斯的分类效果
+fnb = getNBformularFromgraph(graph0)
+
+model = naiveBayes(fnb,data=data_train,na.action = na.pass,laplace=1)
+pr = predict(model,data_test)
+table(data_test$leadclflag,pr)
+
+#生成潜变量结构模型
+
+childset = c('kdjstatus','smastatus')
+flatent = getLCAformularFromgraph(graph0,childset)
+res = poLCA(flatent, 
+            maxiter=50000, nclass=2, 
+            nrep=10, data=data_train[,childset])
 
 
+pr_l1 = ifelse(res$posterior[,1] > res$posterior[,2],'1','2')
+d_new_train = cbind(data_train,pr_l1)
+colnames(d_new_train) = c(colnames(data_train),'temp0')
 
-plot.mygraph = function(g)
-{
-  if(nrow(g$arcs) > 0)
-  {
-    vedges = as.vector(t(g$arcs))
-    gr = make_graph(vedges)
-    plot(gr)
-  }
- 
-}
 
-addlatentnodes = function(g,nodes)
-{
-  if(any(nodes %in% c(g$lnodenames,g$mnodenames))) 
-  {
-    warning('the nodes have repeated names')
-    return(g)
-  }
-  g$lnodenames = c(g$lnodenames,nodes)
-  g$nodes = c(g$nodes,nodes)
-  for( n in nodes)
-  {
-    g$nodes[[n]] = list()
-    g$nodes[[n]]$children = character(0)
-    g$nodes[[n]]$parents = character(0)
-    g$nodes[[n]]$nbr = character(0)
-  }
-  return(g)
-}
+d_new_test = data_test[,childset]
+pr_l2 = poLCA.posterior(res,mapply(as.numeric,d_new_test))
+d_new_test = cbind(data_test,pr_l2)
+colnames(d_new_test) = c(colnames(data_test),'temp0')
 
-hasnode = function(g,nodename)
-{
-  if(nodename %in% c(g$mnodenames, g$lnodenames))
-    return(T)
-  return(F)
-}
 
-assignClassNode = function(g,classnode)
-{
-  if(hasnode(g,classnode))
-  {
-    g$classnode = classnode
-  }
-  else
-  {
-    g$classnode = classnode
-    g$nodes = c(g$nodes,nodes)
-    for( n in nodes)
-    {
-      g$nodes[[n]] = list()
-      g$nodes[[n]]$children = character(0)
-      g$nodes[[n]]$parents = character(0)
-      g$nodes[[n]]$nbr = character(0)
-    }
-  }
-  return(g)
-}
+graph1 =parent_introduction(graph0,graph0$classnode,childset[1],childset[2])
+plot.mygraph(graph1)
+fnb = getNBformularFromgraph(graph1)
 
-haschild = function(g,pnode,chil)
-{
-  if(!hasnode(g,pnode))
-  {
-    warning('no pnode in graph')
-    return(F)
-  }
-  if(is.element(chil,g$nodes[[pnode]]$children))
-    return(T)
-  return(F)
-}
+model = naiveBayes(fnb,data=d_new_train,na.action = na.pass)
+pr = predict(model,d_new_test)
+table(data_test$leadclflag,pr)
 
-childnodes = function(g,node)
-{
-  if(!hasnode(g,node))
-  {
-    warning('no node in graph')
-    return(NULL)
-  }
-  return(g$nodes[[node]]$child)
-}
 
-parentnodes = function(g,node)
-{
-  if(!hasnode(g,node))
-  {
-    warning('no node in graph')
-    return(NULL)
-  }
-  return(g$nodes[[node]]$parents)
-}
-
-newlnodename = function(g)
-{
-  allnames = c(g$mnodenames,g$lnodenames)
-  name = 'temp'
-  i = 0;
-  lname = paste(name,i,sep='')
-  while(is.element(lname,allnames))
-  {
-    i = i + 1;
-    lname = paste(name,i,sep='')
-  }
-  return(lname)
-}
-
-parent_introduction = function(g,pnode,chil1,chil2)
-{
-  if(!(hasnode(g,pnode) && hasnode(g,chil1) && hasnode(g,chil2)))
-  {
-    warning('these nodes are not in nodes of g')
-    return(g)
-  }
-  if(!(haschild(g,pnode,chil1) && haschild(g,pnode,chil2)))
-  {
-    warning('no child in the parent')
-    return(g)
-  }
-  
-  lname = newlnodename(g)
-  g = deletearc(g,from=pnode,to=chil1)
-  g = deletearc(g,from = pnode,to=chil2)
-  g = addlatentnodes(g,lname)
-  arcs = matrix(c(pnode,lname,lname,chil1,lname,chil2),ncol=2,byrow=T,dimnames= list(c(),c("from","to")))
-  g = setarcs(g,arcs)
-}
-
-parent_alteration = function(g,pnode,chil,newp)
-{
-  if(!(hasnode(g,pnode) && hasnode(g,chil) && hasnode(g,newp)))
-  {
-    warning('these nodes are not in nodes of g')
-    return(g)
-  }
-  if(!(haschild(g,pnode,chil)))
-  {
-    warning('no child in the parent')
-    return(g)
-  }
-  
-  g = deletearc(g,from=pnode,to=chil)
-  g = setarc(g,from = newp,to = chil)
-  
-  return(g)
-}
-
-node_deletion = function(g,node)
-{
-  if(!(hasnode(g,node) ))
-  {
-    warning('these nodes are not in nodes of g')
-    return(g)
-  }
-  
-  parents = parentnodes(g,node)
-  childs = childnodes(g,node)
-  
-  if(is.null(parents))
-  {
-    if(!is.null(childs))
-    {
-      for(ch in childs)
-      {
-        g = deletearc(g,from=node,to = ch)
-      }
-      return(g)
-    }
-  }
-  else
-  {
-    if(is.null(childs))
-    {
-      for(p in parents)
-      {
-        g = deletearc(g,from=p,to=node)
-      }
-      return(g)
-      
-    }
-    else
-    {
-      for(p in parents)
-      {
-        for(ch in childs)
-        {
-          g = deletearc(g,from=node,to = ch)
-          g = setarc(g,from=p,to = ch)
-        }
-      }
-      return(g)
-      
-    }
-  }
-  
-}
-
-arcs = matrix(
-  c("a","b","b","c","a","d",'c','d'),ncol=2, byrow=TRUE,
-dimnames= list(c(),c("from","to")))
-
-g = graph(nodes)
-g = setarcs(g,arcs)
-plot.mygraph(g)
-
-lnodes = c('f','g')
-
-g1 = addlatentnodes(g,lnodes)
-g1 = setarc(g,'f','g')
-plot.mygraph(g1)
-
-g2 = deletearc(g1,from='a',to = 'b')
-plot.mygraph(g2)
-
-g3 = parent_introduction(g,'a','b','d')
-plot.mygraph(g3)
-
-g4 = node_deletion(g3,'b')
-plot.mygraph(g4)
