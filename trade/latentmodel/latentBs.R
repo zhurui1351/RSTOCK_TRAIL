@@ -1,5 +1,5 @@
 require(igraph)
-
+require(poLCA)
 ############################
 sourceDir <- function(path, trace = TRUE, ...) {
   for (nm in list.files(path, pattern = "[.][RrSsQq]$")) {
@@ -44,8 +44,10 @@ getLCAformularFromgraph = function(g,nodes)
 
 ########handy test code to compute HNB
 #初始化为朴素贝叶斯分类器
-mnodes = c('smastatus','ccistatus','cmostatus','shortstatus','longstatus','rocstatus',
-           'sarstatus','wprstatus','kdjstatus','chkVostatus','obvstatus','cmostatus','trixstatus')
+mnodes =unique(c('longstatus','Close','shortstatus','smastatus','ccistatus','rsistatus','macdstatus'
+           ,'mfistatus','rocstatus','sarstatus','wprstatus','kdjstatus'
+           ,'chkVostatus','obvstatus','cmostatus','cmfstatus','trixstatus'))
+
 graph0 = graph(mnodes)
 graph0 = assignClassNode(graph0,'leadclflag')
 graph0 = initNBgraph(graph0)
@@ -53,20 +55,39 @@ plot.mygraph(graph0)
 
 #数据准备
 datasubset = analysedata_2000_6[,c('leadclflag',mnodes)]
-data_train = as.data.frame(datasubset['1994/1999'])
+data_train = as.data.frame(datasubset['1994/2014'])
 data_train = na.omit(data_train)
 data_test = as.data.frame(datasubset['2001'])
 data_test = na.omit(data_test)
 
-data_train =as.data.frame(ifelse(data_train=='more',1,ifelse(data_train == 'less',2,ifelse(data_train=='up','up','down'))))
-data_test =  as.data.frame(ifelse(data_test=='more',1,ifelse(data_test == 'less',2,ifelse(data_test=='up','up','down'))))
+##编码数据
+ecode=function(x){
+  
+  tmp = sapply(x,function(x){
+    if(x == 'less')
+      return('1')
+    else if (x == 'more')
+      return('2')
+    else if (x == 'middle')
+      return('3')
+    else if (x == 'up')
+      return('1')
+    else if (x == 'down')
+      return('2')
+    else return(as.character(x))
+    })
+  return(tmp)
+}
+#xx = as.data.frame(mapply(ecode,data_train))
 
+data_train = as.data.frame(mapply(ecode,data_train),row.names=rownames(data_train),as.)
+data_test =  as.data.frame(mapply(ecode,data_test),row.names=rownames(data_test))
 #朴素贝叶斯的分类效果
 fnb = getNBformularFromgraph(graph0)
 
 model = naiveBayes(fnb,data=data_train,na.action = na.pass,laplace=1)
-pr = predict(model,data_test)
-table(data_test$leadclflag,pr)
+pr = predict(model,data_train)
+table(data_train$leadclflag,pr)
 
 #生成潜变量结构模型
 
@@ -81,19 +102,32 @@ pr_l1 = ifelse(res$posterior[,1] > res$posterior[,2],'1','2')
 d_new_train = cbind(data_train,pr_l1)
 colnames(d_new_train) = c(colnames(data_train),'temp0')
 
-
-d_new_test = data_test[,childset]
-pr_l2 = poLCA.posterior(res,mapply(as.numeric,d_new_test))
-d_new_test = cbind(data_test,pr_l2)
-colnames(d_new_test) = c(colnames(data_test),'temp0')
-
-
 graph1 =parent_introduction(graph0,graph0$classnode,childset[1],childset[2])
 plot.mygraph(graph1)
 fnb = getNBformularFromgraph(graph1)
 
-model = naiveBayes(fnb,data=d_new_train,na.action = na.pass)
-pr = predict(model,d_new_test)
-table(data_test$leadclflag,pr)
+model1 = naiveBayes(fnb,data=d_new_train,na.action = na.pass)
+pr1 = predict(model,d_new_train)
+table(d_new_train$leadclflag,pr1)
+
+#iter 2
+childset = c('cmostatus','rocstatus')
+flatent1 = getLCAformularFromgraph(graph1,childset)
+res1 = poLCA(flatent1, 
+            maxiter=50000, nclass=2, 
+            nrep=10, data=d_new_train[,childset])
+
+
+pr_l2 = ifelse(res1$posterior[,1] > res1$posterior[,2],'1','2')
+d_new_train1 = cbind(d_new_train,pr_l2)
+colnames(d_new_train1) = c(colnames(d_new_train),'temp1')
+
+graph2 =parent_introduction(graph1,graph1$classnode,childset[1],childset[2])
+plot.mygraph(graph2)
+fnb = getNBformularFromgraph(graph2)
+
+model2 = naiveBayes(fnb,data=d_new_train1,na.action = na.pass)
+pr1 = predict(model2,d_new_train1)
+table(d_new_train1$leadclflag,pr1)
 
 
