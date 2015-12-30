@@ -278,7 +278,7 @@ monitormonth = function(codes)
   })
   while(T)
   {
-    date = '20151223'
+    date = '20151228'
     datem = substr(date,1,6)
 
     for(code in codes)

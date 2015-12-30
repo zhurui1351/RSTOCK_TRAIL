@@ -1,4 +1,7 @@
 #初始化图，第一次初始化后都是显变量的节点
+require('bnlearn')
+require(igraph)
+require(poLCA)
 graph = function(nodes)
 {
   numnodes = length(nodes)
@@ -321,4 +324,12 @@ testgraph = function()
   g4 = node_deletion(g3,'b')
   plot.mygraph(g4)
   
+}
+
+as.graph.bn = function(g)
+{
+  nodes = c(g$lnodenames,g$mnodenames,g$classnode)
+  ug = empty.graph(nodes)
+  arcs(ug, ignore.cycles = TRUE) = g$arcs
+  return(ug)
 }

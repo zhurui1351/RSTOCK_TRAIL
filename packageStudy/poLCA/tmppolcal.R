@@ -103,7 +103,7 @@ tmplca = function (formula, data, nclass = 2, maxiter = 1000, graphs = FALSE,
             probs.start.ok <- FALSE
         }
       }
-      #初始概率为空
+      #初始似然函数值等
       ret$llik <- -Inf
       ret$attempts <- NULL
       for (repl in 1:nrep) {
@@ -113,6 +113,7 @@ tmplca = function (formula, data, nclass = 2, maxiter = 1000, graphs = FALSE,
         while (error) {
           error <- FALSE
           b <- rep(0, S * (R - 1))
+          #初始化潜类概率
           prior <- poLCA.updatePrior(b, x, R)
           if ((!probs.start.ok) | (is.null(probs.start)) | 
                 (!firstrun) | (repl > 1)) {
@@ -129,10 +130,11 @@ tmplca = function (formula, data, nclass = 2, maxiter = 1000, graphs = FALSE,
           vp <- poLCA.vectorize(probs)
           iter <- 1
           #计算似然函数,maximum表示最大的迭代次数
-          # 
+          # 似然函数
           llik <- matrix(NA, nrow = maxiter, ncol = 1)
           llik[iter] <- -Inf
           dll <- Inf
+          #EM算法，得到潜类条件概率 以及类别的概率
           while ((iter <= maxiter) & (dll > tol) & (!error)) {
             iter <- iter + 1
             #计算每个观察值潜类别的后验概率
@@ -146,11 +148,14 @@ tmplca = function (formula, data, nclass = 2, maxiter = 1000, graphs = FALSE,
               prior <- poLCA.updatePrior(b, x, R)
             }
             else {
+              #更新潜类别的先验概率
               prior <- matrix(colMeans(rgivy), nrow = N, 
                               ncol = R, byrow = TRUE)
             }
+            #似然值
             llik[iter] <- sum(log(rowSums(prior * poLCA.ylik.C(vp, 
-                                                               y))))
+                                                             y))))
+            #似然值增量 
             dll <- llik[iter] - llik[iter - 1]
             if (is.na(dll)) {
               error <- TRUE

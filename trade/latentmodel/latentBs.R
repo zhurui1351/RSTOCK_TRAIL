@@ -42,17 +42,7 @@ getLCAformularFromgraph = function(g,nodes)
   return(f)
 }
 
-########handy test code to compute HNB
-#初始化为朴素贝叶斯分类器
-mnodes =unique(c('longstatus','Close','shortstatus','smastatus','ccistatus','rsistatus','macdstatus'
-           ,'mfistatus','rocstatus','sarstatus','wprstatus','kdjstatus'
-           ,'chkVostatus','obvstatus','cmostatus','cmfstatus','trixstatus'))
-
-graph0 = graph(mnodes)
-graph0 = assignClassNode(graph0,'leadclflag')
-graph0 = initNBgraph(graph0)
-plot.mygraph(graph0)
-
+###################################
 #数据准备
 datasubset = analysedata_2000_6[,c('leadclflag',mnodes)]
 data_train = as.data.frame(datasubset['1994/2014'])
@@ -75,13 +65,30 @@ ecode=function(x){
     else if (x == 'down')
       return('2')
     else return(as.character(x))
-    })
+  })
   return(tmp)
 }
 #xx = as.data.frame(mapply(ecode,data_train))
 
-data_train = as.data.frame(mapply(ecode,data_train),row.names=rownames(data_train),as.)
+data_train = as.data.frame(mapply(ecode,data_train),row.names=rownames(data_train))
 data_test =  as.data.frame(mapply(ecode,data_test),row.names=rownames(data_test))
+
+########handy test code to compute HNB
+#初始化为朴素贝叶斯分类器
+mnodes =unique(c('longstatus','Close','shortstatus','smastatus','ccistatus','rsistatus'
+           ,'rocstatus','sarstatus','wprstatus','kdjstatus'
+           ,'chkVostatus','obvstatus','cmostatus','trixstatus'))
+
+graph0 = graph(mnodes)
+graph0 = assignClassNode(graph0,'leadclflag')
+graph0 = initNBgraph(graph0)
+plot.mygraph(graph0)
+
+bn_graph0 = as.graph.bn(graph0)
+bn1 = bn.fit(bn_graph0,data=data_train[,c(mnodes,'leadclflag')],method ='mle')
+aic1 = AIC(bn1,data=data_train[,c(mnodes,'leadclflag')])
+bic1 = BIC(bn1,data=data_train[,c(mnodes,'leadclflag')])
+
 #朴素贝叶斯的分类效果
 fnb = getNBformularFromgraph(graph0)
 

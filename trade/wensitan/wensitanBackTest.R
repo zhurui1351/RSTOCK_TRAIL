@@ -17,7 +17,7 @@ sourceDir <- function(path, trace = TRUE, ...) {
 
 sourceDir('D:/Rcode/code/RSTOCK_TRAIL/trade/wensitan/help')
 sourceDir('D:/Rcode/code/RSTOCK_TRAIL/trade/wensitan/log')
-sourceDir('D:/Rcode/code/RSTOCK_TRAIL/trade/wensitan/trade')
+#sourceDir('D:/Rcode/code/RSTOCK_TRAIL/trade/wensitan/trade')
 sourceDir('D:/Rcode/code/RSTOCK_TRAIL/trade/wensitan/analysis')
 
 #加入大盘阶段判断信息
