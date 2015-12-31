@@ -117,6 +117,10 @@ model1 = naiveBayes(fnb,data=d_new_train,na.action = na.pass)
 pr1 = predict(model,d_new_train)
 table(d_new_train$leadclflag,pr1)
 
+bn_graph1 = as.graph.bn(graph1)
+bn1 = bn.fit(bn_graph1,data=d_new_train,method ='mle')
+aic1 = AIC(bn1,data=d_new_train)
+bic1 = BIC(bn1,data=d_new_train)
 #iter 2
 childset = c('cmostatus','rocstatus')
 flatent1 = getLCAformularFromgraph(graph1,childset)
