@@ -114,7 +114,7 @@ addlatentnodes = function(g,nodes)
     return(g)
   }
   g$lnodenames = c(g$lnodenames,nodes)
-  g$nodes = c(g$nodes,nodes)
+  #g$nodes = c(g$nodes,nodes)
   for( n in nodes)
   {
     g$nodes[[n]] = list()
@@ -332,4 +332,33 @@ as.graph.bn = function(g)
   ug = empty.graph(nodes)
   arcs(ug, ignore.cycles = TRUE) = g$arcs
   return(ug)
+}
+
+getallnodenames = function(g)
+{
+  return(c(g$mnodenames,g$lnodenames,g$classnode))
+}
+
+# 给定起点A，子节点B，形成A为根，B以及B的所有后代的子图
+subgraph = function(g,classnode,subnode)
+{
+  allnodes = getallnodenames(g)
+  
+  from =g$arcs[,'from']
+  to = g$arcs[,'to']
+  
+  subtreenodes = unique(subset(g$arcs,from == subnode,select='to'))
+  leftnodes = c(classnode,subnode,subtreenodes)
+  
+  leftarcs = subset(g$arcs,from %in% leftnodes & to %in% leftnodes)
+  leftmnodes = intersect(c(subnode,subtreenodes),g$mnodenames)
+  leftlnodes = intersect(c(subnode,subtreenodes),g$lnodenames)
+  
+  subg = graph(leftnodes)
+  subg = setarcs(subg,leftarcs)
+  subg$mnodenames = leftmnodes
+  subg$lnodenames = leftlnodes
+  subg$classnode = classnode
+ # plot.mygraph(subg)
+  return(subg)
 }
