@@ -309,7 +309,7 @@ combindlist = function(l0,l1)
     return(l0)
   for(i in 1:length(l1))
   {
-    listtmp[[n+i]] = l1[[i]]
+    listtmp[[n0+i]] = l1[[i]]
   }
   return(listtmp)
 }
@@ -341,9 +341,10 @@ HNBstudy = function(mydata)
     bic_t = bic_c
     subg_addp = getModelsfromparentintro(g)
     subg_alterp = getModelsfromalterparent(g)
-    subg_delet = getModelsfromdeletenode
+    subg_delet = getModelsfromdeletenode(g)
     
     sugs = combindlist(subg_addp,subg_alterp)
+    sugs = combindlist(sugs,subg_delet)
     
     dif = 0.1
     bic_t = Inf
