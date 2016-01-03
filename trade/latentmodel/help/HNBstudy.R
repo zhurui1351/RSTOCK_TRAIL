@@ -30,26 +30,44 @@ decompost = function(g)
     sub = subgraph(gr,classnode,x)
     return(sub)
   },g)
+  return(subgraphs)
 }
 
-getBestCard_subgraph = function(g,mydata)
+getBestCard_subgraph = function(g,mydata,card = 4)
 {
   lnodes = g$lnodenames
   resolv = 0
   mnodes = g$mnodenames 
   
-  ln = lapply(lnodes,function(x){2:4})
+  #子图不含显变量
+  if(length(lnodes) == 0)
+  {
+    bn_graph = as.graph.bn(g)
+    bn = bn.fit(bn_graph,data=mydata[,getallnodenames(g)])
+    bic = BIC(bn,data=mydata[,getallnodenames(g)])
+    isreg = isRegular(g,mydata)
+    if(isreg)
+    {
+      return(list(bng=bn_graph,data=mydata,bic=bic))
+    }
+    else
+    {
+      return(NULL)
+    }
+  }
+  
+  ln = lapply(lnodes,function(x){2:card})
   names(ln) = lnodes
   #势组合的排列
   ln = expand.grid(ln)
   
-  #
+  #选择最优BIC模型
   models = list()
   imodel = 1
   #对每一个排列组合学习势以及相关参数
   for(ri in 1 : nrow(ln))
   {
-    print(ri)
+   # print(ri)
     row = ln[ri,]
     new_data = mydata
     i = 0 
@@ -66,10 +84,11 @@ getBestCard_subgraph = function(g,mydata)
       ls = unlist(ls)
       for( l in ls)
       {
+        nclass=ifelse(length(row) == 1,row,row[1,l])
         childset = g$nodes[[l]]$children
         flatent = getLCAformularFromgraph(g,childset)
         res = poLCA(flatent, 
-                    maxiter=50000, nclass=row[1,l], 
+                    maxiter=50000, nclass=nclass, 
                     nrep=10, data=new_data[,childset],verbose=F)
         latentclass = as.factor(res$predclass)
         tmpnames = colnames(new_data)
@@ -83,6 +102,7 @@ getBestCard_subgraph = function(g,mydata)
     bn = bn.fit(bn_graph,data=new_data[,getallnodenames(g)])
     bic = BIC(bn,data=new_data[,getallnodenames(g)])
     isreg = isRegular(g,new_data)
+  #  isreg = T
     if(isreg)
     {
       models[[imodel]] = list(bng=bn_graph,data=new_data,bic=bic)
@@ -90,12 +110,29 @@ getBestCard_subgraph = function(g,mydata)
     }
   }
   bics = sapply(models,function(x){x$bic})
-  models_sort = models[order(bics,decreasing = T)]
+  models_sort = models[order(bics,decreasing = F)]
+  return(models_sort[1])
 }
 
 #势学习,指定模型，得到每个隐变量的最优势
-learncard = function(g)
+learncard = function(g,mydata)
 {
+  
+  data = mydata
+  subgraphs = decompost(g)
+  for(i in 1:length(subgraphs))
+  {
+    sg = subgraphs[[i]]
+    #不含隐变量
+    if(length(sg$lnodenames) == 0 ) next
+    sg_best = getBestCard_subgraph(sg,mydata) 
+    if(is.null(sg_best))
+      next
+    sgdata = sg_best[[1]]$data
+    tmpname = colnames(data)
+    data = cbind(data,sgdata[,sg$lnodenames])
+    colnames(data)=c(tmpname,sg$lnodenames)
+  }
   
 }
 
@@ -123,6 +160,7 @@ isCanAddParent = function(g,node)
   }
   return(T)
 }
+
 getModelsfromparentintro = function(g)
 {
   nodes_2child = c()
@@ -151,5 +189,110 @@ getModelsfromparentintro = function(g)
       imodels =  imodels + 1
     }
   }
+  return(models)
+}
+
+#删除节点形成新的模型
+#仅能删除只有不超过2个孩子的隐节点
+getModelsfromdeletenode = function(g)
+{
+  lnodes = g$lnodenames
+  nodes_delete = c()
+  for(lnode in lnodes)
+  {
+    if(length(g$nodes[[lnode]]$children) <= 2)
+      nodes_delete = c(nodes_delete,lnode)
+  }
   
+  models = list()
+  imodels = 1
+  for(node in nodes_delete)
+  {
+    sg = node_deletion(g,node)
+    models[[imodels]] = sg
+    imodels = imodels + 1
+  }
+  return(models)
+}
+
+issinglelyconlatent = function(g,node)
+{
+  if(!hasnode(g,node))
+  {
+    warning('g has not this node')
+    return(F)
+  }
+  if( !is.element(node,g$lnodenames))
+  {
+    return(F)
+  }
+  
+  if(length(c(g$nodes[[node]]$parents,g$nodes[[node]]$children)) == 2)
+    return(T)
+  else
+    return(F)
+}
+
+#通过变换父节点生成新的模型
+getModelsfromalterparent = function(g)
+{
+  nodes_alter_p = c()
+  nodes_alter_sb = c()
+  nodes = c(g$mnodenames,g$lnodenames)
+  for(node in nodes)
+  {
+    p = g$nodes[[node]]$parents
+    if(length(p) != 1 ) next
+    gp =  g$nodes[[p]]$parents
+    sb = g$nodes[[node]]$nbr
+    #没有祖父节点且没有非叶子的邻居节点
+    if( length(gp) == 0 && length(intersect(sb,g$lnodenames)) == 0)
+    {
+      next
+    }
+    #父节点是隐节点，且没有邻居
+    if(is.element(p,g$lnodenames) && length(sb) == 0)
+    {
+      next
+    }
+    if(!( is.element(p,g$lnodenames) && length(sb) == 1 && issinglelyconlatent(g,sb)))
+    {
+      if(length(gp) > 0 )
+      {
+        nodes_alter_p = c(node,nodes_alter_p)  
+      }
+    }
+    if(!( is.element(p,g$lnodenames) && length(sb) == 1 && issinglelyconlatent(g,p)))
+    {
+      if(length(intersect(sb,g$lnodenames)) > 0)
+      {
+        nodes_alter_sb = c(node,nodes_alter_sb) 
+      } 
+    }
+  }
+  
+  models = list()
+  imodels = 1
+  
+  for(node in nodes_alter_p)
+  {
+    p = g$nodes[[node]]$parents
+    gp =  g$nodes[[p]]$parents
+    sg = parent_alteration(g,p,node,gp)
+    models[[imodels]] = sg
+    imodels = imodels + 1
+  }
+  for(node in nodes_alter_sb)
+  {
+    p = g$nodes[[node]]$parents
+    sb =  g$nodes[[node]]$nbr
+    sb = intersect(sb,g$lnodenames)
+    for(s in sb)
+    {
+      sg = parent_alteration(g,p,node,s)
+      models[[imodels]] = sg
+      imodels = imodels + 1
+    }
+  }
+  return(models)
 }

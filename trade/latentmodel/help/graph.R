@@ -246,9 +246,9 @@ node_deletion = function(g,node)
   parents = parentnodes(g,node)
   childs = childnodes(g,node)
   
-  if(is.null(parents))
+  if(length((parents)) == 0 )
   {
-    if(!is.null(childs))
+    if(length(childs) != 0)
     {
       for(ch in childs)
       {
@@ -259,7 +259,7 @@ node_deletion = function(g,node)
   }
   else
   {
-    if(is.null(childs))
+    if(length(childs) == 0)
     {
       for(p in parents)
       {
@@ -277,6 +277,7 @@ node_deletion = function(g,node)
           g = deletearc(g,from=node,to = ch)
           g = setarc(g,from=p,to = ch)
         }
+        g= deletearc(g,from=p,to=node)
       }
       return(g)
       
