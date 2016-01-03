@@ -39,7 +39,7 @@ getBestCard_subgraph = function(g,mydata,card = 4)
   resolv = 0
   mnodes = g$mnodenames 
   
-  #子图不含显变量
+  #子图不含隐变量
   if(length(lnodes) == 0)
   {
     bn_graph = as.graph.bn(g)
@@ -67,7 +67,7 @@ getBestCard_subgraph = function(g,mydata,card = 4)
   #对每一个排列组合学习势以及相关参数
   for(ri in 1 : nrow(ln))
   {
-   # print(ri)
+    print(ri)
     row = ln[ri,]
     new_data = mydata
     i = 0 
@@ -89,7 +89,7 @@ getBestCard_subgraph = function(g,mydata,card = 4)
         flatent = getLCAformularFromgraph(g,childset)
         res = poLCA(flatent, 
                     maxiter=50000, nclass=nclass, 
-                    nrep=10, data=new_data[,childset],verbose=F)
+                    nrep=10, data=new_data[,childset],verbose=T)
         latentclass = as.factor(res$predclass)
         tmpnames = colnames(new_data)
         new_data = cbind(new_data,latentclass)
@@ -122,6 +122,7 @@ learncard = function(g,mydata)
   subgraphs = decompost(g)
   for(i in 1:length(subgraphs))
   {
+    print(i)
     sg = subgraphs[[i]]
     #不含隐变量
     if(length(sg$lnodenames) == 0 ) next
@@ -133,7 +134,7 @@ learncard = function(g,mydata)
     data = cbind(data,sgdata[,sg$lnodenames])
     colnames(data)=c(tmpname,sg$lnodenames)
   }
-  
+  return(data)
 }
 
 #结构学习
@@ -295,4 +296,84 @@ getModelsfromalterparent = function(g)
     }
   }
   return(models)
+}
+
+combindlist = function(l0,l1)
+{
+  listtmp = l0
+  n0 = length(l0)
+  n1 = length(l1)
+  if(n0 == 0)
+    return(l1)
+  if(n1 ==0)
+    return(l0)
+  for(i in 1:length(l1))
+  {
+    listtmp[[n+i]] = l1[[i]]
+  }
+  return(listtmp)
+}
+
+#潜变量分层贝叶斯学习
+HNBstudy = function(mydata)
+{
+  mnodes =unique(c('longstatus','Close','shortstatus','smastatus','ccistatus','rsistatus'
+                   ,'rocstatus','sarstatus','wprstatus','kdjstatus'
+                   ,'chkVostatus','obvstatus','cmostatus','trixstatus'))
+  
+  graph0 = graph(mnodes)
+  graph0 = assignClassNode(graph0,'leadclflag')
+  graph0 = initNBgraph(graph0)
+  plot.mygraph(graph0)
+  bn_graph0 = as.graph.bn(graph0)
+  bn0 = bn.fit(bn_graph0,data=mydata[,c(mnodes,'leadclflag')],method ='mle')
+  bic0 = BIC(bn0,data=mydata[,c(mnodes,'leadclflag')])
+  
+  g = graph0
+  bic_c = bic0
+  bic_t = Inf
+  
+  allgraph = list()
+  iall = 1
+  
+  while((bic_t-bic_c) > 0.1)
+  {
+    bic_t = bic_c
+    subg_addp = getModelsfromparentintro(g)
+    subg_alterp = getModelsfromalterparent(g)
+    subg_delet = getModelsfromdeletenode
+    
+    sugs = combindlist(subg_addp,subg_alterp)
+    
+    dif = 0.1
+    bic_t = Inf
+    
+    
+    bic_c = Inf
+    tmpg = NULL
+    #print(length(sugs))
+    for(i in 1:length(sugs))
+    {
+      print(i)
+      sg = sugs[[i]]
+      sg_card = learncard(sg,mydata)
+      if(length(setdiff(getallnodenames(sg),colnames(sg_card))) > 0 )
+        next
+      bn_sg = as.graph.bn(sg)
+      bn = bn.fit(bn_sg,data=sg_card[,getallnodenames(sg)],method ='mle')
+      bic = BIC(bn,data=sg_card[,getallnodenames(sg)])
+      if(bic < bic_c)
+      {
+        bic_c = bic
+        tmpg = sg
+        print(bic)
+        plot.mygraph(sg)
+      }
+    }
+    
+    g = tmpg
+    allgraph[[iall]] = g
+    iall = iall + 1
+  }
+ 
 }
