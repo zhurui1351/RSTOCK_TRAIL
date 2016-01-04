@@ -193,7 +193,7 @@ lm = findSnStock(from='1990',to='2015')
 
 slm =  Filter(function(x){ ratio = x[[3]]
 month = x[[2]]
-ratio>=0.8 && month==2 },lm)
+ratio>=0.75 && month==1 },lm)
 
 lbest = slm[order(sapply(slm,function(x){x$ratio}),decreasing=TRUE)]
 
@@ -217,11 +217,13 @@ mcor[lower.tri(mcor)] = 1
 msort=sort(as.vector(mcor))[1:10]
 l=lapply(msort, function(x){which(mcor==x,arr.ind = T)})
 
-code1=rownames(mcor)[l[[2]][1]]
-code2=colnames(mcor)[l[[2]][2]]
+code1=rownames(mcor)[l[[1]][1]]
+code2=colnames(mcor)[l[[1]][2]]
 
-testMonthPeriod(code=code1,from='1990',to='2014',detail = T)
-testMonthPeriod(code=code2,from='1990',to='2014',detail = T)
+testMonthPeriod(code='600525',from='1990',to='2015',detail = T)
+testMonthPeriod(code='000039',from='1990',to='2015',detail = T)
+get.stock.info('sz000039')
+get.stock.info('sh600525')
 
 
 corbewteenstock = function(xx)
@@ -243,20 +245,8 @@ corbewteenstock = function(xx)
   },'600961')
 }
 
-
-#600234
-#000971
-testMonthPeriod(code='600618',from='1990',to='2014',detail = T)
-testMonthPeriod(code='600995',from='1990',to='2014',detail = T)
-
-getSymbols('600618.SS')
-getSymbols('000971.SZ')
-
-get.stock.info("sh600618")
-
-code = '000971'
-code_yh = ifelse(substr(code,1,1) == '6',paste(code,'SS',sep='.'),paste(code,'SZ',sep='.'))
-code_sina = ifelse(substr(code,1,1) == '6',paste('sh',code,sep=''),paste('sz',code,sep=''))
+#code_yh = ifelse(substr(code,1,1) == '6',paste(code,'SS',sep='.'),paste(code,'SZ',sep='.'))
+#code_sina = ifelse(substr(code,1,1) == '6',paste('sh',code,sep=''),paste('sz',code,sep=''))
 
 
 #codes = c('600618')
@@ -278,7 +268,7 @@ monitormonth = function(codes)
   })
   while(T)
   {
-    date = '20151228'
+    date = '20160104'
     datem = substr(date,1,6)
 
     for(code in codes)

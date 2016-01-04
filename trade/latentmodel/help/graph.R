@@ -64,6 +64,8 @@ deletearc = function(g,from,to)
   }
   
   g$arcs =g$arcs[-lineno,]
+  if(!is.null(g$arcs) && class(g$arcs) != 'matrix')
+    g$arcs = matrix(g$arcs,ncol = 2,byrow=T,dimnames = list(NULL,c('from','to')))
   
   g$nodes[[from]]$children = g$nodes[[from]]$children[-which(g$nodes[[from]]$children == to)]
   g$nodes[[to]]$parents =  g$nodes[[to]]$parents[-which( g$nodes[[to]]$parents == from)]
@@ -340,26 +342,68 @@ getallnodenames = function(g)
   return(c(g$mnodenames,g$lnodenames,g$classnode))
 }
 
+#获得某个节点的所有子图的边
+alldescarc = function(g,node)
+{
+  if(!hasnode(g,node))
+  {
+    warning('this is no node in allchildarcs')
+    return(g)
+  }
+  
+  if(length(g$nodes[[node]]$children) == 0)
+  {
+    return(NULL)
+  }
+  
+  from = g$arcs[,'from']
+  to = g$arcs[,'to']
+  
+  ch1 = subset(g$arcs,from==node & to %in% g$nodes[[node]]$children)
+  
+  for(ch in g$nodes[[node]]$children)
+  {
+    tmp = alldescarc(g,ch)
+    ch1 = rbind(ch1,tmp)
+  }
+  return(ch1)
+}
+
+#删除某一分支
+deletebranch = function(g,node)
+{
+  if(!hasnode(g,node))
+  {
+    warning('this is no node in deletebranch')
+    return(g)
+  }
+  sg = deletearc(g,g$classnode,node)
+  deletearcs = alldescarc(g,node)
+  if(length(nrow(deletearcs)) == 0)
+    return(sg)
+  for( i in 1:nrow(deletearcs))
+  {
+    from = deletearcs[i,'from']
+    to = deletearcs[i,'to']
+    sg = deletearc(sg,from,to)
+  }
+  allmeannodes = unique(c(sg$arcs[,'from'],sg$arcs[,'to']))
+  sg$lnodenames = intersect(sg$lnodenames,allmeannodes)
+  return(sg)
+}
+
+
 # 给定起点A，子节点B，形成A为根，B以及B的所有后代的子图
 subgraph = function(g,classnode,subnode)
 {
-  allnodes = getallnodenames(g)
   
-  from =g$arcs[,'from']
-  to = g$arcs[,'to']
+  chnodes = g$nodes[[classnode]]$children
+  subg = g
+  for(n in chnodes[chnodes!=subnode])
+  {
+    subg = deletebranch(subg,n)
+  }
   
-  subtreenodes = unique(subset(g$arcs,from == subnode,select='to'))
-  leftnodes = c(classnode,subnode,subtreenodes)
-  
-  leftarcs = subset(g$arcs,from %in% leftnodes & to %in% leftnodes)
-  leftmnodes = intersect(c(subnode,subtreenodes),g$mnodenames)
-  leftlnodes = intersect(c(subnode,subtreenodes),g$lnodenames)
-  
-  subg = graph(leftnodes)
-  subg = setarcs(subg,leftarcs)
-  subg$mnodenames = leftmnodes
-  subg$lnodenames = leftlnodes
-  subg$classnode = classnode
- # plot.mygraph(subg)
+ # plot.mygraph(g)
   return(subg)
 }

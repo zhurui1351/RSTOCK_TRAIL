@@ -67,7 +67,7 @@ getBestCard_subgraph = function(g,mydata,card = 4)
   #对每一个排列组合学习势以及相关参数
   for(ri in 1 : nrow(ln))
   {
-    print(ri)
+   # print(ri)
     row = ln[ri,]
     new_data = mydata
     i = 0 
@@ -82,14 +82,17 @@ getBestCard_subgraph = function(g,mydata,card = 4)
         }
       },new_data,g,simplify=F,USE.NAMES=F)
       ls = unlist(ls)
+      ls = ls[!(ls %in% colnames(new_data))]
       for( l in ls)
       {
         nclass=ifelse(length(row) == 1,row,row[1,l])
         childset = g$nodes[[l]]$children
         flatent = getLCAformularFromgraph(g,childset)
+        resdata = as.data.frame(new_data[,childset])
+        colnames(resdata) = childset
         res = poLCA(flatent, 
                     maxiter=50000, nclass=nclass, 
-                    nrep=10, data=new_data[,childset],verbose=T)
+                    nrep=3, data=resdata,verbose=F)
         latentclass = as.factor(res$predclass)
         tmpnames = colnames(new_data)
         new_data = cbind(new_data,latentclass)
@@ -150,12 +153,12 @@ isCanAddParent = function(g,node)
     return(F)
   }
   
-  if(!is.element(node,g$lnodenames))
+  if(is.element(node,g$mnodenames))
   {
-    return(T)
+    return(F)
   }
   
-  if(length(c(g$nodes[[node]]$children,g$nodes[[node]]$parents)) == 2)
+  if(length(c(g$nodes[[node]]$children,g$nodes[[node]]$parents)) %in% c(2,3))
   {
     return(F)
   }
@@ -317,9 +320,8 @@ combindlist = function(l0,l1)
 #潜变量分层贝叶斯学习
 HNBstudy = function(mydata)
 {
-  mnodes =unique(c('longstatus','Close','shortstatus','smastatus','ccistatus','rsistatus'
-                   ,'rocstatus','sarstatus','wprstatus','kdjstatus'
-                   ,'chkVostatus','obvstatus','cmostatus','trixstatus'))
+  mnodes =unique(c('longstatus','Close','smastatus','ccistatus','rsistatus'
+                   ,'rocstatus'))
   
   graph0 = graph(mnodes)
   graph0 = assignClassNode(graph0,'leadclflag')
@@ -352,7 +354,7 @@ HNBstudy = function(mydata)
     
     bic_c = Inf
     tmpg = NULL
-    #print(length(sugs))
+    print(length(sugs))
     for(i in 1:length(sugs))
     {
       print(i)

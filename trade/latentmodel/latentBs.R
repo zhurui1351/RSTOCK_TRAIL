@@ -79,6 +79,9 @@ mnodes =unique(c('longstatus','Close','shortstatus','smastatus','ccistatus','rsi
            ,'rocstatus','sarstatus','wprstatus','kdjstatus'
            ,'chkVostatus','obvstatus','cmostatus','trixstatus'))
 
+mnodes =unique(c('longstatus','Close','shortstatus','smastatus','ccistatus','rsistatus'
+                 ,'rocstatus'))
+
 graph0 = graph(mnodes)
 graph0 = assignClassNode(graph0,'leadclflag')
 graph0 = initNBgraph(graph0)
@@ -141,4 +144,8 @@ model2 = naiveBayes(fnb,data=d_new_train1,na.action = na.pass)
 pr1 = predict(model2,d_new_train1)
 table(d_new_train1$leadclflag,pr1)
 
+
+#分层贝叶斯学习
+
+HNBstudy(data_train)
 
