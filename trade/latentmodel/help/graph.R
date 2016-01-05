@@ -281,6 +281,10 @@ node_deletion = function(g,node)
         }
         g= deletearc(g,from=p,to=node)
       }
+      
+      g$mnodenames = g$mnodenames[g$mnodenames!=node]
+      g$lnodenames = g$lnodenames[g$lnodenames!=node]
+      
       return(g)
       
     }

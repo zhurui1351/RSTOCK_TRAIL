@@ -125,7 +125,7 @@ learncard = function(g,mydata)
   subgraphs = decompost(g)
   for(i in 1:length(subgraphs))
   {
-    print(i)
+   # print(i)
     sg = subgraphs[[i]]
     #不含隐变量
     if(length(sg$lnodenames) == 0 ) next
@@ -201,6 +201,10 @@ getModelsfromparentintro = function(g)
 getModelsfromdeletenode = function(g)
 {
   lnodes = g$lnodenames
+  if(length(lnodes) < 2)
+  {
+    return(NULL)
+  }
   nodes_delete = c()
   for(lnode in lnodes)
   {
@@ -254,8 +258,8 @@ getModelsfromalterparent = function(g)
     {
       next
     }
-    #父节点是隐节点，且没有邻居
-    if(is.element(p,g$lnodenames) && length(sb) == 0)
+    #父节点是隐节点，且没有邻居或只有一个邻居
+    if(is.element(p,g$lnodenames) && length(sb) %in% c(0,1))
     {
       next
     }
@@ -355,6 +359,12 @@ HNBstudy = function(mydata)
     bic_c = Inf
     tmpg = NULL
     print(length(sugs))
+    
+    if(length(sugs) == 0)
+    {
+      break
+    }
+    
     for(i in 1:length(sugs))
     {
       print(i)
