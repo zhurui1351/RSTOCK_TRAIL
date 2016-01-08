@@ -92,7 +92,7 @@ getBestCard_subgraph = function(g,mydata,card = 4)
         colnames(resdata) = childset
         res = poLCA(flatent, 
                     maxiter=50000, nclass=nclass, 
-                    nrep=3, data=resdata,verbose=F)
+                    nrep=3, data=resdata,verbose=T)
         latentclass = as.factor(res$predclass)
         tmpnames = colnames(new_data)
         new_data = cbind(new_data,latentclass)
@@ -105,7 +105,7 @@ getBestCard_subgraph = function(g,mydata,card = 4)
     bn = bn.fit(bn_graph,data=new_data[,getallnodenames(g)])
     bic = BIC(bn,data=new_data[,getallnodenames(g)])
     isreg = isRegular(g,new_data)
-  #  isreg = T
+    isreg = T
     if(isreg)
     {
       models[[imodel]] = list(bng=bn_graph,data=new_data,bic=bic)
@@ -125,7 +125,7 @@ learncard = function(g,mydata)
   subgraphs = decompost(g)
   for(i in 1:length(subgraphs))
   {
-   # print(i)
+    print(i)
     sg = subgraphs[[i]]
     #不含隐变量
     if(length(sg$lnodenames) == 0 ) next
@@ -337,12 +337,12 @@ HNBstudy = function(mydata)
   
   g = graph0
   bic_c = bic0
-  bic_t = Inf
+  bic_t = -Inf
   
   allgraph = list()
   iall = 1
   
-  while((bic_t-bic_c) > 0.1)
+  while((bic_c-bic_t) > 0.1)
   {
     bic_t = bic_c
     subg_addp = getModelsfromparentintro(g)
@@ -356,7 +356,7 @@ HNBstudy = function(mydata)
     bic_t = Inf
     
     
-    bic_c = Inf
+    bic_c = -Inf
     tmpg = NULL
     print(length(sugs))
     
@@ -375,7 +375,7 @@ HNBstudy = function(mydata)
       bn_sg = as.graph.bn(sg)
       bn = bn.fit(bn_sg,data=sg_card[,getallnodenames(sg)],method ='mle')
       bic = BIC(bn,data=sg_card[,getallnodenames(sg)])
-      if(bic < bic_c)
+      if(bic > bic_c)
       {
         bic_c = bic
         tmpg = sg

@@ -268,7 +268,7 @@ monitormonth = function(codes)
   })
   while(T)
   {
-    date = '20160104'
+    date = '20160107'
     datem = substr(date,1,6)
 
     for(code in codes)
@@ -293,7 +293,7 @@ monitormonth = function(codes)
       pd$sma3 =  tail(p$sma3,1)
       print(pd[,c(1:6,33:38)])
     }
-    Sys.sleep(15)
+    Sys.sleep(30)
     
   }
 }
