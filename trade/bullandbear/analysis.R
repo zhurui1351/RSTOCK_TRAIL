@@ -25,8 +25,8 @@ shindex$sma = SMA(Cl(shindex),150)
 
 special = list(c(from = '1995-05-18',to='1995-05-22'))
 
-sapply(bear, function(x){as.numeric(as.Date(x['to']) - as.Date(x['from'])) })
-sapply(bull, function(x){as.numeric(as.Date(x['to']) - as.Date(x['from'])) })
+#sapply(bear, function(x){as.numeric(as.Date(x['to']) - as.Date(x['from'])) })
+#sapply(bull, function(x){as.numeric(as.Date(x['to']) - as.Date(x['from'])) })
 
 bulllist  = find_bull(upratio = 1,downratio = -0.3,shindex = shindex)
 
@@ -42,8 +42,8 @@ for(i in 1:length(bulllist))
   print(statdate)
   print(sd(Delt(Cl(shindex[statdate])),na.rm=T))
   print(mean(Delt(Cl(shindex[statdate])),na.rm=T))
-  plotdata = cbind(Cl(shindex[statdate]),shindex[paste(from,end,sep='/')]$sma)
-  plot(plotdata)
+  plotdata = cbind(Cl(shindex[statdate]),shindex[statdate]$sma)
+  chartSeries(shindex,TA=c(addSMA(n=100)),subset=paste(bullfrom,bullend,sep='::'))
   tmp = scan()
 }
 
@@ -56,8 +56,8 @@ for(i in 1:length(bearlist))
   print(statdate)
   print(sd(Delt(Cl(shindex[statdate])),na.rm=T))
   print(mean(Delt(Cl(shindex[statdate])),na.rm=T))
-  plotdata = cbind(Cl(shindex[statdate]),shindex[paste(from,end,sep='/')]$sma)
-  plot(plotdata)
+  plotdata = cbind(Cl(shindex[statdate]),shindex[statdate]$sma)
+  chartSeries(shindex,TA=c(addSMA(n=100)),subset=paste(bearfrom,bearend,sep='::'))
   tmp = scan()
 }
 
