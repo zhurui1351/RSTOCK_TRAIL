@@ -1,16 +1,16 @@
 #find bull 
 find_bull_first = function(upratio = 1,downratio = -0.3,shindex)
 {
-  templow =as.numeric(Cl(shindex[1,]))
-  temphi = as.numeric(Cl(shindex[1,]))
+  templow =as.numeric(Lo(shindex[1,]))
+  temphi = as.numeric(Hi(shindex[1,]))
   from = index(shindex[1,])
   to = index(shindex[1,])
   for(i in 2:nrow(shindex))
   {
     
     cur = shindex[i,]
-    curHi = as.numeric(Cl(cur))
-    curLo = as.numeric(Cl(cur))
+    curHi = as.numeric(Hi(cur))
+    curLo = as.numeric(Lo(cur))
     curdate = index(cur)
     
     templow_1 = templow
@@ -39,8 +39,8 @@ find_bull_first = function(upratio = 1,downratio = -0.3,shindex)
   for(j in (i+1) : nrow(shindex))
   {
     cur = shindex[j,]
-    curHi = as.numeric(Cl(cur))
-    curLo = as.numeric(Cl(cur))
+    curHi = as.numeric(Hi(cur))
+    curLo = as.numeric(Lo(cur))
     curdate = index(cur)
     
     temphi_1 = temphi
@@ -87,16 +87,16 @@ find_bull = function(upratio = 1,downratio = -0.3,shindex)
 #find bear
 find_bear_first = function(upratio = 0.2,downratio = -0.4,shindex)
 {
-  templow =as.numeric(Cl(shindex[1,]))
-  temphi = as.numeric(Cl(shindex[1,]))
+  templow =as.numeric(Lo(shindex[1,]))
+  temphi = as.numeric(Hi(shindex[1,]))
   from = index(shindex[1,])
   to = index(shindex[1,])
   for(i in 2:nrow(shindex))
   {
     
     cur = shindex[i,]
-    curHi = as.numeric(Cl(cur))
-    curLo = as.numeric(Cl(cur))
+    curHi = as.numeric(Hi(cur))
+    curLo = as.numeric(Lo(cur))
     curdate = index(cur)
     
     temphigh_1 = temphi
@@ -125,8 +125,8 @@ find_bear_first = function(upratio = 0.2,downratio = -0.4,shindex)
   for(j in (i+1) : nrow(shindex))
   {
     cur = shindex[j,]
-    curHi = as.numeric(Cl(cur))
-    curLo = as.numeric(Cl(cur))
+    curHi = as.numeric(Hi(cur))
+    curLo = as.numeric(Lo(cur))
     curdate = index(cur)
     
     templow_1 = templow

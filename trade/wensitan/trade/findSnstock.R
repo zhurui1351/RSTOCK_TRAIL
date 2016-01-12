@@ -198,7 +198,7 @@ ratio>=0.75 && month==1 },lm)
 lbest = slm[order(sapply(slm,function(x){x$ratio}),decreasing=TRUE)]
 
 #计算相关系数
-codes = sapply(slm,function(x){x$code})
+codes = sapply(lbest,function(x){x$code})
 
 l=lapply(codes, function(x){
   p = readOneStock(x)
@@ -268,7 +268,7 @@ monitormonth = function(codes)
   })
   while(T)
   {
-    date = '20160107'
+    date = '20160111'
     datem = substr(date,1,6)
 
     for(code in codes)
