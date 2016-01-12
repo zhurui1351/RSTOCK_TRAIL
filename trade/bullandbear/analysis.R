@@ -87,7 +87,13 @@ for(i in 1: length(bulist))
   l = bulist[[i]]
   tmpdate = paste(l['from'],l['to'],sep='/')
   tmpdate1 = paste(l['from'],l['to'],sep='::')
-  print(find_bull(upratio = 0.5,downratio = -0.2,myindex[tmpdate])) 
+  
+  i1 = which(index(myindex) == l['from'])
+  i2 = which(index(myindex) == l['to'])
+  
+  revindex = as.data.frame(myindex)[i2:i1,]
+  
+  print(find_bull(upratio = 0.3,downratio = -0.1,myindex[tmpdate])) 
   dygraph(myindex[tmpdate]$Close)
   tmp = scan()
 }
