@@ -98,7 +98,12 @@ for(i in 1: length(bulist))
   tmp = scan()
 }
 
-from_bull = c('1992-12-11','1994-07-29','1996-01-19','"1999-12-30','2007-06-08','2008-10-31','2014-07-18')
+from_bull = c('1992-12-11','1994-07-29','1996-01-19','"1999-12-30','2006-03-10','2008-10-31','2014-07-18')
+i = which(index(myindex) == '2014-11-07')
+mean(Delt(myindex[(i-4):i]$Close),na.rm=T)
+mean(Delt(myindex[i:(i+4)]$Close),na.rm=T)
+
+
 
 
 for(i in 1 : breakout_sma)

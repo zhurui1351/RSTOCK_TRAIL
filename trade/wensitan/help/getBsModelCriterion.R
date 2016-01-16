@@ -1,4 +1,5 @@
 require(pROC)
+require(ROCR)
 getBsModelCriterion = function(longtotest,f,testdate,pricedata,analysedata)
 {
   signals = data.frame()

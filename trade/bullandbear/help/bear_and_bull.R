@@ -169,6 +169,14 @@ find_bear = function(upratio = 0.2,downratio = -0.4,shindex)
   return(l)
 }
 
+## 找到距离前期低点涨幅超过一定比例的点
+find_turing = function(myindex)
+{
+  find_bull_first(upratio = 1,downratio = -0.3,myindex)
+  find_bear_first(upratio = 0.3,downratio = -0.3,myindex['1992-05-29/'])
+}
+
+
 # manul flag bear and bull
 flag_for_shindex = function(shindex)
 {
@@ -182,3 +190,4 @@ flag_for_shindex = function(shindex)
               ,c(from = '2009-08-04',to='2010-07-02'))
   
 }
+
