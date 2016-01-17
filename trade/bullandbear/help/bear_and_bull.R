@@ -169,11 +169,40 @@ find_bear = function(upratio = 0.2,downratio = -0.4,shindex)
   return(l)
 }
 
-## 找到距离前期低点涨幅超过一定比例的点
-find_turing = function(myindex)
+##  阶段划分：距离最近低点 上涨 30%以前为一阶段
+## 开上上涨30%到上涨最高幅度之间为二阶段(中间回撤20%  反弹结束 继续以前期低点搜寻)
+## 最近高点回撤 30% 为3阶段
+## 30%回撤到最低点为4阶段 （中间反弹20%  下跌结束 继续以前期高点为参考搜寻）
+## 
+find_stage = function(myindex)
 {
-  find_bull_first(upratio = 1,downratio = -0.3,myindex)
-  find_bear_first(upratio = 0.3,downratio = -0.3,myindex['1992-05-29/'])
+ 
+  tempuplow =as.numeric(Lo(shindex[1,]))
+  tempuphi = as.numeric(Hi(shindex[1,]))
+  upfrom = index(shindex[1,])
+  upto = index(shindex[1,])
+  
+  tempdownlow =as.numeric(Lo(shindex[1,]))
+  tempdownhi = as.numeric(Hi(shindex[1,]))
+  downfrom = index(shindex[1,])
+  downto = index(shindex[1,])
+  
+  prehigh = as.numeric(Hi(shindex[1,]))
+  prelow = as.numeric(Lo(shindex[1,]))
+  
+  for(i in 2:nrow(myindex))
+  {
+    cur = shindex[i,]
+    curHi = as.numeric(Hi(cur))
+    curLo = as.numeric(Lo(cur))
+    curdate = index(cur)
+    
+    tuplow = tempuplow
+    tdownhi = tempdownhi
+    
+    
+    
+  }
 }
 
 
