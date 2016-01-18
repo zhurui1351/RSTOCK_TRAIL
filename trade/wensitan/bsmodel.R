@@ -270,7 +270,7 @@ analysedata$williamsadsignal = williamsadsignal
 
 #回测,产生交易记录 
 #每年更新模型，使用前n年的数据
-testdate = substr(as.character(index(to.yearly(pricedata['2000/2015']))),1,4)
+testdate = substr(as.character(index(to.yearly(pricedata['1995/2015']))),1,4)
 starttrainyear = as.character(1995)
 records = data.frame()
 #analysedata_xts = as.xts(analysedata)

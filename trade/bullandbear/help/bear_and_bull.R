@@ -190,19 +190,75 @@ find_stage = function(myindex)
   prehigh = as.numeric(Hi(shindex[1,]))
   prelow = as.numeric(Lo(shindex[1,]))
   
-  for(i in 2:nrow(myindex))
+  upstage = T
+  
+  
+  #分析从牛还是熊开始
+  
+  bullfirst = find_bull_first(upratio = 1,downratio = -0.3,myindex)
+  bearfirst = find_bear_first(upratio = 0.2,downratio = -0.3,shindex)
+  
+  #记录位置
+  records = list()
+  
+  i = 2
+ # for(i in 2:nrow(shindex))
+  while(i < nrow(shindex))
   {
+    
     cur = shindex[i,]
     curHi = as.numeric(Hi(cur))
     curLo = as.numeric(Lo(cur))
     curdate = index(cur)
     
-    tuplow = tempuplow
-    tdownhi = tempdownhi
+    tmp_up_low = tempuplow
+    tmp_down_high = tempdownhi
     
+    if(curLo < tempuplow)
+    {
+      tempuplow = curLo
+      bullfrom = curdate
+      bullto = curdate
+    }
     
-    
+    startupratio = 0.3
+    #向上 找到满足符合要求的点
+    if( ((curHi-tmp_up_low) / tmp_up_low) > startupratio )
+    {
+      bullto = curdate
+      end = to
+      tempuphi = curHi
+      startenteruppoint = curdate
+      #记录相关值
+      records = append(list(bullfrom,bullto))
+      #在到达牛市(100%前)顶点前回撤是否达到20%
+      for(j  in (i+1) : nrow(shindex))
+      {
+        if(j >= nrow(shindex)) return('')
+        if(curHi > temphi)
+        {
+          to = curdate
+          temphi = curHi
+          end = to
+        }
+        upratio = 1
+        #成功达到牛市
+        if( ((curHi-tmp_up_low) / tmp_up_low) > upratio )
+        {
+          
+        }
+        
+        #回撤20%
+        if(((curLo - temphi) / temphi) < downratio)
+        {
+          end = curdate
+          break
+        }
+      }
+      
+    }
   }
+  
 }
 
 

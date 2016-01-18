@@ -34,21 +34,25 @@ bearlist = find_bear(upratio = 0.2,downratio = -0.4,shindex = myindex)
 
 
 #看图分析
-for(i in 1:length(bulllist))
+for(i in 1:(length(bulllist)-1))
 {
-  bullfrom = bulllist[[i]]['from']
-  bullto = bulllist[[i]]['to']
-  bullend = bulllist[[i]]['end']
+  bullfrom = as.character(bulllist[[i]]['from'])
+  bullto = as.character(bulllist[[i]]['to'])
+  bullend = as.character(bulllist[[i]]['end'])
   statdate = paste(bullfrom,bullto,sep='/')
-  print(statdate)
-  print(sd(Delt(myindex[statdate]$Close),na.rm=T))
-  print(mean(Delt(myindex[statdate]$Close),na.rm=T))
-  plotdata = cbind(Cl(myindex[statdate]),myindex[statdate]$sma)
-  chartSeries(OHLC(myindex),TA=c(addSMA(n=12,col = "green"),addSMA(n=4,col = "red")),subset=paste(bullfrom,bullend,sep='::'))
-
-  addTA(Cl(myindex[statdate]), on=1, col='yellow')
+ # print(statdate)
+#  print(sd(Delt(myindex[statdate]$Close),na.rm=T))
+ # print(mean(Delt(myindex[statdate]$Close),na.rm=T))
   
-  tmp = scan()
+  str = paste('从',bullfrom ,'的最低',myindex[bullfrom]$Low,'到',bullto,"的最高",myindex[bullto]$High
+              ,'到',bullto,'的最低',myindex[bullend]$Low,'结束',sep='')
+  print(str)
+  plotdata = cbind(Cl(myindex[statdate]),myindex[statdate]$sma)
+ # chartSeries(OHLC(myindex),TA=c(addSMA(n=12,col = "green"),addSMA(n=4,col = "red")),subset=paste(bullfrom,bullend,sep='::'))
+
+#  addTA(Cl(myindex[statdate]), on=1, col='yellow')
+  
+ # tmp = scan()
 }
 
 for(i in 1:length(bearlist))
@@ -106,11 +110,3 @@ mean(Delt(myindex[i:(i+4)]$Close),na.rm=T)
 
 
 
-for(i in 1 : breakout_sma)
-{
-   brktime = index(breakout_sma[i])
-   for(j in 1 : length(bulist))
-   {
-     
-   }
-}
