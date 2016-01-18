@@ -91,6 +91,7 @@ find_bear_first = function(upratio = 0.2,downratio = -0.4,shindex)
   temphi = as.numeric(Hi(shindex[1,]))
   from = index(shindex[1,])
   to = index(shindex[1,])
+  end =  index(shindex[1,])
   for(i in 2:nrow(shindex))
   {
     
@@ -174,37 +175,28 @@ find_bear = function(upratio = 0.2,downratio = -0.4,shindex)
 ## 最近高点回撤 30% 为3阶段
 ## 30%回撤到最低点为4阶段 （中间反弹20%  下跌结束 继续以前期高点为参考搜寻）
 ## 
-find_stage = function(myindex)
+find_upstage_enter = function(myindex)
 {
  
-  tempuplow =as.numeric(Lo(shindex[1,]))
-  tempuphi = as.numeric(Hi(shindex[1,]))
-  upfrom = index(shindex[1,])
-  upto = index(shindex[1,])
-  
-  tempdownlow =as.numeric(Lo(shindex[1,]))
-  tempdownhi = as.numeric(Hi(shindex[1,]))
-  downfrom = index(shindex[1,])
-  downto = index(shindex[1,])
-  
-  prehigh = as.numeric(Hi(shindex[1,]))
-  prelow = as.numeric(Lo(shindex[1,]))
-  
-  upstage = T
-  
-  
-  #分析从牛还是熊开始
-  
-  bullfirst = find_bull_first(upratio = 1,downratio = -0.3,myindex)
-  bearfirst = find_bear_first(upratio = 0.2,downratio = -0.3,shindex)
+#  tempuplow =as.numeric(Lo(shindex[1,]))
+#  tempuphi = as.numeric(Hi(shindex[1,]))
+#  from = index(shindex[1,])
+#  to = index(shindex[1,])
+#  end =  index(shindex[1,])
   
   #记录位置
   records = list()
+  recordsindex = 1
   
-  i = 2
+  i = 1
  # for(i in 2:nrow(shindex))
   while(i < nrow(shindex))
   {
+    tempuplow =as.numeric(Lo(shindex[i,]))
+    tempuphi = as.numeric(Hi(shindex[i,]))
+    from = index(shindex[i,])
+    to = index(shindex[i,])
+    end =  index(shindex[i,])
     
     cur = shindex[i,]
     curHi = as.numeric(Hi(cur))
@@ -216,25 +208,37 @@ find_stage = function(myindex)
     
     if(curLo < tempuplow)
     {
+      #重新定位当前最低点
       tempuplow = curLo
-      bullfrom = curdate
-      bullto = curdate
+      from = curdate
+      to = curdate
+      end = curdate
     }
     
     startupratio = 0.3
     #向上 找到满足符合要求的点
     if( ((curHi-tmp_up_low) / tmp_up_low) > startupratio )
     {
-      bullto = curdate
+      to = curdate
       end = to
       tempuphi = curHi
       startenteruppoint = curdate
       #记录相关值
-      records = append(list(bullfrom,bullto))
       #在到达牛市(100%前)顶点前回撤是否达到20%
       for(j  in (i+1) : nrow(shindex))
       {
-        if(j >= nrow(shindex)) return('')
+        if(j >= nrow(shindex))
+        {
+          records[[recordsindex]] = list(from=from,start = startenteruppoint,end = curdate ,flag='no')
+          recordsindex = recordsindex + 1
+          return(records)
+        }
+        
+        cur = shindex[j,]
+        curHi = as.numeric(Hi(cur))
+        curLo = as.numeric(Lo(cur))
+        curdate = index(cur)
+        
         if(curHi > temphi)
         {
           to = curdate
@@ -245,13 +249,49 @@ find_stage = function(myindex)
         #成功达到牛市
         if( ((curHi-tmp_up_low) / tmp_up_low) > upratio )
         {
+          #寻找牛市终点
+          i = j + 1
+          if(i >= nrow(shindex))
+          {
+            r = list(from=from,start = startenteruppoint,end = curdate,flag='succ' )
+            records[[recordsindex]] = r
+            recordsindex = recordsindex + 1
+            return(records)
+          }
           
+          for(j in (i+1) : nrow(shindex))
+          {
+            cur = shindex[j,]
+            curHi = as.numeric(Hi(cur))
+            curLo = as.numeric(Lo(cur))
+            curdate = index(cur)
+            
+            temphi_1 = temphi
+            
+            if(curHi > temphi)
+            {
+              to = curdate
+              temphi = curHi
+              end = to
+            }
+            breakdownratio = -0.3
+            if(((curLo - temphi_1) / temphi_1) < breakdownratio)
+            {
+              r = list(from=from,start = startenteruppoint,end = curdate,flag='succ' )
+              records[[recordsindex]] = r
+              break
+            }
+          break
         }
         
-        #回撤20%
+        #回撤20%以上，结束
+        downratio = -0.2
         if(((curLo - temphi) / temphi) < downratio)
         {
-          end = curdate
+          r = list(from=from,start = startenteruppoint,end=curdate,flag='fail' )
+          i = j + 1
+          records[[recordsindex]] = r
+          recordsindex = recordsindex + 1
           break
         }
       }
