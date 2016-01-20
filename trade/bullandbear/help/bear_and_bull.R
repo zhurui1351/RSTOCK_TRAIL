@@ -5,6 +5,7 @@ find_bull_first = function(upratio = 1,downratio = -0.3,shindex)
   temphi = as.numeric(Hi(shindex[1,]))
   from = index(shindex[1,])
   to = index(shindex[1,])
+  end = index(shindex[1,])
   for(i in 2:nrow(shindex))
   {
     
@@ -175,37 +176,32 @@ find_bear = function(upratio = 0.2,downratio = -0.4,shindex)
 ## 最近高点回撤 30% 为3阶段
 ## 30%回撤到最低点为4阶段 （中间反弹20%  下跌结束 继续以前期高点为参考搜寻）
 ## 
-find_upstage_enter = function(myindex)
+find_upstage_enter = function(shindex,startupratio = 0.3, upratio = 1,breakdownratio = -0.3, downratio = -0.2)
 {
  
-#  tempuplow =as.numeric(Lo(shindex[1,]))
-#  tempuphi = as.numeric(Hi(shindex[1,]))
-#  from = index(shindex[1,])
-#  to = index(shindex[1,])
-#  end =  index(shindex[1,])
+  tempuplow =as.numeric(Lo(shindex[1,]))
+  tempuphi = as.numeric(Hi(shindex[1,]))
+  from = index(shindex[1,])
+  to = index(shindex[1,])
+  end =  index(shindex[1,])
   
   #记录位置
-  records = list()
+  records = data.frame()
   recordsindex = 1
   
-  i = 1
+  i = 2
  # for(i in 2:nrow(shindex))
   while(i < nrow(shindex))
   {
-    tempuplow =as.numeric(Lo(shindex[i,]))
-    tempuphi = as.numeric(Hi(shindex[i,]))
-    from = index(shindex[i,])
-    to = index(shindex[i,])
-    end =  index(shindex[i,])
-    
+  #  print(i)
     cur = shindex[i,]
     curHi = as.numeric(Hi(cur))
     curLo = as.numeric(Lo(cur))
     curdate = index(cur)
     
     tmp_up_low = tempuplow
-    tmp_down_high = tempdownhi
-    
+
+    #遇到更低点
     if(curLo < tempuplow)
     {
       #重新定位当前最低点
@@ -215,23 +211,29 @@ find_upstage_enter = function(myindex)
       end = curdate
     }
     
-    startupratio = 0.3
+   # startupratio = 0.3
     #向上 找到满足符合要求的点
     if( ((curHi-tmp_up_low) / tmp_up_low) > startupratio )
     {
+     # print(i)
+     # return('')
       to = curdate
       end = to
       tempuphi = curHi
       startenteruppoint = curdate
+      starthi = curHi
       #记录相关值
       #在到达牛市(100%前)顶点前回撤是否达到20%
       for(j  in (i+1) : nrow(shindex))
       {
         if(j >= nrow(shindex))
         {
-          records[[recordsindex]] = list(from=from,start = startenteruppoint,end = curdate ,flag='no')
+         # return('')
+          r = data.frame(from=from,start = startenteruppoint,to=curdate,end = curdate ,flag='notend')
+          records = rbind(records,r)
           recordsindex = recordsindex + 1
-          return(records)
+          print('1')
+          return(list(records,list(from=from,to=to,end=end)))
         }
         
         cur = shindex[j,]
@@ -239,66 +241,91 @@ find_upstage_enter = function(myindex)
         curLo = as.numeric(Lo(cur))
         curdate = index(cur)
         
-        if(curHi > temphi)
+        #继续创新高
+        if(curHi > tempuphi)
         {
           to = curdate
-          temphi = curHi
-          end = to
+          tempuphi = curHi
+          end = curdate
         }
-        upratio = 1
+       # upratio = 1
         #成功达到牛市
         if( ((curHi-tmp_up_low) / tmp_up_low) > upratio )
         {
+          # print(j)
+          # return('')
           #寻找牛市终点
           i = j + 1
           if(i >= nrow(shindex))
           {
-            r = list(from=from,start = startenteruppoint,end = curdate,flag='succ' )
-            records[[recordsindex]] = r
-            recordsindex = recordsindex + 1
-            return(records)
+            r = data.frame(from=from,start = startenteruppoint,to=curdate,end = curdate,flag='succ')
+            records  = rbind(records,r)
+            return(list(records,list(from=from,to=to,end=end)))
           }
-          
-          for(j in (i+1) : nrow(shindex))
+          #寻找牛市终点
+          for(j in i : nrow(shindex))
           {
+           
             cur = shindex[j,]
             curHi = as.numeric(Hi(cur))
             curLo = as.numeric(Lo(cur))
             curdate = index(cur)
             
-            temphi_1 = temphi
+            if(j >= nrow(shindex))
+            {
+            #  print('end')
+             # return('')
+              r = data.frame(from=from,start = startenteruppoint,to=curdate,end = curdate,flag='succ')
+              print(r)
+              records  = rbind(records,r)
+              recordsindex = recordsindex + 1
+              return(list(records,list(from=from,to=to,end=end)))
+            }
             
-            if(curHi > temphi)
+            temphi_1 = tempuphi
+            
+            if(curHi > tempuphi)
             {
               to = curdate
-              temphi = curHi
+              tempuphi = curHi
               end = to
             }
-            breakdownratio = -0.3
+          #  breakdownratio = -0.3
             if(((curLo - temphi_1) / temphi_1) < breakdownratio)
             {
-              r = list(from=from,start = startenteruppoint,end = curdate,flag='succ' )
-              records[[recordsindex]] = r
+              r = data.frame(from=from,start = startenteruppoint,to=to,end = curdate,flag='succ' )
+              records  = rbind(records,r)
+              pos = which(index(shindex) == to)
+              i = pos+1
+              tempuplow =as.numeric(Lo(shindex[i,]))
+              tempuphi = as.numeric(Hi(shindex[i,]))
+              from = index(shindex[i,])
+              to = index(shindex[i,])
+              end =  index(shindex[i,])
               break
             }
+        #  break
+          }
           break
         }
         
         #回撤20%以上，结束
-        downratio = -0.2
-        if(((curLo - temphi) / temphi) < downratio)
+       # downratio = -0.2
+        if(((curLo - starthi) / starthi) < downratio)
         {
-          r = list(from=from,start = startenteruppoint,end=curdate,flag='fail' )
+          r = data.frame(from=from,start = startenteruppoint,to=to,end=curdate,flag='failup' )
           i = j + 1
-          records[[recordsindex]] = r
+          records  = rbind(records,r)
           recordsindex = recordsindex + 1
+          
           break
         }
       }
       
     }
+    i = i + 1
   }
-  
+  return(list(records,list(from=from,to=to,end=end)))
 }
 
 

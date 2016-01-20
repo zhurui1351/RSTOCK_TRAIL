@@ -16,6 +16,13 @@ sourceDir <- function(path, trace = TRUE, ...) {
 sourceDir('D:/Rcode/code/RSTOCK_TRAIL/trade/wensitan/help')
 sourceDir('D:/Rcode/code/RSTOCK_TRAIL/trade/bullandbear/help')
 
+shindex = getSymbols('000001.SS',auto.assign = F,from='1990-01-01')
+
+shindex = getSymbols('^DJI',auto.assign = F,from='1970-01-01')
+
+shindex = adjustOHLC(shindex,use.Adjusted = T)
+colnames(shindex) = gsub('DJI.','',colnames(shindex))
+
 shindex = readSHindex()
 shindex_w = to.weekly(shindex)
 colnames(shindex_w) = gsub('shindex.','',colnames(shindex_w),fixed=T)
@@ -29,11 +36,16 @@ colnames(shindex_m) = gsub('shindex.','',colnames(shindex_m),fixed=T)
 myindex = shindex_w
 
 bulllist  = find_bull(upratio = 1,downratio = -0.3,shindex = myindex)
+enterpoints = find_upstage_enter(myindex,startupratio = 0.3,upratio = 1,breakdownratio = -0.3,downratio = -0.2)
+#enterpoints = find_upstage_enter(myindex,startupratio = 0.1,upratio = 0.3,breakdownratio = -0.1,downratio = -0.1)
+
+records = enterpoints[[1]]
+curstatuts = enterpoints[[2]]
 
 bearlist = find_bear(upratio = 0.2,downratio = -0.4,shindex = myindex)
 
 
-#看图分析
+#看图分析bullist
 for(i in 1:(length(bulllist)-1))
 {
   bullfrom = as.character(bulllist[[i]]['from'])
@@ -68,6 +80,7 @@ for(i in 1:length(bearlist))
   chartSeries(myindex,TA=c(addSMA(n=100,col = "green"),addSMA(n=30,col = "red")),subset=paste(bearfrom,bearend,sep='::'))
   tmp = scan()
 }
+
 
 
 ####basic stat
@@ -106,7 +119,6 @@ from_bull = c('1992-12-11','1994-07-29','1996-01-19','"1999-12-30','2006-03-10',
 i = which(index(myindex) == '2014-11-07')
 mean(Delt(myindex[(i-4):i]$Close),na.rm=T)
 mean(Delt(myindex[i:(i+4)]$Close),na.rm=T)
-
 
 
 
