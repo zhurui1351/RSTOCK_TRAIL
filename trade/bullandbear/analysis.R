@@ -16,12 +16,12 @@ sourceDir <- function(path, trace = TRUE, ...) {
 sourceDir('D:/Rcode/code/RSTOCK_TRAIL/trade/wensitan/help')
 sourceDir('D:/Rcode/code/RSTOCK_TRAIL/trade/bullandbear/help')
 
-shindex = getSymbols('000001.SS',auto.assign = F,from='1990-01-01')
+#shindex = getSymbols('000001.SS',auto.assign = F,from='1990-01-01')
 
-shindex = getSymbols('^DJI',auto.assign = F,from='1970-01-01')
+#shindex = getSymbols('^DJI',auto.assign = F,from='1970-01-01')
 
-shindex = adjustOHLC(shindex,use.Adjusted = T)
-colnames(shindex) = gsub('DJI.','',colnames(shindex))
+#shindex = adjustOHLC(shindex,use.Adjusted = T)
+#colnames(shindex) = gsub('DJI.','',colnames(shindex))
 
 shindex = readSHindex()
 shindex_w = to.weekly(shindex)
