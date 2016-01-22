@@ -322,18 +322,18 @@ combindlist = function(l0,l1)
 }
 
 #潜变量分层贝叶斯学习
-HNBstudy = function(mydata)
+HNBstudy = function(mydata,mnodes,classnode)
 {
-  mnodes =unique(c('longstatus','Close','smastatus','ccistatus','rsistatus'
-                   ,'rocstatus'))
+ # mnodes =unique(c('longstatus','Close','smastatus','ccistatus','rsistatus'
+  #                 ,'rocstatus'))
   
   graph0 = graph(mnodes)
-  graph0 = assignClassNode(graph0,'leadclflag')
+  graph0 = assignClassNode(graph0,classnode)
   graph0 = initNBgraph(graph0)
   plot.mygraph(graph0)
   bn_graph0 = as.graph.bn(graph0)
-  bn0 = bn.fit(bn_graph0,data=mydata[,c(mnodes,'leadclflag')],method ='mle')
-  bic0 = BIC(bn0,data=mydata[,c(mnodes,'leadclflag')])
+  bn0 = bn.fit(bn_graph0,data=mydata[,c(mnodes,classnode)],method ='mle',na.omit=T)
+  bic0 = BIC(bn0,data=mydata[,c(mnodes,classnode)])
   
   g = graph0
   bic_c = bic0
@@ -388,5 +388,5 @@ HNBstudy = function(mydata)
     allgraph[[iall]] = g
     iall = iall + 1
   }
- 
+ return(allgraph)
 }

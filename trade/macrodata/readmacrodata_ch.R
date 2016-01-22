@@ -4,7 +4,7 @@ readmacrodata = function(path = 'D:/data/macro/')
 {
   e = parent.env(environment())
   tableforread = data.frame()
-  r = data.frame(filename = '1年整存整取利率.csv',var = 'interestrate_1y_f_d',fun='interestrate_1y_f_d_fun' )
+  r = data.frame(filename = '1年整存整取利率.csv',var = 'interestrate_1y_f_d',fun='interestrate_1y_f_d_fun')
   tableforread = rbind(tableforread,r )
   r = data.frame(filename = 'CPI当月同比.csv',var = 'cpi_m2m_m',fun='cpi_m2m_m_fun' )
   tableforread = rbind(tableforread,r )
