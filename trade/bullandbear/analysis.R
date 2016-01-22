@@ -5,16 +5,13 @@ require('dygraphs')
 require('lubridate')
 require('dplyr')
 require('dygraphs')
-sourceDir <- function(path, trace = TRUE, ...) {
-  for (nm in list.files(path, pattern = "[.][RrSsQq]$")) {
-    if(trace) cat(nm,":")
-    source(file.path(path, nm), ...)
-    if(trace) cat("\n")
-  }
-}
 
-sourceDir('D:/Rcode/code/RSTOCK_TRAIL/trade/wensitan/help')
-sourceDir('D:/Rcode/code/RSTOCK_TRAIL/trade/bullandbear/help')
+source('D:/Rcode/code/RSTOCK_TRAIL/globaltool/generaltool.R')
+sourceDir('D:/Rcode/code/RSTOCK_TRAIL/trade/wensitan/help',encoding='utf8')
+sourceDir('D:/Rcode/code/RSTOCK_TRAIL/trade/bullandbear/help',encoding='utf8')
+sourceDir('D:/Rcode/code/RSTOCK_TRAIL/trade/macrodata/',encoding='utf8')
+sourceDir('D:/Rcode/code/RSTOCK_TRAIL/trade/macrodata/help',encoding='utf8')
+
 
 #shindex = getSymbols('000001.SS',auto.assign = F,from='1990-01-01')
 
@@ -120,5 +117,46 @@ i = which(index(myindex) == '2014-11-07')
 mean(Delt(myindex[(i-4):i]$Close),na.rm=T)
 mean(Delt(myindex[i:(i+4)]$Close),na.rm=T)
 
+# 主观宏观数据分析
+macrodata = readmacrodata()
 
+for(i in 1 : nrow(records))
+{
+
+  indicator = cci_m
+  
+  start = records[i,'start']
+  #前半年的时间
+  prestart = start - months(6)
+  if(is.na(prestart))
+  {
+    prestart = start - days(1) - months(6)
+    prestart = prestart + days(1)
+  }
+  afterstart = start + months(1)
+  
+
+  perd = paste(prestart,start,sep='/')
+  print(indicator[perd])
+  print(i)
+  tmp = scan()
+  
+}
+
+require('e1071')
+path = 'd:/data/result.csv'
+result = read.csv(path)
+result[result==''] = NA
+flag = records[,"flag"]
+records_model = cbind(flag,result)
+
+varset = c('interestrate_1y_f_d','exchg_usd_rmb_m','cpi_m2m_m','cci_m','emp_m2m_q')
+vars = paste(varset,collapse = '+')
+f = formula(paste('flag ~ ',vars))
+
+model = naiveBayes(f,data=records_model[,c('flag',varset)],na.action = na.pass,laplace = 1)
+
+pr = predict(model,records_model[,varset],type='raw')
+cbind(as.data.frame(pr),flag)
+table(pr,flag)
 
