@@ -332,7 +332,7 @@ HNBstudy = function(mydata,mnodes,classnode)
   graph0 = initNBgraph(graph0)
   plot.mygraph(graph0)
   bn_graph0 = as.graph.bn(graph0)
-  bn0 = bn.fit(bn_graph0,data=mydata[,c(mnodes,classnode)],method ='mle',na.omit=T)
+  bn0 = bn.fit(bn_graph0,data=mydata[,c(mnodes,classnode)],method ='mle')
   bic0 = BIC(bn0,data=mydata[,c(mnodes,classnode)])
   
   g = graph0

@@ -30,7 +30,7 @@ colnames(shindex_m) = gsub('shindex.','',colnames(shindex_m),fixed=T)
 myindex = shindex_w
 
 bulllist  = find_bull(upratio = 1,downratio = -0.3,shindex = myindex)
-enterpoints = find_upstage_enter(myindex,startupratio = 0.3,upratio = 1,breakdownratio = -0.3,downratio = -0.2)
+enterpoints = find_upstage_enter(myindex,startupratio = 0.2,upratio = 1,breakdownratio = -0.3,downratio = -0.2)
 #enterpoints = find_upstage_enter(myindex,startupratio = 0.1,upratio = 0.3,breakdownratio = -0.1,downratio = -0.1)
 
 records = enterpoints[[1]]
@@ -111,7 +111,7 @@ for(i in 1: length(bulist))
 
 # 主观宏观数据分析，观测数据并在其他地方标注
 macrodata = readmacrodata()
-
+#人工看数据分段
 for(i in 1 : nrow(records))
 {
 
@@ -173,9 +173,9 @@ for(var in varset)
 #records_model = cbind(flag,result)
 flag = records[,"flag"]
 records_model = modeldata[,c('flag',varset)]
-#varset = c('interestrate_1y_f_d','exchg_usd_rmb_m','cpi_m2m_m','cci_m','emp_m2m_q')
+varset = c('interestrate_1y_f_d','exchg_usd_rmb_m','cpi_m2m_m','emp_m2m_q')
 
-varset = c('interestrate_1y_f_d','exchg_usd_rmb_m','cpi_m2m_m','cci_m','emp_m2m_q')
+#varset = c('interestrate_1y_f_d','exchg_usd_rmb_m','cpi_m2m_m','cci_m','emp_m2m_q')
 
 vars = paste(varset,collapse = '+')
 f = formula(paste('flag ~ ',vars))
@@ -187,6 +187,7 @@ cbind(as.data.frame(pr),as.character(flag))
 pr1 = predict(model,records_model[,varset])
 table(pr1,flag)
 
+cbind(as.data.frame(pr),modeldata)
 
 #latent
 datasubset = records_model
@@ -195,7 +196,7 @@ ecode=function(x){
   
   tmp = sapply(x,function(x){
     if(is.na(x))
-      return(NA)
+      return(4)
     else if(x == '下降')
       return('0')
     else if (x == '不变')
@@ -214,7 +215,15 @@ ecode=function(x){
   })
   return(tmp)
 }
-varset = c('interestrate_1y_f_d','exchg_usd_rmb_m','cpi_m2m_m')
+varset = c('interestrate_1y_f_d','exchg_usd_rmb_m','cpi_m2m_m','emp_m2m_q')
 
 data_train = as.data.frame(mapply(ecode,datasubset),row.names=rownames(datasubset))
-HNBstudy(na.omit(data_train),varset,'flag')
+result =  HNBstudy(data_train,varset,'flag')
+sg = result[[1]]
+sg_card = learncard(sg,data_train)
+f = getNBformularFromgraph(sg)
+model = naiveBayes(f,data=sg_card,na.action = na.pass,laplace=1)
+pr = predict(model,sg_card,type='raw')
+cbind(as.data.frame(pr),as.character(flag))
+pr1 = predict(model,sg_card)
+table(pr1,flag)
