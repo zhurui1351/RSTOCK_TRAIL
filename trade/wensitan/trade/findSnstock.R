@@ -41,13 +41,13 @@ findSnStock = function(from='1990',to='2014')
 snTestFrame = function()
 {
   records = data.frame()
-  testdate = as.character(2001:2015)
+  testdate = as.character(2005:2015)
   from = '1990'
   for(d in testdate)
   {
     print(d)
     trainyear = as.character(as.numeric(d) - 1)
-    #print(trainyear)
+    print(trainyear)
     lm = findSnStock(to=trainyear)
     assign(paste('lm',trainyear,sep=''),lm)
     for(i in 1: 12)
@@ -55,7 +55,7 @@ snTestFrame = function()
       #筛选满足条件的记录
       slm =  Filter(function(x){ ratio = x[[3]]
       month = x[[2]]
-      ratio>=0.75 && month==i },lm)
+      ratio>=0.8 && month==i },lm)
       if(length(slm)!=0)
       {
         #生成测试记录
@@ -66,14 +66,51 @@ snTestFrame = function()
           code = info[['code']]
           m = as.character(info[['month']])
           
-          stock = readOneStock(code)
-          stock = to.monthly(stock)
+          stock_day = readOneStock(code)
+          stock = to.monthly(stock_day)
+          stock_day$sma5 = lag(SMA(stock_day$Close,5))
+          stock_day$sma10 = lag(SMA(stock_day$Close,10))
+          stock_day$sma3 = lag(SMA(stock_day$Close,3))
+          stock_day$preclose = lag(stock_day$Close)
           tradeinfo = stock[paste(d,m,sep='')]
           if(nrow(tradeinfo)==0) next
           enter = as.numeric(Op(tradeinfo))
           out = as.numeric(Cl(tradeinfo))
-          record = data.frame(code=code,opdate=paste(d,m,sep=''),cldate=paste(d,m,sep=''),Open=enter,Close=out,profit=as.numeric(out-enter),initStop=0,stopprice=0,type='clean')
-          records = rbind(records,record)
+          #######
+          perd = paste(d,m,sep='')
+          stocks = stock_day[perd]
+          enterflag = F
+          outflag = F
+          stopprice = 0
+          initstop = 0
+          for(testi in 1:nrow(stocks))
+          {
+            cur = stocks[testi,]
+            if(!enterflag)
+            {
+              if(cur$sma3 > cur$sma10 && cur$preclose > cur$sma3 )
+              {
+                enter = as.numeric(Op(cur))
+                enterflag = T
+              }
+            }
+            if(!outflag && enterflag)
+            {
+              if( ((as.numeric(cur$Close) - enter) / enter) < -0.1 )
+              {
+                out = as.numeric(cur$Close)
+                outflag  =T
+                stopprice = out
+              }
+            }
+          }
+          #######
+          if(enterflag == T)
+          {
+            record = data.frame(code=code,opdate=paste(d,m,sep=''),cldate=paste(d,m,sep=''),Open=enter,Close=out,profit=as.numeric(out-enter),initStop=0,stopprice=stopprice, type='clean')
+            records = rbind(records,record)
+          }
+          
         }
       }
     }
@@ -91,28 +128,29 @@ snTestFrame = function()
   x=aggregate(profit~opdate,data=records[,c('opdate','profit')],function(x){n=sample(1:length(x),1)
                                                          return(x[n])})
   uniquedate =  as.character(unique(records[,'opdate']))
-  subrecords = subset(records1,substr(opdate,1,4) == '2015') 
+  subrecords = subset(records,substr(opdate,1,4) == '2011') 
  
   records1 = subset(records,Open < 25 & substr(code,1,1)!='3') 
   
   randomtrade = lapply(uniquedate,function(x,records){
     subrecords = subset(records,opdate == x)
     nr = nrow(subrecords)
-    if(nr <= 5) {return(subrecords)}
+    if(nr <= 4) {return(subrecords)}
     else
     {
-      n = sample(1:nrow(subrecords),5)
+      n = sample(1:nrow(subrecords),4)
       return(subrecords[n,])
     }
   },records)
   randomtrade = do.call('rbind',randomtrade)
   anlysisProfit(randomtrade,aggregatecontrol = 4)
+  
 }
 
 
 testinenvir = function()
 {
-  testdate = as.character(2001:2015)
+  testdate = as.character(2006:2015)
   records = data.frame()
   for(d in testdate)
   {
@@ -125,26 +163,79 @@ testinenvir = function()
       slm =  Filter(function(x){ ratio = x[[3]]
                                  month = x[[2]]
                                  ratio>=0.75 && month==i },lm)
+      slm = slm[order(sapply(slm,function(x){x[['ratio']]}),decreasing = T)]
       if(length(slm)!=0)
       {
+        len = ifelse(length(slm) > 4,4,length(slm))
         #生成测试记录
-        for(j in 1 : length(slm))
+        for(j in 1 : len)
         {
           
           info = slm[[j]]
           code = info[['code']]
           m = as.character(info[['month']])
           
-          stock = readOneStock(code)
-          stock = to.monthly(stock)
+          stock_day = readOneStock(code)
+          stock = to.monthly(stock_day)
+          stock_day$sma5 = lag(SMA(stock_day$Close,5))
+          stock_day$sma10 = lag(SMA(stock_day$Close,10))
+          stock_day$sma3 = lag(SMA(stock_day$Close,3))
+          stock_day$sma30 = lag(SMA(stock_day$Close,30))
+          
+          stock_day$preclose = lag(stock_day$Close)
           tradeinfo = stock[paste(d,m,sep='')]
           if(nrow(tradeinfo)==0) next
           enter = as.numeric(Op(tradeinfo))
           out = as.numeric(Cl(tradeinfo))
+          
           high = as.numeric(Hi(tradeinfo))
           low = as.numeric(Lo(tradeinfo))
-          record = data.frame(code=code,opdate=paste(d,m,sep=''),cldate=paste(d,m,sep=''),Open=enter,Close=out,high=high,low=low,profit=as.numeric(out-enter),initStop=0,stopprice=0,type='clean')
-          records = rbind(records,record)
+          #######
+          perd = paste(d,m,sep='')
+          stocks = stock_day[perd]
+          enterflag = F
+          outflag = F
+          stopprice = 0
+          initstop = 0
+          if(nrow(stocks) < 15) next
+          #前五个交易日买入 ，否则不买入
+          for(testi in 1:5)#nrow(stocks))
+          {
+            cur = stocks[testi,]
+            if(!enterflag)
+            {
+              if(cur$preclose > cur$sma30 )
+              {
+                enter = as.numeric(Op(cur))
+                enterflag = T
+                break
+              }
+            }
+            else
+            {
+              break
+            }
+          }
+          for(testi1 in (testi+1):nrow(stocks))
+          {
+            cur = stocks[testi1,]
+            if(!outflag && enterflag)
+            {
+              if( ((as.numeric(cur$Close) - enter) / enter) < -0.15 )
+              {
+                out = as.numeric(cur$Close)
+                outflag  =T
+                stopprice = out
+              }
+            }
+          }
+          #######
+          if(enterflag == T)
+          {
+            record = data.frame(code=code,opdate=paste(d,m,sep=''),cldate=paste(d,m,sep=''),Open=enter,Close=out,high=high,low=low,profit=as.numeric(out-enter),initStop=0,stopprice=stopprice,type='clean')
+            records = rbind(records,record)
+          }
+          
         }
       }
     }
@@ -193,7 +284,7 @@ lm = findSnStock(from='1990',to='2015')
 
 slm =  Filter(function(x){ ratio = x[[3]]
 month = x[[2]]
-ratio>=0.75 && month==1 },lm)
+ratio>=0.8 && month==1 },lm)
 
 lbest = slm[order(sapply(slm,function(x){x$ratio}),decreasing=TRUE)]
 
