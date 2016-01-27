@@ -41,7 +41,7 @@ findSnStock = function(from='1990',to='2014')
 snTestFrame = function()
 {
   records = data.frame()
-  testdate = as.character(2005:2015)
+  testdate = as.character(2000:2015)
   from = '1990'
   for(d in testdate)
   {
@@ -197,6 +197,9 @@ testinenvir = function()
           outflag = F
           stopprice = 0
           initstop = 0
+          opdate = ''
+          cldate = ''
+          quant = 0
           if(nrow(stocks) < 15) next
           #前五个交易日买入 ，否则不买入
           for(testi in 1:5)#nrow(stocks))
@@ -208,6 +211,8 @@ testinenvir = function()
               {
                 enter = as.numeric(Op(cur))
                 enterflag = T
+                opdate = as.Date(index(cur))
+                quant = floor(100 / enter)
                 break
               }
             }
@@ -216,23 +221,35 @@ testinenvir = function()
               break
             }
           }
+          #止损
+          stopprice_move = enter-enter*0.1
+          ismoved = F
+          ismovedout = F
           for(testi1 in (testi+1):nrow(stocks))
           {
             cur = stocks[testi1,]
             if(!outflag && enterflag)
             {
-              if( ((as.numeric(cur$Close) - enter) / enter) < -0.15 )
+              if( as.numeric(cur$Close) <= stopprice_move )
               {
                 out = as.numeric(cur$Close)
                 outflag  =T
                 stopprice = out
+                if(ismoved) ismovedout = T
+                cldate = as.Date(index(cur))
+                break
               }
+            }
+            if(as.numeric(cur$Close) >= 0.15 * stopprice_move)
+            {
+              stopprice_move = stopprice_move + stopprice_move * 0.1
             }
           }
           #######
           if(enterflag == T)
           {
-            record = data.frame(code=code,opdate=paste(d,m,sep=''),cldate=paste(d,m,sep=''),Open=enter,Close=out,high=high,low=low,profit=as.numeric(out-enter),initStop=0,stopprice=stopprice,type='clean')
+            out = ifelse(ismoved && !ismovedout,stopprice,out)
+            record = data.frame(code=code,opdate=opdate,cldate=cldate,Open=enter,Close=out,high=high,low=low,quant=quant,profit=quant * as.numeric(out-enter),initStop=0,stopprice=stopprice,type='clean')
             records = rbind(records,record)
           }
           
@@ -243,7 +260,7 @@ testinenvir = function()
 }
 
 
-anlysisProfit = function(records,aggregatecontrol=4)
+anlysisProfit = function(records,aggregatecontrol=4,ratio=1)
 {
   profit = as.numeric(records[,'profit'])
   print('total nums:')
