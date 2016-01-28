@@ -79,8 +79,8 @@ snTestFrame = function()
           #######
           perd = paste(d,m,sep='')
           stocks = stock_day[perd]
-          enterflag = F
-          outflag = F
+          enterflag = T
+          outflag = T
           stopprice = 0
           initstop = 0
           for(testi in 1:nrow(stocks))
@@ -162,15 +162,18 @@ testinenvir = function()
       #筛选满足条件的记录
       slm =  Filter(function(x){ ratio = x[[3]]
                                  month = x[[2]]
-                                 ratio>=0.75 && month==i },lm)
+                                 ratio>=0.8 && month==i },lm)
+      
+     
       slm = slm[order(sapply(slm,function(x){x[['ratio']]}),decreasing = T)]
-      if(length(slm)!=0)
+      
+    if(length(slm)!=0)
       {
         len = ifelse(length(slm) > 4,4,length(slm))
+        len = length(slm)
         #生成测试记录
         for(j in 1 : len)
         {
-          
           info = slm[[j]]
           code = info[['code']]
           m = as.character(info[['month']])
@@ -193,8 +196,8 @@ testinenvir = function()
           #######
           perd = paste(d,m,sep='')
           stocks = stock_day[perd]
-          enterflag = F
-          outflag = F
+          enterflag = T
+          outflag = T
           stopprice = 0
           initstop = 0
           opdate = ''
@@ -225,9 +228,12 @@ testinenvir = function()
           stopprice_move = enter-enter*0.1
           ismoved = F
           ismovedout = F
-          for(testi1 in (testi+1):nrow(stocks))
+          enddate = as.character(index(stocks[(testi+1),]))
+          for(testi1 in as.character(index(stock_day[paste(enddate,'/',sep='')])))
+         # for(testi1 in (testi+1):nrow(stocks))
           {
-            cur = stocks[testi1,]
+           # cur = stocks[testi1,]
+            cur = stock_day[testi1]
             if(!outflag && enterflag)
             {
               if( as.numeric(cur$Close) <= stopprice_move )
@@ -236,13 +242,13 @@ testinenvir = function()
                 outflag  =T
                 stopprice = out
                 if(ismoved) ismovedout = T
-                cldate = as.Date(index(cur))
+                cldate = as.character(as.Date(index(cur)))
                 break
               }
             }
-            if(as.numeric(cur$Close) >= 0.15 * stopprice_move)
+            if(as.numeric(cur$High) >= 0.1 * stopprice_move + stopprice_move)
             {
-              stopprice_move = stopprice_move + stopprice_move * 0.1
+              stopprice_move = stopprice_move + stopprice_move * 0.05
             }
           }
           #######
@@ -259,6 +265,207 @@ testinenvir = function()
   }
 }
 
+testinenvir_diffseq = function()
+{
+  testdate = as.character(2006:2015)
+  records = data.frame()
+  for(d in testdate)
+  {
+    print(d)
+    trainyear = as.character(as.numeric(d) - 1)
+    lm = get(paste('lm',trainyear,sep=''))
+    for(i in 1: 12)
+    {
+      #筛选满足条件的记录
+      slm =  Filter(function(x){ ratio = x[[3]]
+      month = x[[2]]
+      ratio>=0.75 && month==i },lm)
+      
+      
+      slm = slm[order(sapply(slm,function(x){x[['ratio']]}),decreasing = T)]
+      holdnum = 0 
+      holdcodes = c()
+      #前五个交易日买入
+      for(testi in 1:10)
+      {
+        #持仓个数
+
+        if(length(slm) != 0 )
+        {
+          len = length(slm)
+          #优先买入符合条件的
+          for(j in 1 : len)
+          {
+            if(holdnum > 10) break
+            info = slm[[j]]
+            code = info[['code']]
+            m = as.character(info[['month']])
+            
+            if(is.element(code,holdcodes)) next
+            
+            stock_day = readOneStock(code)
+            stock = to.monthly(stock_day)
+            stock_day$sma5 = lag(SMA(stock_day$Close,5))
+            stock_day$sma10 = lag(SMA(stock_day$Close,10))
+            stock_day$sma3 = lag(SMA(stock_day$Close,3))
+            stock_day$sma30 = lag(SMA(stock_day$Close,30))
+            
+            stock_day$preclose = lag(stock_day$Close)
+            tradeinfo = stock[paste(d,m,sep='')]
+            if(nrow(tradeinfo)==0) next
+            enter = as.numeric(Op(tradeinfo))
+            out = as.numeric(Cl(tradeinfo))
+            
+            high = as.numeric(Hi(tradeinfo))
+            low = as.numeric(Lo(tradeinfo))
+
+            perd = paste(d,m,sep='')
+            stocks = stock_day[perd]
+            if(nrow(stocks) < 15) next
+            enterflag = F
+            outflag = F
+            stopprice = 0
+            initstop = 0
+            opdate = ''
+            cldate = ''
+            quant = 0
+            
+            cur = stocks[testi,]
+            if(!enterflag)
+            {
+              if(cur$preclose > cur$sma30 )
+              {
+                enter = as.numeric(Op(cur))
+                enterflag = T
+                opdate = as.Date(index(cur))
+                quant = floor(100 / enter)
+                holdnum = holdnum + 1
+                holdcodes = c(holdcodes,code)
+                # 考虑何时出场
+                stopprice_move = enter-enter*0.1
+                ismoved = F
+                ismovedout = F
+                
+                enddate = as.character(index(stocks[(testi+1),]))
+                for(testi1 in as.character(index(stock_day[paste(enddate,'/',sep='')])))
+                {
+                  cur = stock_day[testi1]
+                 
+                    if( as.numeric(cur$Close) <= stopprice_move )
+                    {
+                      out = as.numeric(cur$Close)
+                      outflag  =T
+                      stopprice = out
+                      if(ismoved) ismovedout = T
+                      cldate = as.character(as.Date(index(cur)))
+                      break
+                    }
+                  
+                  if(as.numeric(cur$High) >= 0.1 * stopprice_move + stopprice_move)
+                  {
+                    stopprice_move = stopprice_move + stopprice_move * 0.08
+                  }
+                }
+              }
+              
+              if(enterflag == T)
+              {
+                out = ifelse(ismoved && !ismovedout,stopprice,out)
+                record = data.frame(code=code,opdate=opdate,cldate=cldate,Open=enter,Close=out,high=high,low=low,quant=quant,profit=quant * as.numeric(out-enter),initStop=0,stopprice=stopprice,type='clean')
+                records = rbind(records,record)
+              }
+              
+            }
+            
+          }
+        }
+      }
+    }
+  }
+}
+#####
+testinenvir_cor = function()
+{
+  testdate = as.character(2006:2015)
+  records = data.frame()
+  for(d in testdate)
+  {
+    print(d)
+    trainyear = as.character(as.numeric(d) - 1)
+    lm = get(paste('lm',trainyear,sep=''))
+    for(i in 1: 12)
+    {
+      #筛选满足条件的记录
+      slm =  Filter(function(x){ ratio = x[[3]]
+      month = x[[2]]
+      ratio>=0.75 && month==i },lm)
+      
+      slm = slm[order(sapply(slm,function(x){x[['ratio']]}),decreasing = T)]
+      if(length(slm) > 4)
+      {
+        lcor =  unlist(corlist(slm,d))
+      }
+      else
+      {
+        lcor = sapply(slm,function(x){x$code})
+      }
+      
+      for(code in lcor)
+      {
+        stock_day = readOneStock(code)
+        stock = to.monthly(stock_day)
+        
+        stock_day$sma30 = lag(SMA(stock_day$Close,30))
+        stock_day$preclose = lag(stock_day$Close)
+        
+        tradeinfo = stock[paste(d,m,sep='')]
+        if(nrow(tradeinfo)==0) next
+        enter = as.numeric(Op(tradeinfo))
+        out = as.numeric(Cl(tradeinfo))
+        high = as.numeric(Hi(tradeinfo))
+        low = as.numeric(Lo(tradeinfo))
+        opdate = paste(d,i,sep='')
+        cldate = paste(d,i,sep='')
+        quant = 100 / enter
+        
+        record = data.frame(code=code,opdate=opdate,cldate=cldate,Open=enter,Close=out,high=high,low=low,quant=quant,profit=quant * as.numeric(out-enter),initStop=0,stopprice=stopprice,type='clean')
+        records = rbind(records,record)
+        
+      }
+      
+    }
+  }
+}
+
+
+#相关系数函数
+corlist = function(slm,cury)
+{
+  codes = sapply(slm,function(x){x$code})
+  prey = as.numeric(cury) - 3
+  l=lapply(codes, function(x){
+    p = readOneStock(x)
+    p = to.monthly(p)
+    p =Delt(Cl(p))
+    p = p[paste(prey,cury,sep = '/')]
+    return(p)
+  })
+  names(l) = codes
+  m = do.call('cbind',l)
+  colnames(m) = codes
+  mcor = cor(m,use='na.or.complete')
+  mcor[lower.tri(mcor)] = 1
+  msort=sort(as.vector(abs(mcor)))[1:2]
+  l=lapply(msort, function(x){which(abs(mcor)==x,arr.ind = T)})
+  # code1=rownames(mcor)[l[[1]][1]]
+  #code2=colnames(mcor)[l[[1]][2]]
+  l = lapply(l,function(x){
+    code1 = rownames(mcor)[x[1]]
+    code2 = rownames(mcor)[x[2]]
+    return(c(code1,code2))
+  })
+  return(l)
+}
 
 anlysisProfit = function(records,aggregatecontrol=4,ratio=1)
 {
@@ -304,6 +511,8 @@ month = x[[2]]
 ratio>=0.8 && month==1 },lm)
 
 lbest = slm[order(sapply(slm,function(x){x$ratio}),decreasing=TRUE)]
+
+
 
 #计算相关系数
 codes = sapply(lbest,function(x){x$code})
