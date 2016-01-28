@@ -418,7 +418,7 @@ testinenvir_cor = function()
         stock_day$sma30 = lag(SMA(stock_day$Close,30))
         stock_day$preclose = lag(stock_day$Close)
         
-        tradeinfo = stock[paste(d,m,sep='')]
+        tradeinfo = stock[paste(d,i,sep='')]
         if(nrow(tradeinfo)==0) next
         enter = as.numeric(Op(tradeinfo))
         out = as.numeric(Cl(tradeinfo))
