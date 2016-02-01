@@ -44,12 +44,19 @@ getLCAformularFromgraph = function(g,nodes)
 
 ###################################
 #数据准备
-datasubset = analysedata_2000_6[,c('leadclflag',mnodes)]
-data_train = as.data.frame(datasubset['1994/2014'])
+mnodes = c('Close','smasignal','ccisignal','rsisignal','macdsignal','adxsignal','mfisignal','bbandssignal','rocsignal',
+           'sarsignal','wprsignal','kdjsignal','tdisignal','kstsignal','chkADsignal','obvsignal','cmosignal',
+           'cmfsignal','trixsignal','willimadsignal','emvsignal' )
+datasubset = analysedata[,c('leadclflag',mnodes)]
+
+data_train = analysedata_2000_6
+data_train = as.data.frame(data_train['1994/2014'])
 data_train = na.omit(data_train)
 data_test = as.data.frame(datasubset['2001'])
 data_test = na.omit(data_test)
 
+mnodes = colnames(data_train)
+mnodes = mnodes[2:length(mnodes)]
 ##编码数据
 ecode=function(x){
   
@@ -64,6 +71,13 @@ ecode=function(x){
       return('1')
     else if (x == 'down')
       return('2')
+    else if(x == 'short')
+      return('1')
+    else if(x == 'long')
+      return('2')
+    else if(x == 'hold')
+      return('3')
+    
     else return(as.character(x))
   })
   return(tmp)
@@ -147,5 +161,5 @@ table(d_new_train1$leadclflag,pr1)
 
 #分层贝叶斯学习
 
-HNBstudy(data_train)
+HNBstudy(data_train,mnodes,'leadclflag')
 

@@ -79,7 +79,7 @@ for(i in 1:length(bearlist))
 
 ####basic stat
 myindex = shindex_w
-myindex$sma = SMA(myindex$Close,n = 12)
+myindex$sma = SMA(myindex$Close,n = 30)
 myindex$preclose = lag(myindex$Close,1)
 myindex$presma = lag(myindex$sma,1)
 cnt = ifelse(myindex$preclose < myindex$presma & myindex$Close >myindex$sma,1,0 )

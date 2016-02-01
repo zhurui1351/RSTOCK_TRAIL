@@ -125,7 +125,7 @@ learncard = function(g,mydata)
   subgraphs = decompost(g)
   for(i in 1:length(subgraphs))
   {
-    print(i)
+   # print(i)
     sg = subgraphs[[i]]
     #不含隐变量
     if(length(sg$lnodenames) == 0 ) next
@@ -358,7 +358,7 @@ HNBstudy = function(mydata,mnodes,classnode)
     
     bic_c = -Inf
     tmpg = NULL
-    print(length(sugs))
+   # print(length(sugs))
     
     if(length(sugs) == 0)
     {
@@ -367,7 +367,7 @@ HNBstudy = function(mydata,mnodes,classnode)
     
     for(i in 1:length(sugs))
     {
-      print(i)
+     # print(i)
       sg = sugs[[i]]
       sg_card = learncard(sg,mydata)
       if(length(setdiff(getallnodenames(sg),colnames(sg_card))) > 0 )
@@ -379,7 +379,7 @@ HNBstudy = function(mydata,mnodes,classnode)
       {
         bic_c = bic
         tmpg = sg
-        print(bic)
+       # print(bic)
         plot.mygraph(sg)
       }
     }
