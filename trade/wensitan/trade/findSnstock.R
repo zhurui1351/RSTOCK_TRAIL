@@ -170,7 +170,7 @@ testinenvir = function()
     if(length(slm)!=0)
       {
         len = ifelse(length(slm) > 4,4,length(slm))
-        len = length(slm)
+        #len = length(slm)
         #生成测试记录
         for(j in 1 : len)
         {
@@ -196,13 +196,13 @@ testinenvir = function()
           #######
           perd = paste(d,m,sep='')
           stocks = stock_day[perd]
-          enterflag = T
-          outflag = T
+          enterflag = F
+          outflag = F
           stopprice = 0
           initstop = 0
-          opdate = ''
-          cldate = ''
-          quant = 0
+          opdate = perd
+          cldate = perd
+          quant = floor(100/enter)
           if(nrow(stocks) < 15) next
           #前五个交易日买入 ，否则不买入
           for(testi in 1:5)#nrow(stocks))

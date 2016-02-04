@@ -90,9 +90,15 @@ data_test =  as.data.frame(mapply(ecode,data_test),row.names=rownames(data_test)
 ########handy test code to compute HNB
 #初始化为朴素贝叶斯分类器
 mnodes =unique(c('longstatus','Close','shortstatus','smastatus','ccistatus','rsistatus'
-           ,'rocstatus','sarstatus','wprstatus','kdjstatus'
-           ,'chkVostatus','obvstatus','cmostatus','trixstatus'))
+           ,'macdstatus','rocstatus','sarstatus','wprstatus','kdjstatus'
+           ,'obvstatus','cmostatus','temp0','temp1','temp2','temp3','temp4','temp5','flag'))
 
+arcs=matrix(c('longstatus','temp0','Close','temp0','shortstatus','temp0','smastatus','temp1','ccistatus','temp1',
+         'rsistatus','temp1','macdstatus','temp2','rocstatus','temp2','sarstatus','temp2',
+         'wprstatus','temp2','kdjstatus','temp1','obvstatus','temp3','cmostatus','temp3',
+         'temp0','temp4','temp2','temp4','temp1','temp5','temp4','temp5','temp5','flag'
+         ,'temp3','temp5'),ncol=2,byrow = T)
+colnames(arcs) = c('from','to')
 mnodes =unique(c('longstatus','Close','shortstatus','smastatus','ccistatus','rsistatus'
                  ,'rocstatus'))
 

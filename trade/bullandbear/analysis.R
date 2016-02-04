@@ -182,6 +182,9 @@ f = formula(paste('flag ~ ',vars))
 
 model = naiveBayes(f,data=records_model[,c('flag',varset)],na.action = na.pass,laplace = 1)
 
+fit = rpart(flag ~ .,data=records_model[,c('flag',varset)],method="class",parms = list(split = "information"),control=rpart.control(minsplit=2, minbucket=1, cp=0.001))
+plot(fit)
+text(fit)
 pr = predict(model,records_model[,varset],type='raw')
 cbind(as.data.frame(pr),as.character(flag))
 pr1 = predict(model,records_model[,varset])
