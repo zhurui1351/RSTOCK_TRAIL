@@ -33,6 +33,10 @@ bulllist  = find_bull(upratio = 1,downratio = -0.3,shindex = myindex)
 enterpoints = find_upstage_enter(myindex,startupratio = 0.3,upratio = 1,breakdownratio = -0.3,downratio = -0.2)
 #enterpoints = find_upstage_enter(myindex,startupratio = 0.1,upratio = 0.3,breakdownratio = -0.1,downratio = -0.1)
 
+bulllist_points =  find_bull(ispoint=T,uppoint = 100,downpoint = -30,shindex = myindex)
+enterpoints_points = find_upstage_enter_points(myindex,startuppoint = 30,uppoint = 100,breakdownpoint = -30,downpoint = -20)
+
+
 records = enterpoints[[1]]
 curstatuts = enterpoints[[2]]
 

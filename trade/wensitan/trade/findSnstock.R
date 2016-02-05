@@ -467,7 +467,7 @@ corlist = function(slm,cury)
   return(l)
 }
 
-anlysisProfit = function(records,aggregatecontrol=4,ratio=1)
+analysisProfit = function(records,aggregatecontrol=4,ratio=1)
 {
   profit = as.numeric(records[,'profit'])
   print('total nums:')

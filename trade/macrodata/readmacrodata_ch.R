@@ -1,4 +1,4 @@
-sourceDir('D:/Rcode/code/RSTOCK_TRAIL/globaltool')
+sourceDir('D:/Rcode/code/RSTOCK_TRAIL/globaltool',encoding = 'utf8')
 
 readmacrodata = function(path = 'D:/data/macro/')
 {

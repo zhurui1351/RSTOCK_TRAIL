@@ -1,5 +1,5 @@
 #find bull 
-find_bull_first = function(upratio = 1,downratio = -0.3,shindex)
+find_bull_first = function(upratio = 1,downratio = -0.3,shindex,ispoint=F,uppoint = 100,downpoint = -50)
 {
   templow =as.numeric(Lo(shindex[1,]))
   temphi = as.numeric(Hi(shindex[1,]))
@@ -23,7 +23,16 @@ find_bull_first = function(upratio = 1,downratio = -0.3,shindex)
       to = curdate
     }
     
-    if( ((curHi-templow_1) / templow_1) > upratio )
+    if(ispoint == F)
+    {
+      flag = ((curHi-templow_1) / templow_1) > upratio 
+    }
+    else
+    {
+      flag = (curHi-templow_1) > uppoint
+    }
+    
+    if( flag)
     {
       to = curdate
       end = to
@@ -53,7 +62,16 @@ find_bull_first = function(upratio = 1,downratio = -0.3,shindex)
       end = to
     }
     
-    if(((curLo - temphi_1) / temphi_1) < downratio)
+    if(ispoint == F)
+    {
+      flag = ((curLo - temphi_1) / temphi_1) < downratio
+    }
+    else
+    {
+      flag = (curLo - temphi_1) < downpoint
+    }
+    
+    if(flag)
     {
       end = curdate
       break
@@ -64,14 +82,14 @@ find_bull_first = function(upratio = 1,downratio = -0.3,shindex)
   #dygraph(Cl(shindex[paste(from,end,sep='/')]))
 }
 
-find_bull = function(upratio = 1,downratio = -0.3,shindex)
+find_bull = function(upratio = 1,downratio = -0.3,shindex,ispoint = F,uppoint = 100,downpoint = -50)
 {
   i = 1
   l = list()
   li = 1
   while(i < nrow(shindex))
   {
-    temp = find_bull_first(upratio,downratio,shindex[i:nrow(shindex),])
+    temp = find_bull_first(upratio,downratio,shindex[i:nrow(shindex),],ispoint,uppoint,downpoint)
     l[[li]] =  temp
     li = li + 1
     
@@ -86,7 +104,7 @@ find_bull = function(upratio = 1,downratio = -0.3,shindex)
 #find bear market
 
 #find bear
-find_bear_first = function(upratio = 0.2,downratio = -0.4,shindex)
+find_bear_first = function(upratio = 0.2,downratio = -0.4,shindex,ispoint = F,uppoint = 40,downpoint = 100)
 {
   templow =as.numeric(Lo(shindex[1,]))
   temphi = as.numeric(Hi(shindex[1,]))
@@ -110,7 +128,16 @@ find_bear_first = function(upratio = 0.2,downratio = -0.4,shindex)
       to = curdate
     }
     
-    if( ((curLo-temphigh_1) / temphigh_1) < downratio )
+    if(ispoint == F)
+    {
+      flag =  ((curLo-temphigh_1) / temphigh_1) < downratio 
+    }
+    else
+    {
+      flag = (curLo-temphigh_1) < downpoint
+    }
+    
+    if(flag)
     {
       to = curdate
       end = to
@@ -140,7 +167,17 @@ find_bear_first = function(upratio = 0.2,downratio = -0.4,shindex)
       end = to
     }
     
-    if(((curHi - templow_1) / templow_1) > upratio)
+    
+    if(ispoint == F)
+    {
+      flag =  ((curHi - templow_1) / templow_1) > upratio 
+    }
+    else
+    {
+      flag = (curHi - templow_1) > uppoint
+    }
+    
+    if(flag)
     {
       end = curdate
       break
@@ -152,14 +189,14 @@ find_bear_first = function(upratio = 0.2,downratio = -0.4,shindex)
 }
 
 
-find_bear = function(upratio = 0.2,downratio = -0.4,shindex)
+find_bear = function(upratio = 0.2,downratio = -0.4,shindex,ispoint = F,uppoint = 40,downpoint = 100)
 {
   i = 1
   l = list()
   li = 1
   while(i < nrow(shindex))
   {
-    temp = find_bear_first(upratio,downratio,shindex[i:nrow(shindex),])
+    temp = find_bear_first(upratio,downratio,shindex[i:nrow(shindex),],ispoint = F,uppoint = 40,downpoint = 100)
     l[[li]] =  temp
     li = li + 1
     
@@ -312,6 +349,161 @@ find_upstage_enter = function(shindex,startupratio = 0.3, upratio = 1,breakdownr
         #回撤20%以上，结束
        # downratio = -0.2
         if(((curLo - starthi) / starthi) < downratio)
+        {
+          r = data.frame(from=from,start = startenteruppoint,to=to,end=curdate,flag='failup' )
+          i = j + 1
+          records  = rbind(records,r)
+          recordsindex = recordsindex + 1
+          
+          break
+        }
+      }
+      
+    }
+    i = i + 1
+  }
+  return(list(records,list(from=from,to=to,end=end)))
+}
+
+
+
+#根据点位进行牛熊波段分析
+find_upstage_enter_points = function(shindex,startuppoint = 30, uppoint = 100,breakdownpoint = -30, downpoint = -20)
+{
+  
+  tempuplow =as.numeric(Lo(shindex[1,]))
+  tempuphi = as.numeric(Hi(shindex[1,]))
+  from = index(shindex[1,])
+  to = index(shindex[1,])
+  end =  index(shindex[1,])
+  
+  #记录位置
+  records = data.frame()
+  recordsindex = 1
+  
+  i = 2
+  # for(i in 2:nrow(shindex))
+  while(i < nrow(shindex))
+  {
+    #  print(i)
+    cur = shindex[i,]
+    curHi = as.numeric(Hi(cur))
+    curLo = as.numeric(Lo(cur))
+    curdate = index(cur)
+    
+    tmp_up_low = tempuplow
+    
+    #遇到更低点
+    if(curLo < tempuplow)
+    {
+      #重新定位当前最低点
+      tempuplow = curLo
+      from = curdate
+      to = curdate
+      end = curdate
+    }
+    
+    # startupratio = 30
+    #向上 找到满足符合要求的点
+    if( (curHi-tmp_up_low)  > startuppoint )
+    {
+      # print(i)
+      # return('')
+      to = curdate
+      end = to
+      tempuphi = curHi
+      startenteruppoint = curdate
+      starthi = curHi
+      #记录相关值
+      #在到达牛市(100%前)顶点前回撤是否达到20%
+      for(j  in (i+1) : nrow(shindex))
+      {
+        if(j >= nrow(shindex))
+        {
+          # return('')
+          r = data.frame(from=from,start = startenteruppoint,to=curdate,end = curdate ,flag='notend')
+          records = rbind(records,r)
+          recordsindex = recordsindex + 1
+          print('1')
+          return(list(records,list(from=from,to=to,end=end)))
+        }
+        
+        cur = shindex[j,]
+        curHi = as.numeric(Hi(cur))
+        curLo = as.numeric(Lo(cur))
+        curdate = index(cur)
+        
+        #继续创新高
+        if(curHi > tempuphi)
+        {
+          to = curdate
+          tempuphi = curHi
+          end = curdate
+        }
+        # upratio = 1
+        #成功达到牛市
+        if( (curHi-tmp_up_low) > uppoint )
+        {
+          # print(j)
+          # return('')
+          #寻找牛市终点
+          i = j + 1
+          if(i >= nrow(shindex))
+          {
+            r = data.frame(from=from,start = startenteruppoint,to=curdate,end = curdate,flag='succ')
+            records  = rbind(records,r)
+            return(list(records,list(from=from,to=to,end=end)))
+          }
+          #寻找牛市终点
+          for(j in i : nrow(shindex))
+          {
+            
+            cur = shindex[j,]
+            curHi = as.numeric(Hi(cur))
+            curLo = as.numeric(Lo(cur))
+            curdate = index(cur)
+            
+            if(j >= nrow(shindex))
+            {
+              #  print('end')
+              # return('')
+              r = data.frame(from=from,start = startenteruppoint,to=curdate,end = curdate,flag='succ')
+              print(r)
+              records  = rbind(records,r)
+              recordsindex = recordsindex + 1
+              return(list(records,list(from=from,to=to,end=end)))
+            }
+            
+            temphi_1 = tempuphi
+            
+            if(curHi > tempuphi)
+            {
+              to = curdate
+              tempuphi = curHi
+              end = to
+            }
+            #  breakdownratio = -0.3
+            if((curLo - temphi_1) < breakdownpoint)
+            {
+              r = data.frame(from=from,start = startenteruppoint,to=to,end = curdate,flag='succ' )
+              records  = rbind(records,r)
+              pos = which(index(shindex) == to)
+              i = pos+1
+              tempuplow =as.numeric(Lo(shindex[i,]))
+              tempuphi = as.numeric(Hi(shindex[i,]))
+              from = index(shindex[i,])
+              to = index(shindex[i,])
+              end =  index(shindex[i,])
+              break
+            }
+            #  break
+          }
+          break
+        }
+        
+        #回撤20%以上，结束
+        # downratio = -0.2
+        if((curLo - starthi) < downpoint)
         {
           r = data.frame(from=from,start = startenteruppoint,to=to,end=curdate,flag='failup' )
           i = j + 1
