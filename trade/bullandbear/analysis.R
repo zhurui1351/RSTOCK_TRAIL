@@ -44,11 +44,12 @@ bearlist = find_bear(upratio = 0.2,downratio = -0.4,shindex = myindex)
 
 
 #看图分析bullist
-for(i in 1:(length(bulllist)-1))
+bulllist_l = bulllist_points
+for(i in 1:(length(bulllist_l)-1))
 {
-  bullfrom = as.character(bulllist[[i]]['from'])
-  bullto = as.character(bulllist[[i]]['to'])
-  bullend = as.character(bulllist[[i]]['end'])
+  bullfrom = as.character(bulllist_l[[i]]['from'])
+  bullto = as.character(bulllist_l[[i]]['to'])
+  bullend = as.character(bulllist_l[[i]]['end'])
   statdate = paste(bullfrom,bullto,sep='/')
  # print(statdate)
 #  print(sd(Delt(myindex[statdate]$Close),na.rm=T))
