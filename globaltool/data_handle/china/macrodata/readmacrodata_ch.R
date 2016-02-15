@@ -1,6 +1,6 @@
 sourceDir('D:/Rcode/code/RSTOCK_TRAIL/globaltool',encoding = 'utf8')
 
-readmacrodata = function(path = 'D:/data/macro/')
+readmacrodata = function(path = 'D:/data/各国数据/china/macro/')
 {
   e = parent.env(environment())
   tableforread = data.frame()
