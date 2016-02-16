@@ -1,4 +1,5 @@
-sourceDir('D:/Rcode/code/RSTOCK_TRAIL/globaltool',encoding = 'utf8')
+source('D:/Rcode/code/RSTOCK_TRAIL/globaltool/include.R',encoding = 'utf8')
+
 readmacrodata_jp = function(path = 'D:/data/各国数据/japan/macro/')
 {
   e = parent.env(environment())
