@@ -115,7 +115,7 @@ for(i in 1: length(bulist))
 }
 
 # 主观宏观数据分析，观测数据并在其他地方标注
-macrodata = readmacrodata()
+macrodata = readmacrodata_ch()
 
 for(i in 1 : nrow(records))
 {
