@@ -1,6 +1,6 @@
 #pricedata = readOneStock('600390')
 
-testMonthPeriod = function(pricedata=NULL,code,ratio=0.8,from='1990',to='2015',detail=F)
+testMonthPeriod = function(pricedata=NULL,code='',from='1990',to='2015',detail=F)
 {
   require(lubridate)
   if(is.null(pricedata))
