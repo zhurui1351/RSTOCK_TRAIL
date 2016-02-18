@@ -16,11 +16,22 @@ plot(Cl(dou_us['1990/']))
 par(oldpars)
 
 #sn 分析
-testMonthPeriod(dou1,detail = T)
-testMonthPeriod(dou_us)
+testMonthPeriod(dou1,detail = T,from = '1950',to='2016')
+testMonthPeriod(dou_us[,1:4],detail=T,from='1950')
+
+SNRules(dou1,prune = 2,type='iw',tradeDays = 5)
+SNRules(pricedata,prune = 1,type='bm',tradeDays = 12)
 
 tradeRule = backTestBySnRule(rep(0,12),dou1,buyday=8,sellday=9,short = T,verbose = F,tradeDays = 12,type='bm',computePosition=volatilityPositionForTotalEq(dou1day,n=3,ratio=0.01))
 reportpath = "D:/myreport_m"
 f = 'dou1day'
 reports = SnReport(dou1day,confProp=0.7,profitratio = 0,prune=3,initEq = 10000,drawdownratio = -5,path=paste(reportpath,'/',f,sep=""),type='bm',tradeDays = 12,computePosition=fixPosition(size=1))
 
+
+#牛熊分析
+
+#特殊事件分析
+
+#特殊日历分析
+
+#日内模型分析

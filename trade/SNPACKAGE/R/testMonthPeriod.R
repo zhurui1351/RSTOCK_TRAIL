@@ -18,6 +18,7 @@ testMonthPeriod = function(pricedata=NULL,code='',from='1990',to='2015',detail=F
   maxmonth = subset(result,xb==max(xb))
   if(detail)
   {
+    print(result)
     print(subset(pricedata_m,month==maxmonth[1,1]))
   }
   # sum(subset(pricedata_m,month==maxmonth[1,1],select='votile'))
