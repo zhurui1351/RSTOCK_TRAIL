@@ -1,8 +1,5 @@
-require(quantmod)
-require(TTR)
-library(blotter)
-require(lubridate)
-require(dygraphs)
+source('D:/Rcode/code/RSTOCK_TRAIL/globaltool/include.R')
+sourceDir('D:/Rcode/code/RSTOCK_TRAIL/globaltool/data_handle/commodity/soybean')
 
 readallDayData()
 
