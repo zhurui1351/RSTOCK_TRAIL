@@ -66,9 +66,10 @@ initialData <- function(data,type='iw')
   mydata$volatility = sign(Cl(mydata)-Op(mydata))
   #使用merge.xts报错，未知原因
   #mydata <- data.frame(mydata[,c(1,2,3,4,7)],wdays[,1],weekth[,1])
-  mydata = data.frame(Op(mydata),Hi(mydata),Lo(mydata),Cl(mydata),mydata[,'volatility'],sec[,1],fst[,1])
-  mydata = as.xts(mydata)
-  
+  #mydata = data.frame(Op(mydata),Hi(mydata),Lo(mydata),Cl(mydata),mydata[,'volatility'],sec[,1],fst[,1])
+  #mydata = as.xts(mydata)
+  mydata$sec = sec
+  mydata$fst = fst
   #获取礼拜几信息
   #初始化数据处理结束
   return(mydata)
