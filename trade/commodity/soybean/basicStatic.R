@@ -23,6 +23,15 @@ testMonthPeriod(dou_us[,1:4],detail=T,from='1950')
 SNRules(dou1,prune = 1,type='iw',tradeDays = 5,confProp=0.5)
 SNRules(dou1,prune = 1,type='bm',tradeDays = 12)
 
+rule = rep(0,12)
+rule[5] = 1
+rules = list(rule)
+stockdata = dou1
+stockdata = initialData(stockdata,type='bm')
+getBasePropByRules(rules,stockdata,tradeDays)
+subset(stockdata,sec == 5 )
+
+
 
 #牛熊分析
 
