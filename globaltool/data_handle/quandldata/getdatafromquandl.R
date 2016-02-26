@@ -1,5 +1,6 @@
 getSoybean_us = function()
 {
+  require(Quandl)
   Quandl.api_key('8z-Fi9CYwvbvDPXw8v4R')
   names = c('SF','SH','SK','SN','SQ','SU','SX')
   path = 'D:/data/collectdata/quandldata/commidity/soybean/'
@@ -20,4 +21,11 @@ getSoybean_us = function()
       Sys.sleep(5)
     }
   }
+  
+  s1code = 'SCF/CME_S1_FW'
+  price = Quandl(s1code)
+  write.csv(price,file = paste(path,'CME/S1','.txt',sep=''),row.names=F,quote=F )
+  s2code = 'SCF/CME_S2_FW'
+  price = Quandl(s1code)
+  write.csv(price,file = paste(path,'CME/S2','.txt',sep=''),row.names=F,quote=F )
 }

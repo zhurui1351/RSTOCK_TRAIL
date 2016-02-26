@@ -2,7 +2,7 @@ require(quantmod)
 read_dou1_ch = function(path = 'D:/data/commidity/soybean/d/')
 {
   fname = paste(path,'dou1day.txt',sep='')
-  pricedata = read.zoo(fname,header=FALSE, format = "%m/%d/%Y",sep=",",index.column=1) 
+  pricedata = read.zoo(fname,header=F, format = "%m/%d/%Y",sep=",",index.column=1) 
   colnames(pricedata)<-c("Open","High","Low","Close","Volume","Amount","settle")
   return(as.xts(pricedata))
 }
@@ -21,4 +21,12 @@ read_s_f_us = function(path = 'D:/data/commidity/soybean/d/')
   pricedata = read.csv(fname,header=T,sep=",") 
   pricedata = xts(pricedata[,2:7],order.by = as.Date(pricedata$Date))
   return(as.xts(pricedata))
+}
+
+read_s1_quandl = function(path = 'D:/data/collectdata/quandldata/commidity/soybean/CME/')
+{
+  fname = paste(path,'S1.txt',sep='')
+  pricedata = read.csv(fname,header=T,sep=",") 
+  pricedata = xts(pricedata[,2:7],order.by = as.Date(pricedata$Date))
+  
 }
