@@ -1,5 +1,5 @@
-sourceDir('D:/Rcode/code/RSTOCK_TRAIL/globaltool',encoding = 'utf8')
-
+sourceDir('D:/Rcode/code/RSTOCK_TRAIL/globaltool/data_handle/china/macrodata/help',encoding='utf8')
+sourceDir('D:/Rcode/code/RSTOCK_TRAIL/globaltool/date_handle')
 readmacrodata_ch = function(path = 'D:/data/各国数据/china/macro/')
 {
   e = parent.env(environment())

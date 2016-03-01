@@ -1,25 +1,24 @@
 rm(list=ls(all=T))
 source('D:/Rcode/code/RSTOCK_TRAIL/globaltool/include.R')
-sourceDir('D:/Rcode/code/RSTOCK_TRAIL/globaltool/data_handle/commodity/soybean')
-sourceDir('D:/Rcode/code/RSTOCK_TRAIL/trade/SNPACKAGE/R')
+source('D:/Rcode/code/RSTOCK_TRAIL/globaltool/readdata.R')
+sourceDir('D:/Rcode/code/RSTOCK_TRAIL/trade/SNPACKAGE/R',encoding='utf8')
 
-dou1 = read_dou1_ch()
-dou2 = read_dou2_ch()
+dou1 = read_dou1_d_wind()
 
 dou_us = read_s_f_us()
 dou_us_quandl = read_s1_quandl()
 colnames(dou_us_quandl) = c("Open","High","Low","Close","Volume","preopeninterest")
 
-oldpars = par(mfrow=c(3, 1))
+shindex = read_sh000001()
 
+oldpars = par(mfrow=c(3, 1))
 plot(Cl(dou1))
-plot(Cl(dou2))
 plot(Cl(dou_us['1990/']))
 
 par(oldpars)
 
 #sn 分析
-testMonthPeriod(dou1,detail = T,from = '1990',to='2016')
+testMonthPeriod(dou1[,1:4],detail = T,from = '1990',to='2016',strict=F)
 testMonthPeriod(dou_us[,1:4],detail=T,from='1950')
 testMonthPeriod(dou_us_quandl[,1:4],detail=T,from='1950')
 
@@ -54,6 +53,8 @@ nrow(subset(xx,sign(profit) == sign(flag)))
 #牛熊分析
 
 #特殊事件分析
+
+
 
 #特殊日历分析
 

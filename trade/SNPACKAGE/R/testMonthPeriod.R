@@ -1,6 +1,6 @@
 #pricedata = readOneStock('600390')
 
-testMonthPeriod = function(pricedata=NULL,code='',from='1990',to='2015',detail=F)
+testMonthPeriod = function(pricedata=NULL,code='',from='1990',to='2015',detail=F,strict=T)
 {
   require(lubridate)
   if(is.null(pricedata))
@@ -8,7 +8,7 @@ testMonthPeriod = function(pricedata=NULL,code='',from='1990',to='2015',detail=F
   pricedata = pricedata[paste(from,to,sep='/')]
   if(is.null(pricedata) || nrow(pricedata)==0) return(NULL)
   pricedata_m = to.period(pricedata,'months')
-  if(nrow(pricedata_m) < 120) 
+  if(strict && nrow(pricedata_m) < 120) 
   {
     warning('no enough data')
     return(NULL)

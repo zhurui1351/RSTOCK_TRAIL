@@ -22,7 +22,7 @@ flushdata = function()
     cf = config[[i]]
     data =adjustOHLC(getSymbols(cf['symbol'],auto.assign=F,from='1900-01-1'),use.Adjusted = T) 
     f = paste(path,cf['file'],sep='/')
-    write.zoo(data,file=f)
+    write.zoo(data,file=f,sep=',')
   }
   
 }

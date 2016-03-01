@@ -1,0 +1,5 @@
+sourceDir('D:/Rcode/code/RSTOCK_TRAIL/globaltool/data_handle/china',encoding='utf8')
+sourceDir('D:/Rcode/code/RSTOCK_TRAIL/globaltool/data_handle/china/macrodata',encoding='utf8')
+sourceDir('D:/Rcode/code/RSTOCK_TRAIL/globaltool/data_handle/commodity/soybean',encoding='utf8')
+sourceDir('D:/Rcode/code/RSTOCK_TRAIL/globaltool/data_handle/index',encoding='utf8')
+sourceDir('D:/Rcode/code/RSTOCK_TRAIL/globaltool/data_handle/forex',encoding='utf8')

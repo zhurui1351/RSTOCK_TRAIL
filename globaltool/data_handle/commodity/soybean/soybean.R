@@ -30,3 +30,12 @@ read_s1_quandl = function(path = 'D:/data/collectdata/quandldata/commidity/soybe
   pricedata = xts(pricedata[,2:7],order.by = as.Date(pricedata$Date))
   
 }
+
+read_dou1_d_wind = function(path = 'D:/data/collectdata/windata/commidity/soybean/DCE/')
+{
+  fname = paste(path,'dou1day.csv',sep='')
+  pricedata = read.csv(fname,header=T,sep=",") 
+  pricedata = xts(pricedata[,2:10],order.by = as.Date(pricedata$DATETIME))
+  colnames(pricedata) = c('Open','High','Low','Close','Vol','Amt','Dealnum','Settle','Oi')
+  return(pricedata)
+}
