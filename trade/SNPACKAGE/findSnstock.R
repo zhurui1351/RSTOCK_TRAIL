@@ -1,38 +1,23 @@
 rm(list=ls(all=T))
-require(quantmod)
-require(TTR)
-require('dygraphs')
-require('lubridate')
-require('dplyr')
+source('D:/Rcode/code/RSTOCK_TRAIL/globaltool/include.R')
+source('D:/Rcode/code/RSTOCK_TRAIL/globaltool/readdata.R')
 
-sourceDir <- function(path, trace = TRUE, ...) {
-  for (nm in list.files(path, pattern = "[.][RrSsQq]$")) {
-    if(trace) cat(nm,":")
-    source(file.path(path, nm), ...)
-    if(trace) cat("\n")
-  }
-}
 
-sourceDir('D:/Rcode/code/RSTOCK_TRAIL/trade/wensitan/help')
-sourceDir('D:/Rcode/code/RSTOCK_TRAIL/trade/wensitan/log')
-sourceDir('D:/Rcode/code/RSTOCK_TRAIL/trade/wensitan/analysis')
-source('D:/Rcode/code/RSTOCK_TRAIL/trade/SNPACKAGE/analysis/testMonthPeriod.R')
-source('D:/Rcode/code/RSTOCK_TRAIL/scrapdata/stockdata/get.stock.index.info.R')
+sourceDir('D:/Rcode/code/RSTOCK_TRAIL/trade/wensitan/help',encoding='utf8')
+sourceDir('D:/Rcode/code/RSTOCK_TRAIL/trade/wensitan/log',encoding='utf8')
+sourceDir('D:/Rcode/code/RSTOCK_TRAIL/trade/wensitan/analysis',encoding='utf8')
+source('D:/Rcode/code/RSTOCK_TRAIL/trade/SNPACKAGE/R/testMonthPeriod.R',encoding='utf8')
+source('D:/Rcode/code/RSTOCK_TRAIL/scrapdata/stockdata/get.stock.index.info.R',encoding='utf8')
 findSnStock = function(from='1990',to='2014')
 {
   allcodes = names(mg)
   lm=lapply(allcodes,FUN=function(x){
-   # print(x)
     l = testMonthPeriod(code=x,from=from,to=to)
     if(!is.null(l)) return(l)
   })
   
   lm = Filter(function(x){ ll = x[[1]]
                              length(ll)!=0},lm)
-  
-#   slm =  Filter(function(x){ ratio = x[[3]]
-#                              month = x[[2]]
-#                              ratio>=0.8 && month==5 },lm)
   return(lm)
   
 }
@@ -41,7 +26,7 @@ findSnStock = function(from='1990',to='2014')
 snTestFrame = function()
 {
   records = data.frame()
-  testdate = as.character(2000:2015)
+  testdate = as.character(2006:2015)
   from = '1990'
   for(d in testdate)
   {
@@ -55,7 +40,7 @@ snTestFrame = function()
       #筛选满足条件的记录
       slm =  Filter(function(x){ ratio = x[[3]]
       month = x[[2]]
-      ratio>=0.8 && month==i },lm)
+      ratio>=0.75 && month==i },lm)
       if(length(slm)!=0)
       {
         #生成测试记录
@@ -492,55 +477,57 @@ analysisProfit = function(records,aggregatecontrol=4,ratio=1)
 }
 
 
-
-allcodes = readallpuredata(period='years')
-mg = mget(allcodes)
-
-shindex = readSHindex()
-shindex_week = to.weekly(shindex)
-shindex_week$sma30 = SMA(Cl(shindex_week),n=30)
-shindex_week = na.omit(shindex_week)
-shindex_week$volatile = (Cl(shindex_week)-Op(shindex_week))/Op(shindex_week)
-
-shindex_week$stage = judegeStage(shindex_week$sma30)
-
-lm = findSnStock(from='1990',to='2015')
-
-slm =  Filter(function(x){ ratio = x[[3]]
-month = x[[2]]
-ratio>=0.8 && month==1 },lm)
-
-lbest = slm[order(sapply(slm,function(x){x$ratio}),decreasing=TRUE)]
-
-
-
-#计算相关系数
-codes = sapply(lbest,function(x){x$code})
-
-l=lapply(codes, function(x){
-  p = readOneStock(x)
-  p = to.monthly(p)
-  p =Delt(Cl(p))
-  p = p['2012/2015']
-  return(p)
-})
-
-names(l) = codes
-m = do.call('cbind',l)
-colnames(m) = codes
-
-mcor = cor(m,use='na.or.complete')
-mcor[lower.tri(mcor)] = 1
-msort=sort(as.vector(mcor))[1:10]
-l=lapply(msort, function(x){which(mcor==x,arr.ind = T)})
-
-code1=rownames(mcor)[l[[1]][1]]
-code2=colnames(mcor)[l[[1]][2]]
-
-testMonthPeriod(code='600525',from='1990',to='2015',detail = T)
-testMonthPeriod(code='000039',from='1990',to='2015',detail = T)
-get.stock.info('sz000039')
-get.stock.info('sh600525')
+find_sn_begin = function(){
+  allcodes = readallpuredata(period='years')
+  mg = mget(allcodes)
+  
+  shindex = readSHindex()
+  shindex_week = to.weekly(shindex)
+  shindex_week$sma30 = SMA(Cl(shindex_week),n=30)
+  shindex_week = na.omit(shindex_week)
+  shindex_week$volatile = (Cl(shindex_week)-Op(shindex_week))/Op(shindex_week)
+  
+  shindex_week$stage = judegeStage(shindex_week$sma30)
+  
+  lm = findSnStock(from='1990',to='2015')
+  
+  slm =  Filter(function(x){ ratio = x[[3]]
+  month = x[[2]]
+  ratio>=0.8 && month==3 },lm)
+  
+  lbest = slm[order(sapply(slm,function(x){x$ratio}),decreasing=TRUE)]
+  
+  
+  
+  #计算相关系数
+  codes = sapply(lbest,function(x){x$code})
+  
+  l=lapply(codes, function(x){
+    p = readOneStock(x)
+    p = to.monthly(p)
+    p =Delt(Cl(p))
+    p = p['2012/2015']
+    return(p)
+  })
+  
+  names(l) = codes
+  m = do.call('cbind',l)
+  colnames(m) = codes
+  
+  mcor = cor(m,use='na.or.complete')
+  mcor[lower.tri(mcor)] = 1
+  msort=sort(as.vector(mcor))[1:10]
+  l=lapply(msort, function(x){which(mcor==x,arr.ind = T)})
+  
+  code1=rownames(mcor)[l[[1]][1]]
+  code2=colnames(mcor)[l[[1]][2]]
+  
+  testMonthPeriod(code='600525',from='1990',to='2015',detail = T)
+  testMonthPeriod(code='000039',from='1990',to='2015',detail = T)
+  get.stock.info('sz000039')
+  get.stock.info('sh600525')
+  
+}
 
 
 corbewteenstock = function(xx)
@@ -585,7 +572,7 @@ monitormonth = function(codes)
   })
   while(T)
   {
-    date = '20160111'
+    date = '20160302'
     datem = substr(date,1,6)
 
     for(code in codes)
