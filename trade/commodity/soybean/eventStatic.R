@@ -8,7 +8,7 @@ dou1$maxvotile = dou1$High - dou1$Low
 
 shindex = read_sh000001()
 shindex$votitleratio = (shindex$Close - shindex$Open) / shindex$Open
-dates = index(shindex)[which(shindex$votitleratio < -0.05)]
+dates = index(shindex)[which(shindex$votitleratio > 0.04)]
 
 id = c()
 for(d in dates)
@@ -49,7 +49,7 @@ for(i in id)
 }
 
 
-subdou1 = dou1[id,]
+subdou1 = dou1[id+1,]
 nrow(subdou1)
 length(dou1$votile[dou1$votile > 0]) / length(dou1$votile)
 
