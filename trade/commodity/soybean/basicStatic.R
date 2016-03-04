@@ -51,8 +51,9 @@ xx = subset(testdata,substr(date,6,7) == '10' & num == 1)
 nrow(subset(xx,sign(profit) == sign(flag)))
 
 #牛熊分析
+find_bull(upratio = 0.2,downratio = -0.1,shindex = na.omit(dou1[,1:4]))
 
-#特殊事件分析
+#特殊事件分析 usda调高全球产量
 
 
 
