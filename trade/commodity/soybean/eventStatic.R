@@ -38,4 +38,18 @@ basicEventStatic(dou1[,1:4],dates,30,2)
 dates = index(votile_change[votile_change > 2]) 
 basicEventStatic(dou1[,1:4],dates,30,2)
 
+#隔夜美豆异常波动
+s1_d = read_s1_d_wind()
+s1_d$votile =  s1_d$Close - s1_d$Open
+s1_p = na.omit(s1_d[,c('Open','High','Low','Close','votile')])
+s1_p$abssmav = lag(SMA(abs(s1_p$votile),30,na.rm=T))
+votile_change = s1_p$votile/s1_p$abssmav
+dates = index(votile_change[votile_change < -1.5])
+
+basicEventStatic(dou1[,1:4],dates,30,1)
+
+dates = index(votile_change[votile_change > 1.5])
+basicEventStatic(dou1[,1:4],dates,30,2)
+
+
 #经济事件 社会政治事件 自然事件 疫情 新奥尔良飓风灾难 hurricanes 季节性 气候

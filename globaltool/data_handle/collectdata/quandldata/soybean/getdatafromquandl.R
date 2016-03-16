@@ -2,7 +2,8 @@ getSoybean_us = function()
 {
   require(Quandl)
   Quandl.api_key('8z-Fi9CYwvbvDPXw8v4R')
-  names = c('SF','SH','SK','SN','SQ','SU','SX')
+  #names = c('SF','SH','SK','SN','SQ','SU','SX')
+  names = c('SQ','SU','SX')
   path = 'D:/data/collectdata/quandldata/commidity/soybean/'
   for(name in names)
   {

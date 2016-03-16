@@ -39,3 +39,12 @@ read_dou1_d_wind = function(path = 'D:/data/collectdata/windata/commidity/soybea
   colnames(pricedata) = c('Open','High','Low','Close','Vol','Amt','Dealnum','Settle','Oi')
   return(pricedata)
 }
+
+read_s1_d_wind = function(path = 'D:/data/collectdata/windata/commidity/soybean/CME/')
+{
+  fname = paste(path,'s1_wind.csv',sep='')
+  pricedata = read.csv(fname,header=T,sep=",") 
+  pricedata = xts(pricedata[,2:10],order.by = as.Date(pricedata$DATETIME))
+  colnames(pricedata) = c('Open','High','Low','Close','Vol','Amt','Dealnum','Settle','Oi')
+  return(pricedata)
+}

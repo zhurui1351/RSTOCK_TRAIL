@@ -19,3 +19,11 @@ getA1_1m = function()
   write.csv(pricedata,path,row.names=F,quote=F)
   
 }
+
+getS1_d = function()
+{
+  path = 'D:/data/collectdata/windata/commidity/soybean/CME/s1_wind.csv'
+  w_data<-w.wsd("S.CBT","open,high,low,close,volume,amt,dealnum,settle,oi","2009-01-01","2016-02-29","Currency=USD;PriceAdj=F")
+  pricedata = w_data$Data
+  write.csv(pricedata,path,row.names=F,quote=F)
+}
