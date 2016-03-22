@@ -33,7 +33,7 @@ basicEventStatic = function(pricedata,eventdates,preperd,afterperd)
     votileafter = pricedata[startafter:endafter,]$votile
     aftermean = mean(abs(votileafter),na.rm=T)
     
-    result = rbind(result,data.frame(date=index(pricedata)[i],premean = premean,aftermean=aftermean, preupratio = preupratio,aftervotile=aftervotile ))
+    result = rbind(result,data.frame(eventdate=index(pricedata)[i],startdate=index(pricedata)[startafter],enddate=index(pricedata)[endafter],premean = premean,aftermean=aftermean, preupratio = preupratio,aftervotile=aftervotile ))
   }
   
   totalnum = nrow(result)

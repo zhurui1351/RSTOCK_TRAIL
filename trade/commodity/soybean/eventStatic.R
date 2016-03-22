@@ -15,7 +15,7 @@ dates = index(shindex)[which(shindex$votitleratio  <  -0.05)]
 basicEventStatic(dou1[,1:4],dates,30,1:30)
 
 dates = index(shindex)[which(shindex$votitleratio  >  0.05)]
-basicEventStatic(dou1[,1:4],dates,30,3)
+basicEventStatic(dou1[,1:4],dates,30,2)
 
 #汇市冲击
 usdcny_d = readusdcny_d()
