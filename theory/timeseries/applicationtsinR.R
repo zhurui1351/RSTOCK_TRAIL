@@ -1,0 +1,6 @@
+require(TSA)
+data("larain")
+data("color")
+data("hare")
+data("tempdub")
+data("oilfilters")

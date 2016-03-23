@@ -33,7 +33,7 @@ dou1_p = na.omit(dou1[,c('Open','High','Low','Close','votile')])
 dou1_p$abssmav = lag(SMA(abs(dou1_p$votile),30,na.rm=T))
 votile_change = dou1_p$votile/dou1_p$abssmav
 dates = index(votile_change[votile_change < -2]) 
-basicEventStatic(dou1[,1:4],dates,30,2)
+basicEventStatic(dou1[,1:4],dates,30,1)
 
 dates = index(votile_change[votile_change > 2]) 
 basicEventStatic(dou1[,1:4],dates,30,2)
@@ -53,3 +53,5 @@ basicEventStatic(dou1[,1:4],dates,30,2)
 
 
 #经济事件 社会政治事件 自然事件 疫情 新奥尔良飓风灾难 hurricanes 季节性 气候
+#日内特征
+pricedata = collectdatafromtaobao()
