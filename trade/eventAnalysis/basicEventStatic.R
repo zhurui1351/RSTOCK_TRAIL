@@ -53,4 +53,5 @@ basicEventStatic = function(pricedata,eventdates,preperd,afterperd)
   print(paste('afterupratio:',afterupratio))
   print('binom test,preupratio != afterupratio')
   print(binom.test(floor(totalnum*preupratio),totalnum,p=afterupratio))
+  return(result)
 }
