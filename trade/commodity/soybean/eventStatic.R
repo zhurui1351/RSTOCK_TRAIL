@@ -62,41 +62,40 @@ eventdates = dates[dates>='2004-01-01']
 mdates = unique(as.Date(index(pricedata)))
 
 
-
+# 事件发生日当晚有夜盘，则要考虑夜盘开盘
+# 事件发生日无交易 则考虑最近的交易日白盘
 for(day in as.character(eventdates))
 {
+  #事件发生日当天有交易，首先考虑夜盘
   if(is.element(as.Date(day),mdates))
   {
     i = which(mdates == as.Date(day))
+    if(i >= length(mdates)) next;
+    nextday = as.character(mdates[i+1])
     
-    tmpperd = paste(paste(day,'21:00:00'),paste(day,'23:59:00'),sep='/')
-    if(nrow(pricedata[tmpperd]) == 0)
-    {
-      i = i + 1
-    }
-    if(i > length(mdates)) next;
+    perd = paste(paste(day,'21:00:00'),paste(nextday,'15:00:00'),sep='/')
+    preday = day
   }else
   {
      i =  findInterval(as.Date(day),mdates)
      if(i == 0) next;
+     nextday = as.character(mdates[i])
+     perd = paste(paste(nextday,'09:00:00'),paste(nextday,'15:00:00'),sep='/')
+     preday = as.character(mdates[i-1])
   }
-  testday = as.character(mdates[i])
-  startdaytime = paste(testday,'09:00:00')
-  enddaytime =  paste(testday,'15:00:00')
-  startnighttime  = paste(testday,'21:00:00')
-  endnighttime = paste(testday,'02:30:00')
-  perdday = paste(startdaytime,endtime,sep='/')
-  preday = as.character(mdates[i - 1])
-  testmprice = pricedata[perdday]
+  
+  testmprice = pricedata[perd]
   if(nrow(testmprice) == 0) next
   atr = as.numeric(dou1_p[preday]$atr)
-  opentime = index(testmprice)[1]
-  openprice =as.numeric(testmprice[1,]$Open) 
-  initstop = openprice - atr
+  
+  opentime = index(testmprice)[2]
+  openprice =as.numeric(testmprice[2,]$Open) 
+  initstop = openprice - 150
   tradeflag = F
-  for(i in 2:nrow(testmprice))
+  nums = 10
+  for(i in 3:nums)
   {
-    if(i == nrow(testmprice))
+    if(i == nums)
     {
       closeprice = as.numeric(testmprice[i,]$Open)
       closetime = index(testmprice)[i]
@@ -114,7 +113,7 @@ for(day in as.character(eventdates))
     }
     if(tradeflag)
     {
-      r = data.frame(opentime = opentime,closetime=closetime,openp = openprice,closep = closeprice,type='long')
+      r = data.frame(opentime = opentime,closetime=closetime,openp = openprice,closep = closeprice,profit = closeprice - openprice,type='long')
       records = rbind(records,r)
       break
     }
