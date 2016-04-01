@@ -8,6 +8,8 @@ require('dygraphs')
 require('e1071')
 
 source('D:/Rcode/code/RSTOCK_TRAIL/globaltool/generaltool.R')
+source('D:/Rcode/code/RSTOCK_TRAIL/globaltool/readdata.R')
+
 sourceDir('D:/Rcode/code/RSTOCK_TRAIL/trade/wensitan/help',encoding='utf8')
 sourceDir('D:/Rcode/code/RSTOCK_TRAIL/trade/bullandbear/help',encoding='utf8')
 sourceDir('D:/Rcode/code/RSTOCK_TRAIL/trade/macrodata/',encoding='utf8')
@@ -40,7 +42,7 @@ enterpoints_points = find_upstage_enter_points(myindex,startuppoint = 30,uppoint
 records = enterpoints[[1]]
 curstatuts = enterpoints[[2]]
 
-bearlist = find_bear(upratio = 0.2,downratio = -0.4,shindex = myindex)
+bearlist = find_bear(upratio = 0.1,downratio = -0.3,shindex = myindex)
 
 
 #看图分析bullist

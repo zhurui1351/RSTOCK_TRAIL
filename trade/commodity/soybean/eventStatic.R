@@ -23,10 +23,10 @@ usdcny_d_change = diff(usdcny_d) * 10000
 
 #贬值
 dates =index(usdcny_d_change[usdcny_d_change > 100]) 
-basicEventStatic(dou1[,1:4],dates,30,1:10)
+result = basicEventStatic(dou1[,1:4],dates,30,1:10)
 #升值
 dates =index(usdcny_d_change[usdcny_d_change < -100]) 
-basicEventStatic(dou1[,1:4],dates,30,2)
+result = basicEventStatic(dou1[,1:4],dates,30,1:5)
 
 #价格异常波动
 dou1_p = na.omit(dou1[,c('Open','High','Low','Close','votile')])
@@ -34,10 +34,13 @@ dou1_p$abssmav = lag(SMA(abs(dou1_p$votile),30,na.rm=T))
 dou1_p$atr = ATR(dou1_p[,c('Open','High','Low','Close')],30)$atr
 votile_change = dou1_p$votile/dou1_p$atr
 dates = index(votile_change[votile_change < -2]) 
+result = basicEventStatic(dou1[,1:4],dates,30,1:10)
 result = basicEventStatic(dou1[,1:4],dates,30,1)
 
 dates = index(votile_change[votile_change > 2]) 
+result = basicEventStatic(dou1[,1:4],dates,30,1:5)
 result = basicEventStatic(dou1[,1:4],dates,30,1)
+
 
 #隔夜美豆异常波动
 s1_d = read_s1_d_wind()
@@ -47,7 +50,7 @@ s1_p$abssmav = lag(SMA(abs(s1_p$votile),30,na.rm=T))
 votile_change = s1_p$votile/s1_p$abssmav
 dates = index(votile_change[votile_change < -1.5])
 
-result = basicEventStatic(dou1[,1:4],dates,30,1)
+result = basicEventStatic(dou1[,1:4],dates,30,1:5)
 
 dates = index(votile_change[votile_change > 1.5])
 basicEventStatic(dou1[,1:4],dates,30,2)
@@ -56,6 +59,7 @@ basicEventStatic(dou1[,1:4],dates,30,2)
 #经济事件 社会政治事件 自然事件 疫情 新奥尔良飓风灾难 hurricanes 季节性 气候
 #日内特征
 pricedata = collectdatafromtaobao()
+
 #日内数据是2003年8月19号以后
 records = data.frame()
 eventdates = dates[dates>='2004-01-01']
@@ -90,9 +94,9 @@ for(day in as.character(eventdates))
   
   opentime = index(testmprice)[2]
   openprice =as.numeric(testmprice[2,]$Open) 
-  initstop = openprice - 150
+  initstop = openprice - 20
   tradeflag = F
-  nums = 10
+  nums = 15
   for(i in 3:nums)
   {
     if(i == nums)

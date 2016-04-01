@@ -29,14 +29,19 @@ collectdatafromtaobao = function()
   # basenum = nrow(pricedata['2003-08-01'])
   basetime = getbasetime_day()
   basenum = length(basetime)
+  lackdays = c()
   for (day in basedates)
   {
-    p = pricedata[day]
+    daystart = paste(day,'09:01:00')
+    dayend = paste(day,'15:00:00')
+    dayperd = paste(daystart,dayend,sep='/')
+    p = pricedata[dayperd]
     nump = nrow(p)
     #k线有缺失
     if (basenum != nump)
     {
-      dayprice = pricedata[day]
+      lackdays = c(lackdays,day)
+      dayprice = pricedata[dayperd]
       daytime = substring(index(dayprice),12)
       #默认排好序
       missingtime = setdiff(basetime,daytime)
@@ -61,6 +66,7 @@ collectdatafromtaobao = function()
         missp$Low = missp$Open
         missp$High = missp$Open
         missp$Close = missp$Open
+        missp$Vol = 0  
         pricedata = rbind(pricedata,missp)
       }
     }
@@ -73,6 +79,8 @@ collectdatafromtaobao = function()
   period1start = as.character(as.Date(period1[i]))
   period1 = paste(period1start,'2015-05-07',sep='/')
   period1dates = as.character(unique(as.Date(index(pricedata[period1]))))
+  
+  lackdays = c()
   
   basetime = getbasetime_night_crossday()
   basenum = length(basetime)
@@ -94,6 +102,7 @@ collectdatafromtaobao = function()
     #k线有缺失
     if (basenum != nump)
     {
+      lackdays = c(lackdays,day)
       dayprice = pricedata[perd]
       daytime = substring(index(dayprice),12)
       #默认排好序
@@ -113,11 +122,14 @@ collectdatafromtaobao = function()
           j = which(daytime == basetime[i])
         }
         missp = dayprice[j]
-        index(missp) = as.POSIXct(paste(day,mt))
+        
+        whichday = substring(as.character(index(missp)),1,10)
+        index(missp) = as.POSIXct(paste(whichday,mt))
         missp$High = missp$Open
         missp$Low = missp$Open
         missp$High = missp$Open
         missp$Close = missp$Open
+        missp$Vol = 0
         pricedata = rbind(pricedata,missp)
       }
     }
@@ -129,6 +141,8 @@ collectdatafromtaobao = function()
   
   basetime = getbasetime_night()
   basenum = length(basetime)
+  
+  lackdays = c()
   
   for (day in period2dates)
   {
@@ -142,6 +156,7 @@ collectdatafromtaobao = function()
     #k线有缺失
     if (basenum != nump)
     {
+      lackdays = c(lackdays,day)
       dayprice = pricedata[perd]
       daytime = substring(index(dayprice),12)
       #默认排好序
@@ -166,6 +181,7 @@ collectdatafromtaobao = function()
         missp$Low = missp$Open
         missp$High = missp$Open
         missp$Close = missp$Open
+        missp$Vol = 0
         pricedata = rbind(pricedata,missp)
       }
     }

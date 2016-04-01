@@ -104,7 +104,7 @@ find_bull = function(upratio = 1,downratio = -0.3,shindex,ispoint = F,uppoint = 
 #find bear market
 
 #find bear
-find_bear_first = function(upratio = 0.2,downratio = -0.4,shindex,ispoint = F,uppoint = 40,downpoint = 100)
+find_bear_first = function(upratio = 0.2,downratio = -0.4,shindex,ispoint = F,uppoint = 40,downpoint = -100)
 {
   templow =as.numeric(Lo(shindex[1,]))
   temphi = as.numeric(Hi(shindex[1,]))
@@ -189,14 +189,14 @@ find_bear_first = function(upratio = 0.2,downratio = -0.4,shindex,ispoint = F,up
 }
 
 
-find_bear = function(upratio = 0.2,downratio = -0.4,shindex,ispoint = F,uppoint = 40,downpoint = 100)
+find_bear = function(upratio = 0.2,downratio = -0.4,shindex,ispoint = F,uppoint = 40,downpoint = -100)
 {
   i = 1
   l = list()
   li = 1
   while(i < nrow(shindex))
   {
-    temp = find_bear_first(upratio,downratio,shindex[i:nrow(shindex),],ispoint = F,uppoint = 40,downpoint = 100)
+    temp = find_bear_first(upratio,downratio,shindex[i:nrow(shindex),],ispoint,uppoint,downpoint)
     l[[li]] =  temp
     li = li + 1
     
