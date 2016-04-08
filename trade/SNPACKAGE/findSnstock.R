@@ -493,7 +493,7 @@ find_sn_begin = function(){
   
   slm =  Filter(function(x){ ratio = x[[3]]
   month = x[[2]]
-  ratio>=0.8 && month==3 },lm)
+  ratio>=0.8 && month==4 },lm)
   
   lbest = slm[order(sapply(slm,function(x){x$ratio}),decreasing=TRUE)]
   
@@ -572,7 +572,7 @@ monitormonth = function(codes)
   })
   while(T)
   {
-    date = '20160302'
+    date = '20160405'
     datem = substr(date,1,6)
 
     for(code in codes)

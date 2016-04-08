@@ -77,3 +77,27 @@ data("ar2.s")
 ar(ar2.s,order.max = 2,AIC=F,method='yw')
 ar(ar1.s,order.max = 2,AIC=F,method='ols')
 ar(ar1.s,order.max = 2,AIC=F,method='mle')
+#残差图
+data(color)
+m1.color = arima(color,order=c(1,0,0))
+plot(rstandard(m1.color),ylab='standardized residuals',type='o')
+abline(h=0)
+qqnorm(rstandard(m1.color))
+qqline(rstandard(m1.color))
+acf(rstandard(m1.color),plot=F)$acf
+signif(acf(rstandard(m1.color),plot=F)$acf,2)
+#ljung-box 残差检测
+tsdiag(m1.color,gof=15,omit.initial = F)
+#过渡拟合诊断，可以看到系数，标准差的差异，选择更简单的模型
+arima(color,order=c(1,0,0))
+arima(color,order=c(2,0,0))
+arima(color,order=c(1,0,1))
+arima(color,order=c(2,0,1))
+#预测
+data(color)
+m1.color = arima(color,order=c(1,0,0))
+plot(m1.color,n.ahead=12,type='b',xlab='time',ylab='color property')
+abline(h=coef(m1.color)[names(coef(m1.color))=='intercept'])
+#季节模型  随机季节模型
+data(co2)
+plot(co2,ylab='co2')
