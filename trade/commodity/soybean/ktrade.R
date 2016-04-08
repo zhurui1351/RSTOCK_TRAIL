@@ -65,11 +65,14 @@ for(day in days)
   enter = as.numeric(p[i,]$Open)
   if(type =='short')
   {
-    stopprice = enter + 20
+    stopprice = open + 20
+    stopwin = enter - 10
   }
   else
   {
-    stopprice = enter - 20
+    stopprice = open - 20
+    stopwin = enter + 10
+    
   }
   isstop = F
   for(idx in i : nrow(p))
@@ -84,6 +87,14 @@ for(day in days)
         records = rbind(records,r)
         break
       }
+      
+      if(idxcl < stopwin)
+      {
+        isstop = T
+        r = data.frame(time = index(p[idx,]),enter=enter,out =idxcl,isstop = isstop,type = type , profit = enter - idxcl )
+        records = rbind(records,r)
+        break
+      }
     }
     else
     {
@@ -91,6 +102,14 @@ for(day in days)
       {
         isstop = T
         r = data.frame(time = index(p[idx,]),enter=enter,out =idxcl,isstop = isstop,type = type , profit = idxcl - enter )
+        records = rbind(records,r)
+        break
+      }
+      
+      if(idxcl > stopwin)
+      {
+        isstop = T
+        r = data.frame(time = index(p[idx,]),enter=enter,out =idxcl,isstop = isstop,type = type , profit = enter - idxcl )
         records = rbind(records,r)
         break
       }
