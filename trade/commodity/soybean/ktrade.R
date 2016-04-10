@@ -24,11 +24,48 @@ for(day in days)
   open = as.numeric(p[time1]$Open)
   end1 = as.numeric(p[time2]$Close)
   end2 = as.numeric(p[time3]$Close)
-  r = data.frame(open = open,end1 = end1,end2=end2,sign1 = sign(end1 - open),sign2 = sign(end2 - open))
+  r = data.frame(date=day,open = open,end1 = end1,end2=end2,sign1 = sign(end1 - open),sign2 = sign(end2 - open))
   records = rbind(records,r)
 }
 
+years = unique(substring(days,1,7))
+anlysisframe = data.frame()
+for(y in years)
+{
+  sub = subset(records,substring(date,1,7) == y)
+  sub1 = subset(sub,sign1 == sign2)
+  ratio = nrow(sub1) / nrow(sub)
+  a = data.frame(year = y , ratio = ratio)
+  anlysisframe = rbind(anlysisframe,a)
+}
 
+#最高最低点 时间分布统计 暂时只考虑9-15点
+maxtime  = c()
+mintime = c()
+for(day in days)
+{
+  p = pricedata[day]
+  if(nrow(p) ==0) next
+  perdstart = paste(day,'09:00:00')
+  perdend = paste(day,'15:00:00')
+  perd = paste(perdstart,perdend,sep='/')
+  nperd = nrow(p[perd])
+  if(nperd == 0) next
+  p = p[perd]
+  maxp = max(p$High)
+  maxi = which(p$High == maxp)
+  maxi = unique(substring(as.character(index(p[maxi,])),12,13))
+  maxtime = c(maxtime,maxi)
+  
+  minp = min(p$Low)
+  mini = which(p$Low == minp)
+  mini = unique(substring(as.character(index(p[mini,])),12,13))
+  mintime = c(mintime,mini)
+}
+aggregate(maxtime,by = list(maxtime),length)
+aggregate(mintime,by = list(mintime),length)
+
+#回测
 records = data.frame()
 for(day in days)
 {
