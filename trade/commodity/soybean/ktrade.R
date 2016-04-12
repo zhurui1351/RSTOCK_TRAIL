@@ -102,12 +102,12 @@ for(day in days)
   enter = as.numeric(p[i,]$Open)
   if(type =='short')
   {
-    stopprice = open + 20
+    stopprice = open + 100
     stopwin = enter - 10
   }
   else
   {
-    stopprice = open - 20
+    stopprice = open - 100
     stopwin = enter + 10
     
   }
@@ -127,10 +127,10 @@ for(day in days)
       
       if(idxcl < stopwin)
       {
-        isstop = T
-        r = data.frame(time = index(p[idx,]),enter=enter,out =idxcl,isstop = isstop,type = type , profit = enter - idxcl )
-        records = rbind(records,r)
-        break
+      #  isstop = T
+       # r = data.frame(time = index(p[idx,]),enter=enter,out =idxcl,isstop = isstop,type = type , profit = enter - idxcl )
+       # records = rbind(records,r)
+      #  break
       }
     }
     else
@@ -145,10 +145,10 @@ for(day in days)
       
       if(idxcl > stopwin)
       {
-        isstop = T
-        r = data.frame(time = index(p[idx,]),enter=enter,out =idxcl,isstop = isstop,type = type , profit = enter - idxcl )
-        records = rbind(records,r)
-        break
+       # isstop = T
+      #  r = data.frame(time = index(p[idx,]),enter=enter,out =idxcl,isstop = isstop,type = type , profit = enter - idxcl )
+       # records = rbind(records,r)
+      #  break
       }
     }
   }
@@ -157,4 +157,106 @@ for(day in days)
     r = data.frame(time = index(p[idx,]),enter=enter,out =idxcl,isstop = isstop,type = type , profit = ifelse(type == 'long',(idxcl - enter),( enter - idxcl)) )
     records = rbind(records,r)
   }
+}
+
+
+#回测
+records = data.frame()
+for(day in days)
+{
+  print(day)
+  p = pricedata[day]
+  if(nrow(p) ==0) next
+  perdstart = paste(day,'09:00:00')
+  perdend = paste(day,'15:00:00')
+  perd = paste(perdstart,perdend,sep='/')
+  nperd = nrow(p[perd])
+  if(nperd == 0) next
+  
+  time1 = paste(day,'09:01:00')
+  time2 = paste(day,'09:10:00')
+  tp = paste(time1,time2,sep='/')
+  
+  upperline = max(p[tp]$High)[1]
+  lowerline = min(p[tp]$Low)[1]
+  centerline = floor((upperline + lowerline) / 2)
+  
+  i = which(as.character(index(p)) == time2) + 1
+  type = ''
+  ishold = F
+  stepped = F
+  idx = i
+  for(idx in 1 : (nrow(p)-1))
+  {
+    idxcl = as.numeric(p[idx,]$Close)
+    if(idxcl > upperline && ishold == F)
+    {
+      ishold = T
+      type = 'long'
+      enter = as.numeric(p[idx+1,]$Open)
+      entertime = index(p[idx+1,])
+      stopprice = centerline
+      next
+    }
+    if(idxcl < lowerline  && ishold == F)
+    {
+      ishold = T
+      type = 'short'
+      enter = as.numeric(p[idx+1,]$Open)
+      entertime = index(p[idx+1,])
+      stopprice = centerline
+      next
+    }
+    
+    if(ishold == T)
+    {
+      if(type == 'long')
+      {
+        #止损
+        if(idxcl < stopprice)
+        {
+          out = as.numeric(p[idx+1,]$Open)
+          outtime = index(p[idx+1,])
+          r = data.frame(entertime = entertime,enter = enter,outtime = outtime,out = out,stepped=stepped,isstop = T,type = type,profit = enter - out)
+          records = rbind(records,r)
+          ishold = F
+          
+        }
+        #移动止损
+        if(idxcl > stopprice + 10)
+        {
+          stepped = T
+          stopprice = stopprice + 5
+        }
+      }
+      if(type == 'short')
+      {
+        #止损
+        if(idxcl > stopprice)
+        {
+          out = as.numeric(p[idx+1,]$Open)
+          outtime = index(p[idx+1,])
+          r = data.frame(entertime = entertime,enter = enter,outtime = outtime,out = out,stepped=stepped,isstop = T,type = type,profit =  out - enter)
+          records = rbind(records,r)
+          ishold = F
+          
+        }
+        if(idxcl < stopprice - 10)
+        {
+          stepped = T
+          stopprice = stopprice - 5
+          
+        }
+      }
+    }
+  }
+  if(ishold == T)
+  {
+    out = as.numeric(p[idx+1,]$Open)
+    outtime = index(p[idx+1,])
+    r = data.frame(entertime = entertime,enter = enter,outtime = outtime,out = out,stepped=stepped,isstop = F,type = type,profit =ifelse(type == 'long',(enter-out),(out-enter)))
+    records = rbind(records,r)
+  }
+  
+  
 }
