@@ -245,4 +245,3 @@ getbasetime_day = function()
 }
 
 
-  

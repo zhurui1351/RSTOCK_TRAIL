@@ -160,7 +160,7 @@ for(day in days)
 }
 
 
-#回测
+#回测-早上九点时段决定区间
 records = data.frame()
 for(day in days)
 {
@@ -172,39 +172,48 @@ for(day in days)
   perd = paste(perdstart,perdend,sep='/')
   nperd = nrow(p[perd])
   if(nperd == 0) next
+  p = p[perd]
   
   time1 = paste(day,'09:01:00')
-  time2 = paste(day,'09:10:00')
+  time2 = paste(day,'10:00:00')
   tp = paste(time1,time2,sep='/')
   
-  upperline = max(p[tp]$High)[1]
-  lowerline = min(p[tp]$Low)[1]
+  open = as.numeric(p[time1]$Open)
+  upperline = max(p[tp]$High)[1]  
+  lowerline = min(p[tp]$Low)[1]  
   centerline = floor((upperline + lowerline) / 2)
+ # if((upperline - lowerline) < 20) next
   
   i = which(as.character(index(p)) == time2) + 1
   type = ''
   ishold = F
   stepped = F
+  longcount = 0
+  shortcount = 0
   idx = i
   for(idx in 1 : (nrow(p)-1))
   {
     idxcl = as.numeric(p[idx,]$Close)
-    if(idxcl > upperline && ishold == F)
+    if(idxcl > upperline && ishold == F && longcount < 1)
     {
       ishold = T
       type = 'long'
       enter = as.numeric(p[idx+1,]$Open)
       entertime = index(p[idx+1,])
       stopprice = centerline
+      stopwinprice = enter
+      longcount = longcount + 1
       next
     }
-    if(idxcl < lowerline  && ishold == F)
+    if(idxcl < lowerline  && ishold == F && shortcount < 1)
     {
       ishold = T
       type = 'short'
       enter = as.numeric(p[idx+1,]$Open)
       entertime = index(p[idx+1,])
       stopprice = centerline
+      stopwinprice = enter
+      shortcount = shortcount + 1
       next
     }
     
@@ -217,16 +226,18 @@ for(day in days)
         {
           out = as.numeric(p[idx+1,]$Open)
           outtime = index(p[idx+1,])
-          r = data.frame(entertime = entertime,enter = enter,outtime = outtime,out = out,stepped=stepped,isstop = T,type = type,profit = enter - out)
+          r = data.frame(entertime = entertime,enter = enter,outtime = outtime,out = out,stepped=stepped,isstop = T,type = type,profit =out-enter,up=upperline-open,low=open-lowerline)
           records = rbind(records,r)
           ishold = F
           
         }
         #移动止损
-        if(idxcl > stopprice + 10)
+        if(idxcl > stopwinprice + 10)
         {
           stepped = T
-          stopprice = stopprice + 5
+          stopprice = stopwinprice + 5
+          stopwinprice = idxcl
+          
         }
       }
       if(type == 'short')
@@ -236,15 +247,17 @@ for(day in days)
         {
           out = as.numeric(p[idx+1,]$Open)
           outtime = index(p[idx+1,])
-          r = data.frame(entertime = entertime,enter = enter,outtime = outtime,out = out,stepped=stepped,isstop = T,type = type,profit =  out - enter)
+          r = data.frame(entertime = entertime,enter = enter,outtime = outtime,out = out,stepped=stepped,isstop = T,type = type,profit =enter-out,up=upperline-open,low=open-lowerline)
           records = rbind(records,r)
           ishold = F
           
         }
-        if(idxcl < stopprice - 10)
+        if(idxcl < stopwinprice - 10)
         {
           stepped = T
-          stopprice = stopprice - 5
+          stopprice = stopwinprice  - 5
+          stopwinprice = idxcl
+          
           
         }
       }
@@ -254,9 +267,29 @@ for(day in days)
   {
     out = as.numeric(p[idx+1,]$Open)
     outtime = index(p[idx+1,])
-    r = data.frame(entertime = entertime,enter = enter,outtime = outtime,out = out,stepped=stepped,isstop = F,type = type,profit =ifelse(type == 'long',(enter-out),(out-enter)))
+    r = data.frame(entertime = entertime,enter = enter,outtime = outtime,out = out,stepped=stepped,isstop = F,type = type,profit =ifelse(type == 'long',(out-enter),(enter-out)),up=upperline-open,low=open-lowerline)
     records = rbind(records,r)
   }
   
   
 }
+
+year = substring(records$entertime,1,4)
+months = substring(records$entertime,1,6)
+profits = records$profit
+aggregate(x=profits,by=list(year),sum)
+length(profits[profits>0]) / length(profits)
+sum(profits)
+sum(profits[profits>0])
+sum(profits[profits<0])
+
+
+subrecords = subset(records,substring(records$entertime,1,4) == '2014')
+subprofits = subrecords$profit
+subyear = substring(subrecords$entertime,1,7)
+aggregate(x=subprofits,by=list(subyear),sum)
+
+sum(subprofits)
+length(subprofits[subprofits>0]) / length(subprofits)
+sum(subprofits[subprofits>0])
+sum(subprofits[subprofits<0])
