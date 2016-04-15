@@ -60,3 +60,48 @@ find_bull(upratio = 0.2,downratio = -0.1,shindex = na.omit(dou1[,1:4]))
 #特殊日历分析
 
 #日内模型分析
+
+#基本统计
+days = as.character(unique(as.Date(index(pricedata))))
+vs = c()
+for(day in days)
+{
+  print(day)
+  p = pricedata[day]
+  if(nrow(p) ==0) next
+  perdstart = paste(day,'09:00:00')
+  perdend = paste(day,'15:00:00')
+  perd = paste(perdstart,perdend,sep='/')
+  nperd = nrow(p[perd])
+  if(nperd == 0) next
+  p = p[perd]
+  
+  dayvotile = max(p$High) - min(p$Low)
+  time1 = paste(day,'09:01:00')
+  time2 = paste(day,'10:00:00')
+  tp = paste(time1,time2,sep='/')
+  ptp = p[tp]
+  votile = max(ptp$High) - min(ptp$Low)
+  vs = c(vs,votile/dayvotile)
+  
+}
+
+vdays = c()
+for(day in days)
+{
+  print(day)
+  p = pricedata[day]
+  if(nrow(p) ==0) next
+  perdstart = paste(day,'09:00:00')
+  perdend = paste(day,'15:00:00')
+  perd = paste(perdstart,perdend,sep='/')
+  nperd = nrow(p[perd])
+  if(nperd == 0) next
+  p = p[perd]
+  pi = p[1,]
+  if((pi$High - pi$Open) > 30 || (pi$Open - pi$Low) < -30)
+  {
+    vdays = c(vdays,day)
+  }
+  
+}

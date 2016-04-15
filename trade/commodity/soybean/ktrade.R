@@ -179,10 +179,10 @@ for(day in days)
   tp = paste(time1,time2,sep='/')
   
   open = as.numeric(p[time1]$Open)
-  upperline = max(p[tp]$High)[1]  
-  lowerline = min(p[tp]$Low)[1]  
+  upperline = max(p[tp]$High)[1] +3 
+  lowerline = min(p[tp]$Low)[1]  - 3
   centerline = floor((upperline + lowerline) / 2)
- # if((upperline - lowerline) < 20) next
+  if((upperline - lowerline) < 20) next
   
   i = which(as.character(index(p)) == time2) + 1
   type = ''
@@ -190,8 +190,8 @@ for(day in days)
   stepped = F
   longcount = 0
   shortcount = 0
-  idx = i
-  for(idx in 1 : (nrow(p)-1))
+ # idx = i
+  for(idx in i : (nrow(p)-1))
   {
     idxcl = as.numeric(p[idx,]$Close)
     if(idxcl > upperline && ishold == F && longcount < 1)
@@ -280,11 +280,12 @@ profits = records$profit
 aggregate(x=profits,by=list(year),sum)
 length(profits[profits>0]) / length(profits)
 sum(profits)
+length(profits)
 sum(profits[profits>0])
 sum(profits[profits<0])
 
 
-subrecords = subset(records,substring(records$entertime,1,4) == '2014')
+subrecords = subset(records,substring(records$entertime,1,4) == '2016')
 subprofits = subrecords$profit
 subyear = substring(subrecords$entertime,1,7)
 aggregate(x=subprofits,by=list(subyear),sum)
