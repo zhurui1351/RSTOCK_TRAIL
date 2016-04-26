@@ -101,3 +101,10 @@ abline(h=coef(m1.color)[names(coef(m1.color))=='intercept'])
 #季节模型  随机季节模型
 data(co2)
 plot(co2,ylab='co2')
+
+x = 1
+for(i in 1 : 1000)
+{
+  y = x[i] + rnorm(1) 
+  x=c(x,y)
+}

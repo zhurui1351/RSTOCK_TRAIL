@@ -48,3 +48,12 @@ read_s1_d_wind = function(path = 'D:/data/collectdata/windata/commidity/soybean/
   colnames(pricedata) = c('Open','High','Low','Close','Vol','Amt','Dealnum','Settle','Oi')
   return(pricedata)
 }
+
+read_s1_1m_taobao = function(path = 'D:/data/collectdata/quandldata/commidity/soybean/')
+{
+  fname = paste(path,'dou1_1m_taobao.csv',sep='')
+  pricedata = read.csv(fname,header=T,sep=",") 
+  pricedata = xts(pricedata[,2:7],order.by = as.POSIXct(pricedata[,1]))
+  colnames(pricedata) = c('Open','High','Low','Close','Vol','Oi')
+  return(pricedata)
+}

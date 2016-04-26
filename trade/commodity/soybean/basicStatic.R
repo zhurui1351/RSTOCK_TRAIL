@@ -9,6 +9,11 @@ dou_us = read_s_f_us()
 dou_us_quandl = read_s1_quandl()
 colnames(dou_us_quandl) = c("Open","High","Low","Close","Volume","preopeninterest")
 
+doubo_m = read_m_1m_taobao()
+douyou_m = read_y_1m_taobao()
+corp_m = read_c_1m_taobao()
+dou1_m = read_s1_1m_taobao()
+
 shindex = read_sh000001()
 
 oldpars = par(mfrow=c(3, 1))
@@ -105,3 +110,4 @@ for(day in days)
   }
   
 }
+
