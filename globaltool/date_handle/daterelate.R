@@ -39,4 +39,5 @@ to_day = function(pricedata)
     r = xts(data.frame(Open=open,High=high,Low=low,Close=close,Vol=vol,Oi=oi), order.by = as.Date(day))
     rs = rbind(rs,r)
   }
+  return(rs)
 }

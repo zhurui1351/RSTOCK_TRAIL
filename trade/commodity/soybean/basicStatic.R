@@ -14,6 +14,11 @@ douyou_m = read_y_1m_taobao()
 corp_m = read_c_1m_taobao()
 dou1_m = read_s1_1m_taobao()
 
+dou1_day = to_day(dou1_m)
+doubo_day = to_day(doubo_m)
+douyou_day = to_day(douyou_m)
+corp_day = to_day(corp_m)
+
 shindex = read_sh000001()
 
 oldpars = par(mfrow=c(3, 1))
@@ -23,6 +28,7 @@ plot(Cl(dou_us['1990/']))
 par(oldpars)
 
 #sn 分析
+dou1 = dou1_day
 testMonthPeriod(dou1[,1:4],detail = T,from = '1990',to='2016',strict=F)
 testMonthPeriod(dou_us[,1:4],detail=T,from='1950')
 testMonthPeriod(dou_us_quandl[,1:4],detail=T,from='1950')
@@ -67,6 +73,7 @@ find_bull(upratio = 0.2,downratio = -0.1,shindex = na.omit(dou1[,1:4]))
 #日内模型分析
 
 #基本统计
+pricedata = dou1_m
 days = as.character(unique(as.Date(index(pricedata))))
 vs = c()
 for(day in days)
@@ -111,3 +118,15 @@ for(day in days)
   
 }
 
+# 回归
+cl_dou1 = dou1_day$Close
+cl_douyou = douyou_day$Close
+cl_doubo = doubo_day$Close
+cl_corp = corp_day$Close
+
+cl = merge(cl_dou1,cl_douyou,cl_doubo,cl_corp)
+cl = na.omit(cl)
+names(cl)= c('dou','douyou','doubo','corp')
+cl = as.data.frame(cl)
+
+f = lm(dou~.,data = cl[1:1000,])
