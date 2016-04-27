@@ -129,4 +129,151 @@ cl = na.omit(cl)
 names(cl)= c('dou','douyou','doubo','corp')
 cl = as.data.frame(cl)
 
-f = lm(dou~.,data = cl[1:1000,])
+f = lm(dou~.,data = cl[1:300,])
+
+idx = data.frame()
+for(i in 301:nrow(cl))
+{
+  f = lm(dou~.,data = cl[(i-300):(i-1),])
+  se = sd(f$residuals)
+  pv = predict(f,cl[i,c(2,3,4)])
+  tv = cl[i,1]
+  if(abs(tv - pv) > 2 * se)
+  {
+    r = data.frame(i=i,sp = pv - tv)
+    idx = rbind(idx,r)
+  }
+}
+
+#回测
+ratio = 2
+records = data.frame()
+first = F
+ishold = F
+long = F
+short = F
+type = ''
+x = 0
+num = 200
+for(i in (num+1):nrow(cl))
+{
+  f = lm(dou~.,data = cl[(i - num):(i-1),])
+  se = sd(f$residuals)
+  pv = predict(f,cl[i,c(2,3,4)])
+  tv = cl[i,1]
+  it = rownames(cl[i,])
+  price = dou1_day[it]
+  gap = pv - tv
+  
+  if(short || long)
+  {
+     open = as.numeric(price$Open)
+     type = ifelse(short==T,'short','long')
+     short = F
+     long = F
+     ishold = T
+     entertime = it
+     x = i
+  }
+ 
+  if(abs(gap) > ratio * se && ishold == F)
+  {
+    if(gap > 0)
+    {
+      long = T
+    }
+    else
+    {
+      short = T
+    }
+  }
+ 
+  if(ishold == T)
+  {
+    if(abs(gap) > ratio * se)
+    {
+      next
+    }
+    outit = rownames(cl[i+1,])
+    outprice = dou1_day[outit]   
+    out = as.numeric(outprice$Open)
+    outtime = outit
+    r = data.frame(entertime = entertime,open=open,out=out,outtime=outtime,type = type,profit = ifelse(type=='long',out-open,open-out),i=x)
+    records = rbind(records,r)
+    ishold = F
+  }
+}
+
+# 5分钟数据
+cl_dou1_m = Cl(to.minutes15(dou1_m))
+cl_douyou_m = Cl(to.minutes15(douyou_m))
+cl_doubo_m = Cl(to.minutes15(doubo_m))
+cl_corp_m = Cl(to.minutes15(corp_m))
+
+cl_m = merge(cl_dou1_m,cl_douyou_m,cl_doubo_m)
+cl_m = na.omit(cl_m)
+names(cl_m)= c('dou','douyou','doubo')
+cl_m = as.data.frame(cl_m)
+
+f = lm(dou~.,data = cl_m[1:300,])
+
+dou1 = to.minutes15(dou1_m)
+
+
+ratio = 2
+records = data.frame()
+first = F
+ishold = F
+long = F
+short = F
+type = ''
+x = 0
+num = 300
+for(i in (num+1):nrow(cl_m))
+{
+  f = lm(dou~.,data = cl_m[(i - num):(i-1),])
+  se = sd(f$residuals)
+  pv = predict(f,cl_m[i,c(2,3)])
+  tv = cl_m[i,1]
+  it = rownames(cl_m[i,])
+  price = dou1[it]
+  gap = pv - tv
+  
+  if(short || long)
+  {
+    open = as.numeric(Op(price))
+    type = ifelse(short==T,'short','long')
+    short = F
+    long = F
+    ishold = T
+    entertime = it
+    x = i
+  }
+  
+  if(abs(gap) > ratio * se && ishold == F)
+  {
+    if(gap > 0)
+    {
+      long = T
+    }
+    else
+    {
+      short = T
+    }
+  }
+  
+  if(ishold == T)
+  {
+    if(abs(gap) > ratio * se)
+    {
+      next
+    }
+    outit = rownames(cl_m[i+1,])
+    outprice = dou1[outit]   
+    out = as.numeric(Op(outprice))
+    outtime = outit
+    r = data.frame(entertime = entertime,open=open,out=out,outtime=outtime,type = type,profit = ifelse(type=='long',out-open,open-out),i=x)
+    records = rbind(records,r)
+    ishold = F
+  }
+}
