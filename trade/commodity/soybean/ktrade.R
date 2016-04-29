@@ -372,3 +372,36 @@ sub = subset(rdataframe,type == 'down' & signsma == '-1' & preday_votile == '-1'
 chisq.test(rdataframe$signvotile,rdataframe$preday_votile)
 chisq.test(rdataframe$signvotile,rdataframe$type)
 chisq.test(rdataframe$signvotile,rdataframe$signsma)
+
+#回测
+for(i in 1:nrow(result))
+{
+  r = result[i,]
+  day = as.character(as.Date(r$day))
+  starttime = paste(day,'09:00:00')
+  endtime = paste(day,'15:00:00')
+  span = paste(starttime,endtime,sep='/')
+  intraprice = pricedata_m[span]
+  
+  high = Hi(intraprice[1,])
+  low = Lo(intraprice[1,])
+  ishold = F
+  for(j in 2:nrow(interprice)-5)
+  {
+    cl = Cl(interprice[j,])
+    if(cl > high && ishold = F)
+    {
+      ishold = T
+      type = 'long'
+      open = Op(interprice[j+1,])
+      entertime = index(interprice[j+1,])
+    }
+    if(cl < low && ishold = F)
+    {
+      ishold = T
+      type = 'short'
+      open = Op(interprice[j+1,])
+      entertime = index(interprice[j+1,])
+    }
+  }
+}
