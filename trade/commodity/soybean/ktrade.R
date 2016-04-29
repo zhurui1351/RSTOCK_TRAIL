@@ -294,3 +294,81 @@ sum(subprofits)
 length(subprofits[subprofits>0]) / length(subprofits)
 sum(subprofits[subprofits>0])
 sum(subprofits[subprofits<0])
+
+
+#开盘跳空,大阴大阳
+pricedata_m = dou1_m
+pricedata_m$smashort = lag(SMA(Cl(pricedata_m),3),1)
+pricedata_m$smalong= lag(SMA(Cl(pricedata_m),10),1)
+
+pricedata = dou1_day
+days = as.character(unique(as.Date(index(pricedata))))
+alltime = index(pricedata_m)
+time = '09:01:00'
+
+result = data.frame()
+resultfirst = c()
+for(day in days[2:length(days)])
+{
+  iday = which(days == day)
+  preday = days[iday - 1]
+  opentime = paste(day,time)
+  idx = which(alltime == opentime)
+  if(length(idx) == 0) next
+  precloseidx = idx - 1
+  
+  preday_votile = as.numeric(Cl(pricedata[preday]) - Op(pricedata[preday]))
+  open = as.numeric(Op(pricedata_m[idx,]))
+  close = as.numeric(Cl(pricedata_m[idx+60,]))
+  prehigh = as.numeric(Hi(pricedata_m[precloseidx,]))
+  prelow = as.numeric(Lo(pricedata_m[precloseidx,]))
+  
+  
+  
+  smashort = as.numeric(pricedata_m[idx,]$smashort)
+  smalong = as.numeric(pricedata_m[idx,]$smalong)
+  
+  upgap = open - prehigh
+  downgap = prelow - open
+  if(abs(close - open) > 20) resultfirst = c(resultfirst,day)
+  if(upgap > 10)
+  {
+    type = 'up'
+  }else if(downgap > 10)
+  {
+    type = 'down'
+  }
+  else
+  {
+    type = ''
+    next
+  }
+  
+  votile = close - open
+  r = data.frame(day,type =type,votile = votile,smalong=smalong,smashort=smashort,signvotile = sign(votile),signsma=sign(smashort-smalong),preday_votile=sign(preday_votile))
+  result = rbind(result,r)
+}
+
+downset = subset(result,signsma =='-1')
+sumdown = sum(downset$votile)
+vdown = downset$votile 
+rdown = length(vdown[vdown>0])/length(vdown)
+
+upset =  subset(result,type =='up')
+sumup = sum(upset$votile)
+vup = upset$votile
+rup = length(vup[vup < 0])/length(vup)
+
+rdataframe = as.data.frame(result)
+rdataframe$signvotile = as.factor(rdataframe$signvotile)
+rdataframe$signsma = as.factor(rdataframe$signsma)
+rdataframe$preday_votile = as.factor(rdataframe$preday_votile)
+
+ct <- rpart.control(xval=10, minsplit=20, cp=0.001)  
+fit = rpart(signvotile ~ signsma + type + preday_votile,data = rdataframe,control = ct)
+rpart.plot(fit)
+
+sub = subset(rdataframe,type == 'down' & signsma == '-1' & preday_votile == '-1')
+chisq.test(rdataframe$signvotile,rdataframe$preday_votile)
+chisq.test(rdataframe$signvotile,rdataframe$type)
+chisq.test(rdataframe$signvotile,rdataframe$signsma)
