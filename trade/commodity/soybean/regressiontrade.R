@@ -73,7 +73,15 @@ regressionTest = function(stats_frame,fm,pricedata,ratio=2,num = 300)
   }
   return(records)
 }
+doubo_m = read_m_1m_taobao()
+douyou_m = read_y_1m_taobao()
+corp_m = read_c_1m_taobao()
+dou1_m = read_s1_1m_taobao()
 
+dou1_day = to_day(dou1_m)
+doubo_day = to_day(doubo_m)
+douyou_day = to_day(douyou_m)
+corp_day = to_day(corp_m)
 
 cl_dou1 = dou1_day$Close
 cl_douyou = douyou_day$Close

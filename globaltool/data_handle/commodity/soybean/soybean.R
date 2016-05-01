@@ -49,7 +49,7 @@ read_s1_d_wind = function(path = 'D:/data/collectdata/windata/commidity/soybean/
   return(pricedata)
 }
 
-read_s1_1m_taobao = function(path = 'D:/data/collectdata/quandldata/commidity/soybean/')
+read_s1_1m_taobao = function(path = 'D:/data/collectdata/taobaodata/commidity/soybean/')
 {
   fname = paste(path,'dou1_1m_taobao.csv',sep='')
   pricedata = read.csv(fname,header=T,sep=",") 

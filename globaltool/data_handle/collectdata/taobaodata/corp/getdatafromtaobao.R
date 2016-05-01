@@ -1,5 +1,5 @@
 source('D:/Rcode/code/RSTOCK_TRAIL/globaltool/data_handle/collectdata/taobaodata/taobao_data_handle.R',encoding='utf8')
-getsoybeanmeal_taobao = function()
+getcorp_taobao = function()
 {
   pattern = 'DLCMI*'
   pricedata = collectdatafromtaobao(pattern)

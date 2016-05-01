@@ -2,8 +2,16 @@ rm(list=ls(all=T))
 source('D:/Rcode/code/RSTOCK_TRAIL/globaltool/include.R')
 source('D:/Rcode/code/RSTOCK_TRAIL/globaltool/readdata.R')
 sourceDir('D:/Rcode/code/RSTOCK_TRAIL/trade/eventAnalysis')
-pricedata = collectdatafromtaobao()
 
+doubo_m = read_m_1m_taobao()
+douyou_m = read_y_1m_taobao()
+corp_m = read_c_1m_taobao()
+dou1_m = read_s1_1m_taobao()
+
+dou1_day = to_day(dou1_m)
+doubo_day = to_day(doubo_m)
+douyou_day = to_day(douyou_m)
+corp_day = to_day(corp_m)
 days = as.character(unique(as.Date(index(pricedata))))
 
 records = data.frame()
@@ -373,7 +381,8 @@ chisq.test(rdataframe$signvotile,rdataframe$preday_votile)
 chisq.test(rdataframe$signvotile,rdataframe$type)
 chisq.test(rdataframe$signvotile,rdataframe$signsma)
 
-#回测
+#回测,以第一根k线作为参考
+records = data.frame()
 for(i in 1:nrow(result))
 {
   r = result[i,]
@@ -383,25 +392,63 @@ for(i in 1:nrow(result))
   span = paste(starttime,endtime,sep='/')
   intraprice = pricedata_m[span]
   
-  high = Hi(intraprice[1,])
-  low = Lo(intraprice[1,])
+  high = as.numeric(Hi(intraprice[1,]))
+  low = as.numeric(Lo(intraprice[1,]))
   ishold = F
-  for(j in 2:nrow(interprice)-5)
+  type = ''
+  long = F
+  short = F
+  gaptype = result[i,]$type
+  breakhigh = F
+  breaklow = F
+  for(j in 2:nrow(intraprice)-1)
   {
-    cl = Cl(interprice[j,])
-    if(cl > high && ishold = F)
+    #最后n分钟突破 不再交易
+    if(j > (nrow(intraprice) - 10) && ishold == F) break
+    
+    if(long || short)
     {
+      open = as.numeric(Op(intraprice[j,]))
+      entertime = as.character(index(intraprice[j,]))
+      long = F
+      short = F
       ishold = T
-      type = 'long'
-      open = Op(interprice[j+1,])
-      entertime = index(interprice[j+1,])
     }
-    if(cl < low && ishold = F)
+    
+    cl =as.numeric(Cl(intraprice[j,]))
+    if(cl > high && ishold == F && breakhigh == F)
     {
-      ishold = T
+     # type = 'long'
+      breakhigh = T
+     # long = T
+     # next
+    }
+    if(cl < low && ishold == F && breaklow ==F )
+    {
+     # type = 'short'
+      breaklow = T
+      #short = T
+     # next
+    }
+    
+    if(cl < high && ishold == F && breakhigh == T)
+    {
+      breakhigh = F
       type = 'short'
-      open = Op(interprice[j+1,])
-      entertime = index(interprice[j+1,])
+      short = T
     }
+    if(cl > low && ishold == F && breaklow == T)
+    {
+      breaklow = F
+      type = 'long'
+      short = T
+    }
+  }
+  if(ishold == T )
+  {
+    out = as.numeric(Op(intraprice[j,]))
+    outtime = as.character(index(intraprice[j,]))
+    r = data.frame(entertime = entertime,open=open,out=out,outtime=outtime,type = type,profit = ifelse(type=='long',out-open,open-out))
+    records = rbind(records,r)
   }
 }
