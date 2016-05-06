@@ -108,3 +108,38 @@ for(i in 1 : 1000)
   y = x[i] + rnorm(1) 
   x=c(x,y)
 }
+
+#参数拟合
+data(ar1.s)
+data("ar2.s")
+ar(ar1.s,order.max = 1,AIC=F,method = 'yw')
+ar(ar1.s,order.max = 1,AIC=F,method = 'ols')
+ar(ar1.s,order.max = 1,AIC=F,method = 'mle')
+
+ar(ar2.s,order.max = 2,AIC=F,method = 'mle')
+ar(ar2.s,order.max = 2,AIC=F,method = 'ols')
+ar(ar2.s,order.max = 2,AIC=F,method = 'yw')
+
+data("arma11.s")
+arima(arma11.s,order=c(1,0,1),method = 'CSS')
+
+#季节差分
+plot(co2)
+acf(as.vector(co2),lag.max = 36)
+plot(diff(co2))
+acf(as.vector(diff(co2)),lag.max = 36)
+plot(diff(diff(co2),lag=12))
+acf(as.vector(diff(diff(co2),lag=12)),lag.max = 36,ci.type='ma')
+m1.co2 = arima(co2,order=c(0,1,1),seasonal = list(order=c(0,1,1),period = 12))
+m1.co2
+plot(rstandard(m1.co2),type='o')
+abline(h=0)
+acf(as.vector(rstandard(m1.co2)),lag.max = 36)
+qqnorm(as.vector(rstandard(m1.co2)))
+qqline(as.vector(rstandard(m1.co2)))
+#过渡拟合模型
+m2.co2 = arima(co2,order=c(0,1,2),seasonal = list(order=c(0,1,1),period = 12))
+#预测
+plot(m1.co2,n1=c(1990,1),n.ahead=24,xlab='year',type='o',ylab='co2 level')
+plot(m1.co2,n1=c(1990,1),n.ahead=48,xlab='year',type='o',ylab='co2 level')
+
