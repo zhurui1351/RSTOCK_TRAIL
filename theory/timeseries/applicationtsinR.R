@@ -143,3 +143,5 @@ m2.co2 = arima(co2,order=c(0,1,2),seasonal = list(order=c(0,1,1),period = 12))
 plot(m1.co2,n1=c(1990,1),n.ahead=24,xlab='year',type='o',ylab='co2 level')
 plot(m1.co2,n1=c(1990,1),n.ahead=48,xlab='year',type='o',ylab='co2 level')
 
+data("airmiles")
+plot(log(airmiles))
