@@ -12,6 +12,7 @@ dou1_day = to_day(dou1_m)
 doubo_day = to_day(doubo_m)
 douyou_day = to_day(douyou_m)
 corp_day = to_day(corp_m)
+pricedata = dou1_m
 days = as.character(unique(as.Date(index(pricedata))))
 
 records = data.frame()
@@ -452,3 +453,6 @@ for(i in 1:nrow(result))
     records = rbind(records,r)
   }
 }
+
+#区间法
+

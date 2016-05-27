@@ -41,3 +41,35 @@ to_day = function(pricedata)
   }
   return(rs)
 }
+
+#处理后对齐的数据
+to_minutes = function(pricedata,k=5)
+{
+  times = index(pricedata)
+  i = 1
+  newtime =  times[i]
+  ps = pricedata[i:(i+k-1)]
+  open = as.numeric(ps[1,]$Open)
+  high = max(as.numeric(ps$High))
+  low = min(as.numeric(ps$Low))
+  close = tail(ps,1)$Close
+  vol = sum(as.numeric(ps$Vol))
+  oi = tail(ps,1)$Oi
+  r = xts(data.frame(Open=open,High=high,Low=low,Close=close,Vol=vol,Oi=oi), order.by = newtime)
+  rs = r
+  i = i + k
+  while(i < length(times))
+  {
+    newtime =  times[i]
+    ps = pricedata[i:(i+k-1)]
+    open = as.numeric(ps[1,]$Open)
+    high = max(as.numeric(ps$High))
+    low = min(as.numeric(ps$Low))
+    close = tail(ps,1)$Close
+    vol = sum(as.numeric(ps$Vol))
+    oi = tail(ps,1)$Oi
+    r = xts(data.frame(Open=open,High=high,Low=low,Close=close,Vol=vol,Oi=oi), order.by = newtime)
+    rs = rbind(rs,r)
+    i = i + k
+  }
+}
