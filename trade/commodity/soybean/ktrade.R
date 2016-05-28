@@ -1,7 +1,7 @@
 rm(list=ls(all=T))
-source('D:/Rcode/code/RSTOCK_TRAIL/globaltool/include.R')
-source('D:/Rcode/code/RSTOCK_TRAIL/globaltool/readdata.R')
-sourceDir('D:/Rcode/code/RSTOCK_TRAIL/trade/eventAnalysis')
+source('D:/Rcode/code/RSTOCK_TRAIL/globaltool/include.R',encoding='utf8')
+source('D:/Rcode/code/RSTOCK_TRAIL/globaltool/readdata.R',encoding='utf8')
+sourceDir('D:/Rcode/code/RSTOCK_TRAIL/trade/eventAnalysis',encoding='utf8')
 
 doubo_m = read_m_1m_taobao()
 douyou_m = read_y_1m_taobao()
@@ -12,6 +12,18 @@ dou1_day = to_day(dou1_m)
 doubo_day = to_day(doubo_m)
 douyou_day = to_day(douyou_m)
 corp_day = to_day(corp_m)
+
+index(doubo_m) = index(doubo_m) - 60
+index(douyou_m) = index(douyou_m) - 60
+index(corp_m) = index(corp_m) - 60
+index(dou1_m) = index(dou1_m) - 60
+
+doubo_15m = to_minutes(doubo_m,k=15)
+douyou_15m = to_minutes(douyou_m,k=15)
+corp_15m = to_minutes(corp_m,k=15)
+dou1_15m = to_minutes(dou1_m,k=15)
+
+
 pricedata = dou1_m
 days = as.character(unique(as.Date(index(pricedata))))
 

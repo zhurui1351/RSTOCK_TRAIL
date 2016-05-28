@@ -72,4 +72,5 @@ to_minutes = function(pricedata,k=5)
     rs = rbind(rs,r)
     i = i + k
   }
+  return(rs)
 }

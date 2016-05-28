@@ -1,6 +1,64 @@
+sourceDir('D:/Rcode/code/RSTOCK_TRAIL/globaltool/date_handle',encoding='utf8')
+
+getbasetime_night_crossday = function()
+{
+  start = as.POSIXct('2000-01-01 21:01:00')
+  mytimes = c(start)
+  for(i in 1:329)
+  {
+    temp = start + i*60 
+    mytimes = c(mytimes,temp)
+  }
+  return(substring(as.character(mytimes),12))
+}
+
+getbasetime_night = function()
+{
+  start = as.POSIXct('2000-01-01 21:01:00')
+  mytimes = c(start)
+  for(i in 1:149)
+  {
+    temp = start + i*60 
+    mytimes = c(mytimes,temp)
+  }
+  return(substring(as.character(mytimes),12))
+}
+
+
+getbasetime_day = function()
+{
+  mstart = as.POSIXct('2000-01-01 09:01:00')
+  mstart1 = as.POSIXct('2000-01-01 10:31:00')
+  astart = as.POSIXct('2000-01-01 13:31:00')
+  mytimes = c(mstart)
+  
+  for(i in 1:74)
+  {
+    temp = mstart + i * 60
+    mytimes = c(mytimes,temp)
+  }
+  
+  mytimes = c(mytimes,mstart1)
+  for(i in 1:59)
+  {
+    temp = mstart1 + i * 60
+    mytimes = c(mytimes,temp)
+  }
+  
+  mytimes = c(mytimes,astart)
+  for(i in 1:89)
+  {
+    temp = astart + i * 60
+    mytimes = c(mytimes,temp)
+  }
+  return(substring(as.character(mytimes),12))
+  
+}
+
+
 collectdatafromtaobao = function(pattern = 'DLAMI*')
 {
-  path = 'F:/BaiduYunDownload/data'
+  path = 'D:/BaiduYunDownload/data'
   files = list.files(
     path,pattern = pattern ,recursive = T,ignore.case = T,full.names = T
   )
@@ -23,6 +81,7 @@ collectdatafromtaobao = function(pattern = 'DLAMI*')
     pricedata = rbind(pricedata,da)
   }
   
+  newpricedata = NULL
   #去除间隔 白天交易
   basedates = as.character(unique(as.Date(index(pricedata))))
   # basetime = substring(as.character(unique(index(pricedata['2003-08-01']))),12)
@@ -67,9 +126,11 @@ collectdatafromtaobao = function(pattern = 'DLAMI*')
         missp$High = missp$Open
         missp$Close = missp$Open
         missp$Vol = 0  
-        pricedata = rbind(pricedata,missp)
+        p = rbind(p,missp)
       }
     }
+    newpricedata = rbind(newpricedata,p)
+  
   }
   #2014年开始推出夜盘 当日21:00-次日2:30 2015年5月8日期调整夜盘时间为当日21:00 - 23:30
   period1 = as.character(index(pricedata['201401/20150507']))
@@ -130,9 +191,10 @@ collectdatafromtaobao = function(pattern = 'DLAMI*')
         missp$High = missp$Open
         missp$Close = missp$Open
         missp$Vol = 0
-        pricedata = rbind(pricedata,missp)
+        p = rbind(p,missp)
       }
     }
+    newpricedata = rbind(newpricedata,p)
   }
   #2015年5月8日期调整夜盘时间为当日21:00 - 23:30
   period2start = '2015-05-08 09:00:00'
@@ -182,66 +244,13 @@ collectdatafromtaobao = function(pattern = 'DLAMI*')
         missp$High = missp$Open
         missp$Close = missp$Open
         missp$Vol = 0
-        pricedata = rbind(pricedata,missp)
+        p = rbind(p,missp)
       }
     }
+    newpricedata = rbind(newpricedata,p)
   }
-  return(pricedata)
+  return(newpricedata)
 }
 
-getbasetime_night_crossday = function()
-{
-  start = as.POSIXct('2000-01-01 21:01:00')
-  mytimes = c(start)
-  for(i in 1:329)
-  {
-    temp = start + i*60 
-    mytimes = c(mytimes,temp)
-  }
-  return(substring(as.character(mytimes),12))
-}
-
-getbasetime_night = function()
-{
-  start = as.POSIXct('2000-01-01 21:01:00')
-  mytimes = c(start)
-  for(i in 1:149)
-  {
-    temp = start + i*60 
-    mytimes = c(mytimes,temp)
-  }
-  return(substring(as.character(mytimes),12))
-}
-
-
-getbasetime_day = function()
-{
-  mstart = as.POSIXct('2000-01-01 09:01:00')
-  mstart1 = as.POSIXct('2000-01-01 10:31:00')
-  astart = as.POSIXct('2000-01-01 13:31:00')
-  mytimes = c(mstart)
-  
-  for(i in 1:74)
-  {
-    temp = mstart + i * 60
-    mytimes = c(mytimes,temp)
-  }
-  
-  mytimes = c(mytimes,mstart1)
-  for(i in 1:59)
-  {
-    temp = mstart1 + i * 60
-    mytimes = c(mytimes,temp)
-  }
-  
-  mytimes = c(mytimes,astart)
-  for(i in 1:89)
-  {
-    temp = astart + i * 60
-    mytimes = c(mytimes,temp)
-  }
-  return(substring(as.character(mytimes),12))
-  
-}
 
 
