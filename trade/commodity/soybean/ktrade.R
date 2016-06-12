@@ -317,15 +317,18 @@ sum(subprofits[subprofits>0])
 sum(subprofits[subprofits<0])
 
 
-#开盘跳空,大阴大阳
-pricedata_m = dou1_m
+#开盘n分钟跳空,大阴大阳
+#考虑每个开盘瞬间的跳空情况，相关市场跳空情况，跳空后第一根k线涨跌情况，不同时间框架下的
+#跳空情况，判定条件是到一定时期收盘是否会有关闭缺口的迹象
+pricedata_m = dou1_15m
 pricedata_m$smashort = lag(SMA(Cl(pricedata_m),3),1)
 pricedata_m$smalong= lag(SMA(Cl(pricedata_m),10),1)
 
 pricedata = dou1_day
 days = as.character(unique(as.Date(index(pricedata))))
 alltime = index(pricedata_m)
-time = '09:01:00'
+time = '09:00:00'
+time1 = '11:30:00'
 
 result = data.frame()
 resultfirst = c()
@@ -334,13 +337,21 @@ for(day in days[2:length(days)])
   iday = which(days == day)
   preday = days[iday - 1]
   opentime = paste(day,time)
+  endtime = paste(day,time1)
+  
   idx = which(alltime == opentime)
+  endidx = which(alltime == endtime)
+  
   if(length(idx) == 0) next
   precloseidx = idx - 1
   
   preday_votile = as.numeric(Cl(pricedata[preday]) - Op(pricedata[preday]))
+  
   open = as.numeric(Op(pricedata_m[idx,]))
-  close = as.numeric(Cl(pricedata_m[idx+60,]))
+  close = as.numeric(Cl(pricedata_m[idx,]))
+  starthigh =  as.numeric(Hi(pricedata_m[idx,]))
+  startlow =  as.numeric(Lo(pricedata_m[idx,]))
+  
   prehigh = as.numeric(Hi(pricedata_m[precloseidx,]))
   prelow = as.numeric(Lo(pricedata_m[precloseidx,]))
   
@@ -351,11 +362,14 @@ for(day in days[2:length(days)])
   
   upgap = open - prehigh
   downgap = prelow - open
+  
   if(abs(close - open) > 20) resultfirst = c(resultfirst,day)
+  
   if(upgap > 10)
   {
     type = 'up'
-  }else if(downgap > 10)
+  }
+  else if(downgap > 10)
   {
     type = 'down'
   }
