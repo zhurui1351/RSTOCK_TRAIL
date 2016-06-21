@@ -123,14 +123,35 @@ $(document).ready(function () {
 <h2>R Markdown</h2>
 <p>This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <a href="http://rmarkdown.rstudio.com" class="uri">http://rmarkdown.rstudio.com</a>.</p>
 <p>When you click the <strong>Knit</strong> button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:</p>
-<pre><code>## Loading required package: RMySQL</code></pre>
-<pre><code>## Loading required package: DBI</code></pre>
-<pre><code>## Loading required package: lubridate</code></pre>
-<pre><code>## 
-## Attaching package: 'lubridate'</code></pre>
-<pre><code>## The following object is masked from 'package:base':
-## 
-##     date</code></pre>
+<pre class="r"><code>head(cusdt)</code></pre>
+<pre><code>##   序号 首次服务日期 客户姓名        电话 车牌号码 车辆初次登记日期
+## 1    1   2015-12-04   喻永亮 15902893075 川AR7P13       2011.05.06
+## 2    2   2015-12-09   严有建 13281248646 川AL5073             2012
+## 3    3   2015-12-09     刘师 13980767817 川AG7218             2010
+## 4    4   2015-12-10   彭志刚 15928348309 川AG2553             2011
+## 5    5   2015-12-10     易师 15308003737 川AD5350             2010
+## 6    6   2015-12-11   万云良 15882463775 川AE8285         20110308
+##   行驶里程.KM 发动机型号   品牌             车型   保养地点 保养费用
+## 1        &lt;NA&gt;       &lt;NA&gt; 凯马牌     01821365锡柴 剑龙钢材城      200
+## 2        &lt;NA&gt;       &lt;NA&gt; 东风牌 多利卡（道依茨）       &lt;NA&gt;      795
+## 3        &lt;NA&gt;       &lt;NA&gt; 福田牌              143       &lt;NA&gt;      500
+## 4        &lt;NA&gt;       &lt;NA&gt; 凯马牌          大柴498       &lt;NA&gt;      980
+## 5        &lt;NA&gt;       &lt;NA&gt; 东风牌       多利卡玉柴       &lt;NA&gt;     &lt;NA&gt;
+## 6        &lt;NA&gt;       &lt;NA&gt; 东风牌       多利卡玉柴 八益家具城     &lt;NA&gt;
+##   保养周期   机油品牌 保险公司 保险到期日期 车辆类型 保险险种 保险情况
+## 1   一个月 美孚黑霸王     &lt;NA&gt;         &lt;NA&gt;     &lt;NA&gt;     &lt;NA&gt;     &lt;NA&gt;
+## 2     &lt;NA&gt;       美孚     &lt;NA&gt;         &lt;NA&gt;     &lt;NA&gt;     &lt;NA&gt;     9000
+## 3     &lt;NA&gt;       其它     &lt;NA&gt;         &lt;NA&gt;     &lt;NA&gt;     &lt;NA&gt;     7800
+## 4 40天以上       美孚     &lt;NA&gt;         &lt;NA&gt;     &lt;NA&gt;     &lt;NA&gt; 6300永城
+## 5     &lt;NA&gt;       美孚     &lt;NA&gt;         &lt;NA&gt;     &lt;NA&gt;     &lt;NA&gt;     6000
+## 6 40天以上       美孚     &lt;NA&gt;         &lt;NA&gt;     &lt;NA&gt;     &lt;NA&gt;     6800
+##   是否挂靠 挂靠.搬家公司 是否考虑换车
+## 1       否          &lt;NA&gt;         &lt;NA&gt;
+## 2       否          &lt;NA&gt;         &lt;NA&gt;
+## 3       否          &lt;NA&gt;         &lt;NA&gt;
+## 4       否          &lt;NA&gt;           否
+## 5     &lt;NA&gt;          &lt;NA&gt;         &lt;NA&gt;
+## 6       否          &lt;NA&gt;           是</code></pre>
 </div>
 
 
