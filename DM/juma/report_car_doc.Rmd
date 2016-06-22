@@ -1,20 +1,143 @@
 ---
-title: "report_car_doc"
-output: html_document
+title: "卡车医生分析"
+output: word_document
 ---
 
 
-## R Markdown
-
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+### 增长分析
 
 
 ```{r,echo=FALSE,warning=FALSE,message=FALSE}
 source('D:/Rcode/code/RSTOCK_TRAIL/DM/juma/data_clean.R',encoding = 'utf8')
+cus_date = cusdt$首次服务日期
+cus_date_m = strftime(cus_date,format = '%Y-%m')
+cus_dt_m = aggregate(cus_date_m,by = list(cus_date_m),length)
+
+
+cus_date_w = strftime(cus_date,format = '%Y-%W')
+cus_dt_w = aggregate(cus_date_w,by = list(cus_date_w),length)
+#订单
+order_date = orderdt$服务日期
+order_date = as.Date(order_date)
+order_date_m = strftime(order_date,format = '%Y-%m')
+order_dt_m = aggregate(order_date_m,by = list(order_date_m),length)
+
+order_date_w = strftime(order_date,format = '%Y-%W')
+order_dt_w = aggregate(order_date_w,by = list(order_date_w),length)
+
+#线性回归 预测建模
+l = length(cus_dt_m[,2])
+fm = lm(y~x,data.frame(x=1:l,y=cus_dt_m[,2]))
+pr = floor(predict(fm,data.frame(x=1:(l+3))))
+
+#预测客户总量
+pr_cus_num = nrow(cusdt) + sum(pr[(l+1):(l+3)])
 ```
 
-```{r}
-head(cusdt)
+```{r,echo=FALSE,fig.width = 10, fig.height = 5}
+#绘图分析
+plot(order_dt_m[,2],xaxt = 'n',type='o',col='red',xlab='',ylab = '',xlim = range(1,10))
+text(x=1:length(order_dt_m[,2]),y=order_dt_m[,2] + 20,labels=order_dt_m[,2],col = 'red')
+axis(1, 1:nrow(cus_dt_m),cus_dt_m[,1])
+axis(1,(l+1):(l+3),c('2016-07','2016-08','2016-09'))
+
+lines(cus_dt_m[,2],type="o",pch=22,lty=2,col='green')
+text(x=1:length(cus_dt_m[,2]),y=cus_dt_m[,2],labels=cus_dt_m[,2],col='green')
+lines(1:(l+3),y = pr,col = 'black' )
+text(x=1:(l+3),y=pr,labels=pr,col='black')
+
+title(main="增长趋势", col.main="red", font.main=4)
+title(xlab= "日期", col.lab=rgb(0,0.5,0))
+title(ylab= "数量", col.lab=rgb(0,0.5,0))
+legend(1, max(order_dt_m[,2]), c('订单增长','客户增长','预测增长'),bty='n', cex=0.8, col=c('red','green','black'), pch=c(21,22,22), lty=c(1,2,1));
+legend(l, max(order_dt_m[,2]), paste('预测总用户:',pr_cus_num),bty='n');
+```
+
+### 客户及活跃度分析
+
+```{r,echo=FALSE,warning=FALSE,message=FALSE}
+#活跃度，总体分析
+enddate = as.Date('2016-06-20')
+startdate = enddate - 60
+
+subcusnos = na.omit(subset(cusdt,as.Date(首次服务日期) > startdate)$序号) 
+
+subcusnos = na.omit(cusdt$序号) 
+
+
+suborderdt = subset(orderdt,cusno %in% subcusnos)
+
+dt = aggregate(suborderdt[,'cusno'],by=list(suborderdt[,'cusno']),length)
+dt_sum = aggregate(dt[,2],by=list(dt[,2]),length)
+colnames(dt_sum) = c('使用次数','车辆总数')
+
+xx = subset(dt,dt[,2] == 10)
+
+#活跃度细分
+#未满60天
+#45天以内，体验客户
+cusflag = cus_flag_func(cusdt,orderdt,enddate)
+
+dt_cus_flag = aggregate(cusflag$flag,by = list(cusflag$flag),length)
+colnames(dt_cus_flag) = c('客户类别','客户量')
+dt_cus_flag$比例 = dt_cus_flag$客户量/nrow(cusflag)
+
+survrate = subset(dt_cus_flag,客户类别=='留存用户')[,'客户量'] / sum(subset(dt_cus_flag,客户类别 %in% c('留存用户','危险用户','流失体验用户','流失用户'))[,'客户量']) 
+
+```
+
+```{r,echo=FALSE}
+pie(dt_cus_flag[,2],main="客户分布情况",col=rainbow(length(dt_cus_flag[,2])),labels=dt_cus_flag[,1])
+
+```
+
+考虑注册时间已满60天客户的流失率:`r survrate` <p>
+则Q3结束实际存留客户数为: `r survrate` * `r pr_cus_num` =  `r  floor(survrate * pr_cus_num) `
+
+## 加氟活动分析
+```{r,echo=FALSE,message=FALSE,warning=FALSE}
+activitidate = as.Date('2016-06-13')
+s1 = grep('氟',orderdt$服务项目)
+s2 = grep('氟',orderdt$备注)
+s = union(s1,s2)
+
+s = orderdt[s,]
+actorders = subset(s,s$服务日期 >= activitidate)
+actcus = unique(na.omit(actorders$cusno))
+
+preorders = subset(orderdt,orderdt$服务日期 < activitidate)
+
+#老客户激活
+oldcus = subset(cusdt,as.Date(cusdt$首次服务日期) < activitidate )$序号
+reaccesscus = actcus[actcus %in% oldcus]
+reaccesscus_num = length(reaccesscus)
+reaccesscus_rate = round(reaccesscus_num / length(oldcus),3)
+preoldolders = subset(preorders,cusno %in% reaccesscus)
+
+#流失客户激活
+preactdate  = as.Date('2016-06-12')
+cus_flag_preact = cus_flag_func(cusdt,orderdt,preactdate)
+death_cus = subset(cus_flag_preact,flag %in% c('流失用户','流失体验用户'))
+death_cus_num = nrow(death_cus)
+
+death_to_live = reaccesscus[which(reaccesscus %in% death_cus$cusno)]
+death_to_live_num = length(death_to_live)
+
+predt = aggregate(as.Date(preoldolders[,c('服务日期')]),by = list(preoldolders$cusno),max)
+colnames(predt) = c('客户号','最近访问日期')
+predt$距离最近未访问天数 = activitidate - predt$最近访问日期
+
+#death_to_live = subset(predt,距离最近未访问天数 > 60)
+#真实拉新
+newcus = actcus[!(actcus %in% oldcus)]
+newcus_num = length(newcus)
+```
+```{r,echo=FALSE,fig.width = 10, fig.height = 5}
+op = par(mfrow=c(1,2))
+barplot(c(newcus_num,reaccesscus_num),main="拉新分析", xlab="客户类型",ylab="数量",names.arg=c(paste('新客户',newcus_num),paste('回头客',reaccesscus_num)),border="blue",col=c('red','yellow'))
+legend(0, newcus_num ,paste('回头率:',reaccesscus_rate), cex=0.8);
+
+barplot(matrix(c(death_to_live_num,death_cus_num-death_to_live_num)), col = c("lightblue", "mistyrose") ,legend=c(paste('挽回客户',death_to_live_num),paste('流失客户',death_cus_num)))
+title('唤醒分析')
+par(op)
 ```
