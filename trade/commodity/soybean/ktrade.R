@@ -13,6 +13,7 @@ doubo_day = to_day(doubo_m)
 douyou_day = to_day(douyou_m)
 corp_day = to_day(corp_m)
 
+#对齐开盘时间
 index(doubo_m) = index(doubo_m) - 60
 index(douyou_m) = index(douyou_m) - 60
 index(corp_m) = index(corp_m) - 60
@@ -320,11 +321,11 @@ sum(subprofits[subprofits<0])
 #开盘n分钟跳空,大阴大阳
 #考虑每个开盘瞬间的跳空情况，相关市场跳空情况，跳空后第一根k线涨跌情况，不同时间框架下的
 #跳空情况，判定条件是到一定时期收盘是否会有关闭缺口的迹象
-pricedata_m = dou1_15m
+pricedata_m = corp_15m
 pricedata_m$smashort = lag(SMA(Cl(pricedata_m),3),1)
 pricedata_m$smalong= lag(SMA(Cl(pricedata_m),10),1)
 
-pricedata = dou1_day
+pricedata = corp_day
 days = as.character(unique(as.Date(index(pricedata))))
 alltime = index(pricedata_m)
 time = '09:00:00'
@@ -365,11 +366,11 @@ for(day in days[2:length(days)])
   
   if(abs(close - open) > 20) resultfirst = c(resultfirst,day)
   
-  if(upgap > 10)
+  if(upgap > 0)
   {
     type = 'up'
   }
-  else if(downgap > 10)
+  else if(downgap > 0)
   {
     type = 'down'
   }
@@ -380,9 +381,10 @@ for(day in days[2:length(days)])
   }
   
   votile = close - open
-  r = data.frame(day,type =type,votile = votile,smalong=smalong,smashort=smashort,signvotile = sign(votile),signsma=sign(smashort-smalong),preday_votile=sign(preday_votile))
+  r = data.frame(day,type =type,votile = votile,smalong=smalong,smashort=smashort,signvotile = sign(votile),signsma=sign(smashort-smalong))
   result = rbind(result,r)
 }
+
 
 downset = subset(result,signsma =='-1')
 sumdown = sum(downset$votile)

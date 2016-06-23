@@ -1,4 +1,4 @@
-rm(list = ls(all=T))
+#rm(list = ls(all=T))
 require(RMySQL)
 require(lubridate)
 source('D:/Rcode/code/RSTOCK_TRAIL/DM/juma/car_doc_func.R',encoding = 'utf8')

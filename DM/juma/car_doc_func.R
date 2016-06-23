@@ -59,8 +59,19 @@ cus_flag_func = function(cusdt_all,orderdt_all,enddate)
     {
       flag = NA
     }
-    r= data.frame(cusno = no,flag = flag)
+    r= data.frame(cusno = no,flag = flag,lastdate=lastdate)
     cusflag = rbind(cusflag,r)
   }
   return(cusflag)
+}
+
+survival_rate = function(cusflag)
+{
+  dt_cus_flag = aggregate(cusflag$flag,by = list(cusflag$flag),length)
+  colnames(dt_cus_flag) = c('客户类别','客户量')
+  dt_cus_flag$比例 = dt_cus_flag$客户量/nrow(cusflag)
+  
+  survrate = subset(dt_cus_flag,客户类别=='留存用户')[,'客户量'] / sum(subset(dt_cus_flag,客户类别 %in% c('留存用户','危险用户','流失体验用户','流失用户'))[,'客户量']) 
+  return(survrate)
+  
 }

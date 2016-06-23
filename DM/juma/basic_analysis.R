@@ -54,14 +54,34 @@ title(ylab= "数量", col.lab=rgb(0,0.5,0))
 legend(1, max(order_dt_m[,2]), c('订单增长','客户增长','预测增长'),bty='n', cex=0.8, col=c('red','green','black'), pch=c(21,22,22), lty=c(1,2,1));
 legend(l, max(order_dt_m[,2]), paste('预测总用户:',pr_cus_num),bty='n');
 
+#留存率趋势,每个月的客户的留存情况
+
+sur_date = as.Date(c('2016-02-29','2016-03-31','2016-04-30','2016-05-31','2016-06-20'))
+#总留存
+surv_rates = unlist( lapply(sur_date, function(x,ulist,olist){
+  cusflag = cus_flag_func(ulist,olist,x)
+  rate = survival_rate(cusflag)
+  return(rate)
+  },cusdt,orderdt) )
+
+plot(1:length(surv_rates),surv_rates,xaxt = 'n',type='o',col='red',xlab='',ylab = '')
+text(x=1:length(surv_rates),y=surv_rates,labels=round(surv_rates,3),col = 'red')
+axis(1, 1:length(surv_rates),sur_date)
+
+
 #服务车辆车次的分布
 cars_num = data.frame()
 cars = unique(suborders$服务车编号)
 for(car in cars)
 {
-  dates = subset(suborders,服务车编号 == car)[,'服务日期']
+  xorders = subset(suborders,服务车编号 == car)
+  
+  x = union(grep('氟',xorders$服务项目),grep('氟',xorders$备注))
+  
+  dates = xorders[,'服务日期']
   dates_num = length(unique(dates))
-  r = data.frame(车牌=car,出车=dates_num)
+  
+  r = data.frame(车牌=car,出车=dates_num,加氟活动=length(x),其他服务=nrow(xorders)-length(x),平均单=nrow(xorders)/dates_num)
   cars_num = rbind(cars_num,r)
 }
 cars_num
@@ -125,7 +145,8 @@ dt_cus_flag = aggregate(cusflag$flag,by = list(cusflag$flag),length)
 colnames(dt_cus_flag) = c('客户类别','客户量')
 dt_cus_flag$比例 = dt_cus_flag$客户量/nrow(cusflag)
 
-survrate = subset(dt_cus_flag,客户类别=='留存用户')[,'客户量'] / sum(subset(dt_cus_flag,客户类别 %in% c('留存用户','危险用户','流失体验用户','流失用户'))[,'客户量']) 
+survrate = survival_rate(cusflag)
+  
 pie(dt_cus_flag[,2],main="客户分布情况",col=rainbow(length(dt_cus_flag[,2])),labels=dt_cus_flag[,1])
 pr_cus_surv = floor(survrate * pr_cus_num) 
 
@@ -181,3 +202,15 @@ aggregate(neworders$cusno,by = list(neworders$cusno),length)
 
 oldorders = subset(actorders,cusno %in% oldcus)
 aggregate(oldorders$cusno,by = list(oldorders$cusno),length)
+
+
+
+#提取流失客户
+
+death_cus_all = subset(cusflag,flag %in% c('流失用户','流失体验用户'))
+cuslist = merge(death_cus_all,cusdt[,c('序号','客户姓名','电话','车牌号码')],by.x = 'cusno',by.y = '序号')
+
+cuslist = cuslist[,c('客户姓名','电话','车牌号码','lastdate')]
+colnames(cuslist) = c('客户姓名','电话','车牌号码','最近一次使用日期')
+#write.csv(cuslist,'d:/流失客户名单.csv',row.names = F)
+
