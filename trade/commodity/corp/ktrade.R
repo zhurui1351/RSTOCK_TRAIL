@@ -71,10 +71,10 @@ for(day in days[2:length(days)])
   upgap = open - prehigh
   downgap = prelow - open
   
-  stop = 15
-  trail_profit = 5
+  stop = 20
+  trail_profit = 10
 
-  if(upgap > 0)
+  if(downgap > 0)
   {
     type = 'up'
     for(i in 1 : nrow(daydata))
@@ -98,7 +98,7 @@ for(day in days[2:length(days)])
       }
     }
   }
-  else if(downgap > 0)
+  else if(upgap > 0)
   {
     type = 'down'
     for(i in 1 : nrow(daydata))
@@ -133,3 +133,6 @@ for(day in days[2:length(days)])
  
 }
 
+result$profit = ifelse(result$type == 'up',result$out-result$open,result$open-result$out)
+profit = result$profit
+length(profit[profit>0]) / length(profit)

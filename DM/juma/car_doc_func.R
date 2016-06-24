@@ -75,3 +75,37 @@ survival_rate = function(cusflag)
   return(survrate)
   
 }
+
+active_rate = function(cusdt_all,orderdt_all,days=30,enddate)
+{
+  cusdt = subset(cusdt_all,首次服务日期 <= enddate)
+  orderdt = subset(orderdt_all,服务日期 <= enddate)
+  cus_flag = data.frame()
+  cusnos = na.omit(cusdt$序号)
+  for(no in cusnos)
+  {
+    cusorders = subset(orderdt,orderdt$cusno == no)
+    if(nrow(cusorders) == 0) next
+    else if(nrow(cusorders) == 1) {flag = 'no'}
+    else
+    {
+      dates = as.Date(cusorders$服务日期[order(as.Date(cusorders$服务日期),decreasing = F)]) 
+      gap = as.numeric(dates[2] - dates[1])
+      if(gap <= days) 
+      {
+        flag = 'yes'
+      }
+      else
+      {
+        flag = 'no'
+      }
+    }
+    
+    r = data.frame(cusno=no,flag=flag)
+    cus_flag = rbind(cus_flag,r)
+  }
+  
+  rate = subset(cus_flag,cus_flag[,2] == 'yes')
+  rate = nrow(rate) / nrow(cus_flag)
+  return(rate)
+}
