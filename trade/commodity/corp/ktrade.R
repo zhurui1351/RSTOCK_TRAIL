@@ -1,4 +1,4 @@
-rm(list=ls(all=T))
+#rm(list=ls(all=T))
 source('D:/Rcode/code/RSTOCK_TRAIL/globaltool/include.R',encoding='utf8')
 source('D:/Rcode/code/RSTOCK_TRAIL/globaltool/readdata.R',encoding='utf8')
 sourceDir('D:/Rcode/code/RSTOCK_TRAIL/trade/eventAnalysis',encoding='utf8')
@@ -28,11 +28,11 @@ dou1_15m = to_minutes(dou1_m,k=15)
 #开盘n分钟跳空,大阴大阳
 #考虑每个开盘瞬间的跳空情况，相关市场跳空情况，跳空后第一根k线涨跌情况，不同时间框架下的
 #跳空情况，判定条件是到一定时期收盘是否会有关闭缺口的迹象
-pricedata_m = corp_15m
+pricedata_m = dou1_15m
 pricedata_m$smashort = lag(SMA(Cl(pricedata_m),3),1)
 pricedata_m$smalong= lag(SMA(Cl(pricedata_m),10),1)
 
-pricedata = corp_day
+pricedata = dou1_day
 days = as.character(unique(as.Date(index(pricedata))))
 alltime = index(pricedata_m)
 time = '09:00:00'
@@ -72,7 +72,7 @@ for(day in days[2:length(days)])
   downgap = prelow - open
   
   stop = 150
-  trail_profit = 5
+  trail_profit = 10
 
   if(downgap > 5)
   {

@@ -227,9 +227,34 @@ cus_rate = survival_rate(cus_flag)
 increase_target = 3500 - nrow(cusdt)
 reaccess_target = nrow(cusdt) * 0.4 
 
+#提前一个月的用户进行预估
 active_rate = active_rate(cusdt,orderdt,30,as.Date('2016-05-24'))
 active_target = increase_target * active_rate
 
 
 
 lack_cars = (increase_target + reaccess_target +active_target) / (26 * service_num)
+
+current_ability = 9 * 10 * 26
+increase_target_change = (current_ability - reaccess_target) / 1.3
+
+## 周报数据
+start = as.Date('2016-06-17')
+end = as.Date('2016-06-23')
+week_days = seq(start,end,by = 1)
+week_r = data.frame()
+for(i in 1:length(week_days))
+{
+  day = week_days[i]
+  print(day)
+  order_day = subset(orderdt,服务日期 == day)
+  cus_day = subset(cusdt,首次服务日期 == day)
+  
+  num_cars = length(unique(na.omit(order_day$服务车编号)))
+  num_order = nrow(order_day)
+  num_cus = nrow(cus_day)
+  
+  r = data.frame(日期=as.character(day),投入车次=num_cars,服务单量=num_order,拓客量=num_cus)
+  week_r = rbind(week_r,r)
+  
+}
