@@ -202,7 +202,7 @@ colnames(cuslist) = c('客户姓名','电话','车牌号码','最近一次使用
 #服务能力预估
 
 #服务车辆车次的分布
-car_orders = subset(orderdt,服务日期 >= as.Date('2016-06-13') & 服务日期 <= as.Date('2016-06-23') )
+car_orders = subset(orderdt,服务日期 >= as.Date('2016-05-01') & 服务日期 <= as.Date('2016-05-31') )
 cars_num = data.frame()
 cars = unique(car_orders$服务车编号)
 for(car in cars)
@@ -239,8 +239,8 @@ current_ability = 9 * 10 * 26
 increase_target_change = (current_ability - reaccess_target) / 1.3
 
 ## 周报数据
-start = as.Date('2016-06-17')
-end = as.Date('2016-06-23')
+start = as.Date('2016-05-01')
+end = as.Date('2016-05-31')
 week_days = seq(start,end,by = 1)
 week_r = data.frame()
 for(i in 1:length(week_days))

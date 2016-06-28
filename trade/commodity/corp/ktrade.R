@@ -1,4 +1,4 @@
-#rm(list=ls(all=T))
+rm(list=ls(all=T))
 source('D:/Rcode/code/RSTOCK_TRAIL/globaltool/include.R',encoding='utf8')
 source('D:/Rcode/code/RSTOCK_TRAIL/globaltool/readdata.R',encoding='utf8')
 sourceDir('D:/Rcode/code/RSTOCK_TRAIL/trade/eventAnalysis',encoding='utf8')
