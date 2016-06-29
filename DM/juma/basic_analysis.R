@@ -225,7 +225,7 @@ cus_flag = cus_flag_func(cusdt,orderdt,as.Date('2016-06-23'))
 cus_rate = survival_rate(cus_flag)
 
 increase_target = 3500 - nrow(cusdt)
-reaccess_target = nrow(cusdt) * 0.4 
+reaccess_target = nrow(cusdt) * 0.45 
 
 #提前一个月的用户进行预估
 active_rate = active_rate(cusdt,orderdt,30,as.Date('2016-05-24'))
@@ -235,7 +235,7 @@ active_target = increase_target * active_rate
 
 lack_cars = (increase_target + reaccess_target +active_target) / (26 * service_num)
 
-current_ability = 9 * 10 * 26
+current_ability = 9 * 8 * 26
 increase_target_change = (current_ability - reaccess_target) / 1.3
 
 ## 周报数据
