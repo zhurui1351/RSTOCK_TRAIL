@@ -28,16 +28,17 @@ dou1_15m = to_minutes(dou1_m,k=15)
 #开盘n分钟跳空,大阴大阳
 #考虑每个开盘瞬间的跳空情况，相关市场跳空情况，跳空后第一根k线涨跌情况，不同时间框架下的
 #跳空情况，判定条件是到一定时期收盘是否会有关闭缺口的迹象
-pricedata_m = dou1_15m
+pricedata_m = corp_15m
 pricedata_m$smashort = lag(SMA(Cl(pricedata_m),3),1)
 pricedata_m$smalong= lag(SMA(Cl(pricedata_m),10),1)
 
-pricedata = dou1_day
+pricedata = corp_day
 days = as.character(unique(as.Date(index(pricedata))))
 alltime = index(pricedata_m)
 time = '09:00:00'
-time1 = '11:30:00'
-
+time1 = '15:00:00'
+stop = 25
+trail_profit = 10
 result = data.frame()
 for(day in days[2:length(days)])
 {
@@ -58,6 +59,7 @@ for(day in days[2:length(days)])
   preday_votile = as.numeric(Cl(pricedata[preday]) - Op(pricedata[preday]))
   
   open = as.numeric(Op(pricedata_m[idx,]))
+  enter = as.numeric(Op(daydata[1,]))
   close = as.numeric(Cl(pricedata_m[idx,]))
   starthigh =  as.numeric(Hi(pricedata_m[idx,]))
   startlow =  as.numeric(Lo(pricedata_m[idx,]))
@@ -71,10 +73,9 @@ for(day in days[2:length(days)])
   upgap = open - prehigh
   downgap = prelow - open
   
-  stop = 150
-  trail_profit = 10
+  flag = as.numeric(Cl(daydata[1,])) - as.numeric(Op(daydata[1,]))
 
-  if(downgap > 5)
+  if(downgap > 10)
   {
     type = 'up'
     for(i in 1 : nrow(daydata))
@@ -82,23 +83,28 @@ for(day in days[2:length(days)])
       if(i == nrow(daydata))
       {
         out = as.numeric(Cl(daydata[i,]))
+        outtime = index(daydata[i,])
         break
       }
       s_low = as.numeric(Lo(daydata[i,]))
       s_high = as.numeric(Hi(daydata[i,]))
-      if((open-s_low) > stop)
+      if((enter-s_low) > stop)
       {
-        out = open - stop
+        out = enter - stop
+        outtime = index(daydata[i,])
+        
         break
       }
-      if((s_high - open) > trail_profit)
+      if((s_high - enter) > trail_profit)
       {
-        out = open + trail_profit
+        out = enter + trail_profit
+        outtime = index(daydata[i,])
+        
         break
       }
     }
   }
-  else if(upgap > 5)
+  else if(upgap > 10)
   {
     type = 'down'
     for(i in 1 : nrow(daydata))
@@ -106,18 +112,24 @@ for(day in days[2:length(days)])
       if(i == nrow(daydata))
       {
         out = as.numeric(Cl(daydata[i,]))
+        outtime = index(daydata[i,])
+        
         break
       }
       s_low = as.numeric(Lo(daydata[i,]))
       s_high = as.numeric(Hi(daydata[i,]))
-      if((s_high - open) > stop)
+      if((s_high - enter) > stop)
       {
-        out = open + stop
+        out = enter + stop
+        outtime = index(daydata[i,])
+        
         break
       }
-      if((open-s_low) > trail_profit)
+      if((enter-s_low) > trail_profit)
       {
-        out = open - trail_profit
+        out = enter - trail_profit
+        outtime = index(daydata[i,])
+        
         break
       }
     }
@@ -128,7 +140,7 @@ for(day in days[2:length(days)])
     next
   }
   
-  r = data.frame(day,type =type,open=open,out=out)
+  r = data.frame(day,type =type,open=enter,out=out,outtime = outtime,flag=flag)
   result = rbind(result,r)
  
 }
@@ -136,3 +148,16 @@ for(day in days[2:length(days)])
 result$profit = ifelse(result$type == 'up',result$out-result$open,result$open-result$out)
 profit = result$profit
 length(profit[profit>0]) / length(profit)
+
+result$flag = ifelse(result$flag >0,'1',ifelse(result$flag<0,'-1','0'))
+result$profit = ifelse(result$profit >0,'1','-1')
+
+i = which(result$flag == 0)
+result = result[-i,]
+
+ct <- rpart.control(xval=10, minsplit=20, cp=0.001)  
+fit = rpart(profit ~ type + flag,data = result)
+rpart.plot(fit)
+pr = predict(fit,type='class')
+pt = table(result$profit,pr)
+precison = (pt[1,1] + pt[2,2]) / sum(pt)
