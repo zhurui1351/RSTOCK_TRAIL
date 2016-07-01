@@ -58,7 +58,7 @@ legend(l, max(order_dt_m[,2]), paste('预测总用户:',pr_cus_num),bty='n');
 
 ```{r,echo=FALSE,warning=FALSE,message=FALSE}
 #活跃度，总体分析
-enddate = as.Date('2016-06-23')
+enddate = as.Date('2016-06-30')
 startdate = enddate - 60
 
 subcusnos = na.omit(subset(cusdt,as.Date(首次服务日期) > startdate)$序号) 
@@ -145,13 +145,13 @@ title('唤醒分析')
 par(op)
 ```
 
-实际新增客户为196户，实际唤醒流失客户为28户，唤醒率为 0.06,客户流失严重，而且重新激活的可能性较低
+实际新增客户为286户，实际唤醒流失客户为39户，唤醒率为 0.08,客户流失严重，而且重新激活的可能性较低
 
 ### 服务能力估计
 
 ```{r,echo=FALSE}
 #服务车辆车次的分布
-car_orders = subset(orderdt,服务日期 >= as.Date('2016-06-13') & 服务日期 <= as.Date('2016-06-23') )
+car_orders = subset(orderdt,服务日期 >= as.Date('2016-06-13') & 服务日期 <= as.Date('2016-06-30') )
 cars_num = data.frame()
 cars = unique(car_orders$服务车编号)
 for(car in cars)
@@ -173,7 +173,7 @@ service_num = floor(sum(cars_num[,'总单量']) /  sum(cars_num[,'出车']))
 
 
 ```{r,echo=FALSE}
-cus_flag = cus_flag_func(cusdt,orderdt,as.Date('2016-06-23'))
+cus_flag = cus_flag_func(cusdt,orderdt,as.Date('2016-06-30'))
 cus_rate = survival_rate(cus_flag)
 increase_target = 3500 - nrow(cusdt)
 reaccess_target = nrow(cusdt) * 0.45

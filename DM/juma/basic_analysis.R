@@ -56,7 +56,7 @@ legend(l, max(order_dt_m[,2]), paste('预测总用户:',pr_cus_num),bty='n');
 
 #留存率趋势,每个月的客户的留存情况
 
-sur_date = as.Date(c('2016-02-29','2016-03-31','2016-04-30','2016-05-31','2016-06-23'))
+sur_date = as.Date(c('2016-02-29','2016-03-31','2016-04-30','2016-05-31','2016-06-30'))
 #总留存
 surv_rates = unlist( lapply(sur_date, function(x,ulist,olist){
   cusflag = cus_flag_func(ulist,olist,x)
@@ -101,11 +101,11 @@ for(a in address)
     mathed = F
   }
 }
-aggregate(flagwords,by=list(flagwords),length)
+#aggregate(flagwords,by=list(flagwords),length)
 
 
 #活跃度，总体分析
-enddate = as.Date('2016-06-23')
+enddate = as.Date('2016-06-30')
 startdate = enddate - 60
 
 subcusnos = na.omit(subset(cusdt,as.Date(首次服务日期) > startdate)$序号) 
@@ -202,7 +202,7 @@ colnames(cuslist) = c('客户姓名','电话','车牌号码','最近一次使用
 #服务能力预估
 
 #服务车辆车次的分布
-car_orders = subset(orderdt,服务日期 >= as.Date('2016-05-01') & 服务日期 <= as.Date('2016-05-31') )
+car_orders = subset(orderdt,服务日期 >= as.Date('2016-06-13') & 服务日期 <= as.Date('2016-06-30') )
 cars_num = data.frame()
 cars = unique(car_orders$服务车编号)
 for(car in cars)
@@ -221,19 +221,19 @@ for(car in cars)
 service_num = floor(sum(cars_num[,'总单量']) /  sum(cars_num[,'出车']))
 
 #服务缺口
-cus_flag = cus_flag_func(cusdt,orderdt,as.Date('2016-06-23'))
+cus_flag = cus_flag_func(cusdt,orderdt,as.Date('2016-06-30'))
 cus_rate = survival_rate(cus_flag)
 
 increase_target = 3500 - nrow(cusdt)
 reaccess_target = nrow(cusdt) * 0.45 
 
 #提前一个月的用户进行预估
-active_rate = active_rate(cusdt,orderdt,30,as.Date('2016-05-24'))
+active_rate = active_rate(cusdt,orderdt,30,as.Date('2016-05-31'))
 active_target = increase_target * active_rate
 
 
 
-lack_cars = (increase_target + reaccess_target +active_target) / (26 * service_num)
+lack_cars = (increase_target + reaccess_target +active_target) / (26 * 9)
 
 current_ability = 9 * 8 * 26
 increase_target_change = (current_ability - reaccess_target) / 1.3
@@ -246,7 +246,7 @@ week_r = data.frame()
 for(i in 1:length(week_days))
 {
   day = week_days[i]
-  print(day)
+ # print(day)
   order_day = subset(orderdt,服务日期 == day)
   cus_day = subset(cusdt,首次服务日期 == day)
   

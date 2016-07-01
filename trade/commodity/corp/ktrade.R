@@ -37,7 +37,7 @@ days = as.character(unique(as.Date(index(pricedata))))
 alltime = index(pricedata_m)
 time = '09:00:00'
 time1 = '15:00:00'
-stop = 25
+stop = 15
 trail_profit = 10
 result = data.frame()
 for(day in days[2:length(days)])
@@ -64,6 +64,9 @@ for(day in days[2:length(days)])
   starthigh =  as.numeric(Hi(pricedata_m[idx,]))
   startlow =  as.numeric(Lo(pricedata_m[idx,]))
   
+  high = as.numeric(Hi(pricedata[day]))
+  low = as.numeric(Lo(pricedata[day]))
+  
   prehigh = as.numeric(Hi(pricedata_m[precloseidx,]))
   prelow = as.numeric(Lo(pricedata_m[precloseidx,]))
   
@@ -75,7 +78,7 @@ for(day in days[2:length(days)])
   
   flag = as.numeric(Cl(daydata[1,])) - as.numeric(Op(daydata[1,]))
 
-  if(downgap > 10)
+  if(downgap > 5)
   {
     type = 'up'
     for(i in 1 : nrow(daydata))
@@ -104,7 +107,7 @@ for(day in days[2:length(days)])
       }
     }
   }
-  else if(upgap > 10)
+  else if(upgap > 5)
   {
     type = 'down'
     for(i in 1 : nrow(daydata))
@@ -140,7 +143,7 @@ for(day in days[2:length(days)])
     next
   }
   
-  r = data.frame(day,type =type,open=enter,out=out,outtime = outtime,flag=flag)
+  r = data.frame(day,type =type,open=enter,out=out,outtime = outtime,high=high-open,low=low-open)
   result = rbind(result,r)
  
 }
