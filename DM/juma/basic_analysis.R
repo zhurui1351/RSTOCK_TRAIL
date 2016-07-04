@@ -172,6 +172,11 @@ predt$距离最近未访问天数 = activitidate - predt$最近访问日期
 #真实拉新
 newcus = actcus[!(actcus %in% oldcus)]
 newcus_num = length(newcus)
+
+#拉新激活
+new_active_order = subset(orderdt,cusno %in% newcus)
+new_active_order_s = aggregate(new_active_order$cusno,by=list(new_active_order$cusno),length)
+new_active_order_n=nrow(subset(new_active_order_s,new_active_order_s[,2] > 1))
 # 绘图
 op = par(mfrow=c(1,2))
 barplot(c(newcus_num,reaccesscus_num),main="拉新分析",names.arg=c(paste('新客户',newcus_num),paste('回头客',reaccesscus_num)),
@@ -202,7 +207,7 @@ colnames(cuslist) = c('客户姓名','电话','车牌号码','最近一次使用
 #服务能力预估
 
 #服务车辆车次的分布
-car_orders = subset(orderdt,服务日期 >= as.Date('2016-06-13') & 服务日期 <= as.Date('2016-06-30') )
+car_orders = subset(orderdt,服务日期 >= as.Date('2016-06-01') & 服务日期 <= as.Date('2016-06-30') )
 cars_num = data.frame()
 cars = unique(car_orders$服务车编号)
 for(car in cars)
@@ -214,7 +219,9 @@ for(car in cars)
   dates = xorders[,'服务日期']
   dates_num = length(unique(dates))
   
-  r = data.frame(车牌=car,出车=dates_num,加氟活动=length(x),其他服务=nrow(xorders)-length(x),总单量=nrow(xorders),平均单=nrow(xorders)/dates_num)
+  total_fee = sum(xorders$收费合计,na.rm=T)
+  mean_fee = mean(xorders$收费合计,na.rm = T)
+  r = data.frame(车牌=car,出车=dates_num,加氟活动=length(x),其他服务=nrow(xorders)-length(x),总单量=nrow(xorders),平均单量=nrow(xorders)/dates_num,总流水=total_fee,客单价=mean_fee)
   cars_num = rbind(cars_num,r)
 }
 #cars_num
@@ -239,9 +246,9 @@ current_ability = 9 * 8 * 26
 increase_target_change = (current_ability - reaccess_target) / 1.3
 
 ## 周报数据
-start = as.Date('2016-05-01')
-end = as.Date('2016-05-31')
-week_days = seq(start,end,by = 1)
+start = as.Date('2016-03-18')
+end = as.Date('2016-06-30')
+week_days = seq(start,end,by = 7)
 week_r = data.frame()
 for(i in 1:length(week_days))
 {
@@ -258,3 +265,22 @@ for(i in 1:length(week_days))
   week_r = rbind(week_r,r)
   
 }
+
+#单车分析
+
+week_days_i = c(week_days,as.Date('2016-06-30'))
+s1 = subset(orderdt,服务日期 >= as.Date('2016-06-13') & 收费合计 != 8 & 收费合计 > 0)
+s2 = subset(orderdt,服务日期 < as.Date('2016-06-13') & 收费合计 > 0)
+s = rbind(s1,s2)
+r = data.frame()
+for(w in 2:length(week_days_i))
+{
+  start = week_days_i[w-1]
+  end = week_days_i[w]
+  sorder = subset(s,服务日期>=start & 服务日期<end)
+  sum_fee = sum(sorder$收费合计,na.rm=T)
+  sum_mean = mean(sorder$收费合计,na.rm=T)
+  num_car = length(unique(sorder$服务车编号))
+  r1 = data.frame(日期=start,单车流水 = sum_fee/num_car,客单价=sum_mean)  
+  r = rbind(r,r1)
+  }
