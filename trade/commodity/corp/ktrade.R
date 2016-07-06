@@ -59,7 +59,7 @@ for(day in days[2:length(days)])
   preday_votile = as.numeric(Cl(pricedata[preday]) - Op(pricedata[preday]))
   
   open = as.numeric(Op(pricedata_m[idx,]))
-  enter = as.numeric(Op(daydata[1,]))
+  enter = as.numeric(Op(daydata[2,]))
   close = as.numeric(Cl(pricedata_m[idx,]))
   starthigh =  as.numeric(Hi(pricedata_m[idx,]))
   startlow =  as.numeric(Lo(pricedata_m[idx,]))
@@ -81,7 +81,7 @@ for(day in days[2:length(days)])
   if(downgap > 5)
   {
     type = 'up'
-    for(i in 1 : nrow(daydata))
+    for(i in 2 : nrow(daydata))
     {
       if(i == nrow(daydata))
       {
@@ -110,7 +110,7 @@ for(day in days[2:length(days)])
   else if(upgap > 5)
   {
     type = 'down'
-    for(i in 1 : nrow(daydata))
+    for(i in 2 : nrow(daydata))
     {
       if(i == nrow(daydata))
       {
@@ -143,7 +143,7 @@ for(day in days[2:length(days)])
     next
   }
   
-  r = data.frame(day,type =type,open=enter,out=out,outtime = outtime,high=high-open,low=low-open)
+  r = data.frame(day,type =type,flag=flag,open=enter,out=out,outtime = outtime,high=high-open,low=low-open)
   result = rbind(result,r)
  
 }
@@ -158,8 +158,10 @@ result$profit = ifelse(result$profit >0,'1','-1')
 i = which(result$flag == 0)
 result = result[-i,]
 
+result$profit = as.factor(result$profit)
+result$type = as.factor(result$type)
 ct <- rpart.control(xval=10, minsplit=20, cp=0.001)  
-fit = rpart(profit ~ type + flag,data = result)
+fit = randomForest(profit ~ type + flag,data = result)
 rpart.plot(fit)
 pr = predict(fit,type='class')
 pt = table(result$profit,pr)

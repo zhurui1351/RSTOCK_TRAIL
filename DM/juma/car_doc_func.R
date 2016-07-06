@@ -109,3 +109,27 @@ active_rate = function(cusdt_all,orderdt_all,days=30,enddate)
   rate = nrow(rate) / nrow(cus_flag)
   return(rate)
 }
+
+new_num_period = function(cusdt_all,start,end)
+{
+  n_cus = subset(cusdt_all,首次服务日期 >= start & 首次服务日期<=end)
+  num = length(unique(n_cus$序号))
+  return(num)
+}
+
+relive_num_period = function(cusdt_all,orderdt_all,start,end)
+{
+  n_order = subset(orderdt_all,服务日期 >= start & 服务日期<=end)
+  
+  actcus = unique(na.omit(n_order$cusno))
+  
+  oldcus = subset(cusdt_all,as.Date(cusdt$首次服务日期) < start )$序号
+  reaccesscus = actcus[actcus %in% oldcus]
+  
+  cus_flag_preact = cus_flag_func(cusdt_all,orderdt_all,start)
+  death_cus = subset(cus_flag_preact,flag %in% c('流失用户','流失体验用户'))
+  
+  death_to_live = reaccesscus[which(reaccesscus %in% death_cus$cusno)]
+  death_to_live_num = length(death_to_live)
+  return(death_to_live_num)
+}

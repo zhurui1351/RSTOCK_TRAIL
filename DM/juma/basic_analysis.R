@@ -207,7 +207,7 @@ colnames(cuslist) = c('客户姓名','电话','车牌号码','最近一次使用
 #服务能力预估
 
 #服务车辆车次的分布
-car_orders = subset(orderdt,服务日期 >= as.Date('2016-06-01') & 服务日期 <= as.Date('2016-06-30') )
+car_orders = subset(orderdt,服务日期 >= as.Date('2016-06-13') & 服务日期 <= as.Date('2016-06-30') )
 cars_num = data.frame()
 cars = unique(car_orders$服务车编号)
 for(car in cars)
@@ -232,7 +232,7 @@ cus_flag = cus_flag_func(cusdt,orderdt,as.Date('2016-06-30'))
 cus_rate = survival_rate(cus_flag)
 
 increase_target = 3500 - nrow(cusdt)
-reaccess_target = nrow(cusdt) * 0.45 
+reaccess_target = nrow(subset(cusdt,首次服务日期<= as.Date('2016-06-30'))) * 0.45 
 
 #提前一个月的用户进行预估
 active_rate = active_rate(cusdt,orderdt,30,as.Date('2016-05-31'))
@@ -242,7 +242,7 @@ active_target = increase_target * active_rate
 
 lack_cars = (increase_target + reaccess_target +active_target) / (26 * 9)
 
-current_ability = 9 * 8 * 26
+current_ability = 9 * 7 * 26
 increase_target_change = (current_ability - reaccess_target) / 1.3
 
 ## 周报数据
