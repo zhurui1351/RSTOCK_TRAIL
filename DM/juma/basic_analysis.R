@@ -207,7 +207,7 @@ colnames(cuslist) = c('客户姓名','电话','车牌号码','最近一次使用
 #服务能力预估
 
 #服务车辆车次的分布
-car_orders = subset(orderdt,服务日期 >= as.Date('2016-06-13') & 服务日期 <= as.Date('2016-06-30') )
+car_orders = subset(orderdt,服务日期 >= as.Date('2016-06-01') & 服务日期 <= as.Date('2016-06-12') )
 cars_num = data.frame()
 cars = unique(car_orders$服务车编号)
 for(car in cars)
@@ -284,3 +284,47 @@ for(w in 2:length(week_days_i))
   r1 = data.frame(日期=start,单车流水 = sum_fee/num_car,客单价=sum_mean)  
   r = rbind(r,r1)
   }
+
+#技师分析
+
+car_code = c('川A0G53H','川A4Z68L','川A4Q85V')
+start = as.Date('2016-06-01')
+end = as.Date('2016-06-30')
+
+driver_order = subset(orderdt,服务车编号 %in% car_code & 服务日期>=start & 服务日期<=end)
+
+car_fee_dt = data.frame()
+
+for(car in car_code)
+{
+   s_drive = subset(driver_order,服务车编号 == car)
+   drive_cus = subset(cusdt,序号 %in% unique(s_drive$cusno))
+   new_cus = subset(drive_cus,首次服务日期>=start)
+   old_cus =  subset(drive_cus,首次服务日期 < start)
+   
+   new_cus_num = nrow(new_cus)
+   old_cus_num = nrow(old_cus)
+   
+   old_order = subset(s_drive,cusno %in% old_cus$序号)
+   new_order = subset(s_drive,cusno %in% new_cus$序号)
+   
+   old_order_num = nrow(old_order)
+   new_order_num= nrow(new_order)
+   
+   old_order_fee = sum(old_order$收费合计,na.rm=T)
+   old_order_mean = mean(old_order$收费合计,na.rm = T)
+   
+   new_order_fee = sum(new_order$收费合计,na.rm = T)
+   new_order_mean = mean(new_order$收费合计,na.rm=T)
+   
+   day_new_order  = aggregate(new_order$服务日期,by = list(new_order$服务日期),length)
+   
+   n1 = nrow(subset(day_new_order,day_new_order[,2] >=4 & day_new_order[,2] <= 6))
+   n2 = nrow(subset(day_new_order,day_new_order[,2] >=7))
+   
+   r = data.frame(车牌=car,拉新客户=new_cus_num,拉新订单量=new_order_num,拉新总流水=new_order_fee,拉新客单价=new_order_mean,
+                    老客户=old_cus_num,老客户订单量=old_order_num,老客户流水=old_order_fee,老客户客单价=old_order_mean,
+                    拉新4至6个天数=n1,拉新7个以上天数=n2)
+   car_fee_dt = rbind(car_fee_dt,r)
+
+}
