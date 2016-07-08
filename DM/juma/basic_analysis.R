@@ -232,18 +232,18 @@ cus_flag = cus_flag_func(cusdt,orderdt,as.Date('2016-06-30'))
 cus_rate = survival_rate(cus_flag)
 
 increase_target = 3500 - nrow(cusdt)
-reaccess_target = nrow(subset(cusdt,首次服务日期<= as.Date('2016-06-30'))) * 0.45 
+reaccess_target = nrow(subset(cusdt,首次服务日期<= as.Date('2016-06-30'))) * 0.35
 
 #提前一个月的用户进行预估
-active_rate = active_rate(cusdt,orderdt,30,as.Date('2016-05-31'))
-active_target = increase_target * active_rate
+active_rate_d = active_rate(cusdt,orderdt,30,as.Date('2016-06-01'))
+active_target = increase_target * active_rate_d
 
 
 
 lack_cars = (increase_target + reaccess_target +active_target) / (26 * 9)
 
 current_ability = 9 * 7 * 26
-increase_target_change = (current_ability - reaccess_target) / 1.3
+increase_target_change = (current_ability - reaccess_target*1.3) / 1.3
 
 ## 周报数据
 start = as.Date('2016-03-18')
@@ -262,6 +262,32 @@ for(i in 1:length(week_days))
   num_cus = nrow(cus_day)
   
   r = data.frame(日期=as.character(day),投入车次=num_cars,服务单量=num_order,拓客量=num_cus)
+  week_r = rbind(week_r,r)
+  
+}
+
+
+start = as.Date('2016-03-18')
+end = as.Date('2016-07-01')
+week_days = seq(start,end,by = 7)
+week_r = data.frame()
+for(i in 2:length(week_days))
+{
+  day = week_days[i]
+  preday = week_days[i-1]
+  # print(day)
+  order_day = subset(orderdt,服务日期 >= preday & 服务日期< day)
+  cus_day = subset(cusdt,首次服务日期 >= preday & 首次服务日期 < day)
+  
+  num_cars = length(unique(na.omit(order_day$服务车编号)))
+  num_order = nrow(order_day)
+  num_cus = nrow(cus_day)
+  fee = sum(order_day$收费合计,na.rm=T)
+  mean_fea = fee / num_cars
+  
+  out_num = aggregate(order_day$服务日期,by = list(order_day$服务车编号),function(x){length(unique(x))})
+  
+  r = data.frame(日期=as.character(preday),投入车次=num_cars,服务单量=num_order,拓客量=num_cus,总流水=fee,单车流水=mean_fea,总出车量=sum(out_num[,2]))
   week_r = rbind(week_r,r)
   
 }
@@ -328,3 +354,17 @@ for(car in car_code)
    car_fee_dt = rbind(car_fee_dt,r)
 
 }
+
+#月活
+month_date = as.Date('2016-06-01')
+old_cus = subset(cusdt,首次服务日期<month_date)$序号
+old_cus_num = length(old_cus)
+
+month_date_end = as.Date('2016-06-30')
+n_order = subset(orderdt,服务日期>=month_date & 服务日期<=month_date_end)
+n_cus = n_order$cusno
+reaccess_cus = na.omit(old_cus[old_cus %in% n_cus])
+reaccess_cus_num = length(reaccess_cus)
+reaccess_cus_num / old_cus_num
+old_order = subset(orderdt,服务日期>=month_date & 服务日期<=month_date_end & cusno %in% reaccess_cus)
+nrow(old_order) /  reaccess_cus_num
