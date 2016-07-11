@@ -133,3 +133,70 @@ relive_num_period = function(cusdt_all,orderdt_all,start,end)
   death_to_live_num = length(death_to_live)
   return(death_to_live_num)
 }
+
+getmaxcusno = function(cusdt)
+{
+  if(nrow(cusdt) == 0) return(0)
+  cusnos = cusdt$序号
+  return(max(cusnos))
+}
+
+getCustomerfromOrder_increase = function(cusdt,orderdt,day)
+{
+  new_cusdt = cusdt
+  order_day = subset(orderdt,服务日期 == day)
+  for(i in 1:nrow(order_day))
+  {
+    r = order_day[i,]
+    if(!is.null(new_cusdt$车牌号码) && !is.na(r[1,'车牌号']) && !is.null(r[1,'车牌号']) && nchar(r[1,'车牌号']) > 1)
+    {
+      subdt = subset(new_cusdt,车牌号码== r[1,'车牌号'] )[1,]
+      if(!is.null(subdt) && nrow(subdt) > 0 && !is.na(subdt[,'序号']) && !is.null(subdt[,'序号']) )
+      {
+        next
+      }
+    }
+    #按车牌无法索引到客户
+    if(!is.null(new_cusdt$电话) && !is.na(r[1,'联系方式']) && !is.null(r[1,'联系方式']) && nchar(r[1,'联系方式']) > 1)
+    {
+      subdt = subset(new_cusdt,电话== r[1,'联系方式'] )[1,]
+      if( nrow(subdt) > 0 && !is.na(subdt[,'序号']) && !is.null(subdt[,'序号']) )
+      {
+        next
+      }
+    }
+    #按客户姓名
+    if(!is.null(new_cusdt$客户姓名) && !is.na(r[1,'客户姓名']) && !is.null(r[1,'客户姓名']) && nchar(r[1,'客户姓名']) > 1)
+    {
+      subdt = subset(new_cusdt,客户姓名== r[1,'客户姓名'] )[1,]
+      if( nrow(subdt) > 0 && !is.na(subdt[,'序号']) && !is.null(subdt[,'序号']) )
+      {
+        next
+      }
+    }
+    
+    #判定为新用户
+    cusno = getmaxcusno(new_cusdt) + 1
+    r_c = data.frame(序号=cusno,首次服务日期=day,客户姓名=r[1,'客户姓名'],电话=r[1,'联系方式'],车牌号码=r[1,'车牌号'],
+                       VIN码='',车辆初次登记日期='', 车辆类型=r[1,'车辆类型'],核载人数='',发动机型号=r[1,'发动机型号'],
+                       行驶里程.KM=r[1,'行驶里程.KM'],品牌=r[1,"车辆品牌"],车型=r[1,'车辆类型'],车辆长度=r[1,'车辆长度.米'],
+                       入城证=r[1,'是否有入城证'],车牌颜色=r[1,'车牌照颜色'],保养地点=r[1,'服务地址'],保险公司=r[1,'保险公司'],保险到期日期=r[1,'保险到期日期'],
+                       车辆类型.1='',保险险种=r$保险险种,保险情况='',是否挂靠='',挂靠.搬家公司='',是否考虑换车='',X='')
+    
+    new_cusdt = rbind(new_cusdt,r_c)
+  }
+  return(new_cusdt)
+}
+
+getCustomerfromOrder_all = function(cus_all,orderdt)
+{
+  days = unique(orderdt$服务日期)
+  for(day in days)
+  {
+    print(day)
+    day = as.Date(day)
+    cus = getCustomerfromOrder_increase(cus_all,orderdt,day)
+    cus_all = cus
+  }
+
+}

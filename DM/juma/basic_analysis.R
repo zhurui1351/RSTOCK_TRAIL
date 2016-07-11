@@ -1,4 +1,6 @@
 
+orderdt$收费合计 = as.numeric(orderdt$收费合计)
+
 kpi_date = as.Date('2016-06-01')
 
 #新增用户，服务单情况
@@ -207,13 +209,13 @@ colnames(cuslist) = c('客户姓名','电话','车牌号码','最近一次使用
 #服务能力预估
 
 #服务车辆车次的分布
-car_orders = subset(orderdt,服务日期 >= as.Date('2016-06-01') & 服务日期 <= as.Date('2016-06-12') )
+car_orders = subset(orderdt,服务日期 >= as.Date('2016-07-01') & 服务日期 <= as.Date('2016-07-08') )
 cars_num = data.frame()
 cars = unique(car_orders$服务车编号)
 for(car in cars)
 {
   xorders = subset(car_orders,服务车编号 == car)
-  
+  xorders$收费合计 = as.numeric(xorders$收费合计)
   x = union(grep('氟',xorders$服务项目),grep('氟',xorders$备注))
   
   dates = xorders[,'服务日期']
@@ -266,6 +268,8 @@ for(i in 1:length(week_days))
   
 }
 
+dates = c('2016-06-17','2016-06-24','2016-07-01','2016-07-08')
+unlist(lapply(as.Date(dates), function(x){ survival_rate(cus_flag_func(cusdt,orderdt,x))}))
 
 start = as.Date('2016-03-18')
 end = as.Date('2016-07-01')
@@ -314,6 +318,7 @@ for(w in 2:length(week_days_i))
 #技师分析
 
 car_code = c('川A0G53H','川A4Z68L','川A4Q85V')
+car_code = cars_num$车牌[c(1:7,9)]
 start = as.Date('2016-06-01')
 end = as.Date('2016-06-30')
 
