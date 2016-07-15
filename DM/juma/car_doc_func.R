@@ -191,12 +191,66 @@ getCustomerfromOrder_increase = function(cusdt,orderdt,day)
 getCustomerfromOrder_all = function(cus_all,orderdt)
 {
   days = unique(orderdt$服务日期)
-  for(day in days)
+  for(i in 1:length(days))
   {
-    print(day)
+    day = days[i]
     day = as.Date(day)
     cus = getCustomerfromOrder_increase(cus_all,orderdt,day)
     cus_all = cus
   }
+  return(cus_all)
+}
 
+
+getCusinfobytype = function(cusnos,orderdt)
+{
+  actcus_info = data.frame()
+  for(cus in cusnos)
+  {
+    cus_info = subset(cusdt,序号==cus)
+    order_info = subset(orderdt,cusno == cus)
+    dates = as.Date(order_info$服务日期[order(as.Date(order_info$服务日期),decreasing = F)]) 
+    firstdate = dates[1]
+    lastdate = dates[length(dates)]
+    order_num = nrow(order_info)
+    fee = sum(order_info$收费合计,na.rm = T)
+    fee_mean = mean(order_info$收费合计,na.rm = T)
+    max_fee = max(order_info$收费合计,na.rm = T)
+    time_gap = diff(as.Date(order_info$服务日期))
+    time_gap_mean = mean(time_gap)
+    max_time_gap = max(time_gap)
+    service = unique(order_info$服务项目)
+    service = na.omit(gsub(',','、',service))
+    service = strsplit(service,'、')
+    service = unique(unlist(service))
+    service_num = length(service)
+    
+    r = data.frame(客户号=cus,订单量=order_num,总花费=fee,客单价=fee_mean,最大消费=max_fee,平均服务间隔=time_gap_mean,
+                      最大间隔=max_time_gap,服务范围=service_num,注册时间=firstdate,最近服务时间=lastdate)
+    actcus_info = rbind(actcus_info,r)
+  }
+  return(actcus_info)
+}
+
+basic_user_stat = function(cusdt,orderdt)
+{
+  result = data.frame()
+  days = unique(as.Date(orderdt$服务日期))
+  for(i in 1:length(days))
+  {
+    day = days[i]
+    cusflag = cus_flag_func(cusdt,orderdt,day)
+    death_cus = subset(cusflag,flag %in% c('流失用户','流失体验用户'))
+    death_cus_num = nrow(death_cus)
+    
+    cus = subset(cusdt,首次服务日期==day)
+    orders = subset(orderdt,服务日期==day)
+    cusnum = length(na.omit(cus$序号))
+    oldcus = setdiff(orders$cusno,cus$序号)
+    oldcusnum = length(oldcus)
+    ordernum = nrow(orders)
+    r = data.frame(日期=day,新增客户=cusnum,老客户=oldcusnum,订单量=ordernum,死亡用户数=death_cus_num)
+    result = rbind(result,r)
+  }
+  return(result)
 }

@@ -126,7 +126,7 @@ xx = subset(dt,dt[,2] == 10)
 #活跃度细分
 #未满60天
 #45天以内，体验客户
-cusflag = cus_flag_func(cusdt,orderdt,enddate)
+cusflag = cus_flag_func(cusdt,orderdt,as.Date('2016-07-08'))
 
 dt_cus_flag = aggregate(cusflag$flag,by = list(cusflag$flag),length)
 colnames(dt_cus_flag) = c('客户类别','客户量')
@@ -373,3 +373,29 @@ reaccess_cus_num = length(reaccess_cus)
 reaccess_cus_num / old_cus_num
 old_order = subset(orderdt,服务日期>=month_date & 服务日期<=month_date_end & cusno %in% reaccess_cus)
 nrow(old_order) /  reaccess_cus_num
+
+
+#季节模型
+orderday = orderdt$服务日期
+orderday = as.Date(orderday)
+orderweekday = strftime(orderday,'%w')
+mon = unique(substr(orderday,1,7))
+
+torder = data.frame(orderday = orderday,weekday = orderweekday,mon = substr(orderday,1,7),stringsAsFactors =F)
+
+total_ts = aggregate(orderweekday,by = list(orderweekday),length)
+
+windows(400,400)
+para = par(mfrow=c(3,2))
+
+for(m in mon[3:(length(mon)-1)])
+{
+  storder = subset(torder,mon == m)
+  ts = aggregate(storder$weekday,by = list(storder$weekday),length)
+  colnames(ts) = c('weekday','num')
+  ts$weekday = as.numeric(ts$weekday)
+  ts$weekday[ts$weekday==0] = 7
+  ts = ts[order(ts$weekday),]
+  plot(ts$weekday,ts$num,type = 'l',xlab='星期',ylab='订单量',main=m)
+}
+options(para)

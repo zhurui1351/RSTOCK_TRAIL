@@ -114,7 +114,13 @@ for(i in 1 : nrow(cusdt))
 }
 
 cusdt[,'首次服务日期'] = as.Date(cusdt[,'首次服务日期'])
+orderdt$收费合计 = as.numeric(orderdt$收费合计)
+cusdt$首次服务日期 = as.Date(cusdt$首次服务日期)
+orderdt$服务日期 = as.Date(orderdt$服务日期)
 
+#cus = getCustomerfromOrder_all(data.frame(),orderdt)
+  
+  
 savepath = 'D:/jumpdata/cardoc/'
 write.csv(orderdt,file = paste(savepath,'订单表汇总.csv',sep=''),row.names = F)
 write.csv(cusdt,file = paste(savepath,'客户表汇总.csv',sep=''),row.names = F)
