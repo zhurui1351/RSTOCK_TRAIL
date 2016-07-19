@@ -37,8 +37,8 @@ days = as.character(unique(as.Date(index(pricedata))))
 alltime = index(pricedata_m)
 time = '09:00:00'
 time1 = '15:00:00'
-stop = 15
-trail_profit = 10
+stop = 10
+trail_profit = 5
 result = data.frame()
 for(day in days[2:length(days)])
 {

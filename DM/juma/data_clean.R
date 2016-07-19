@@ -1,4 +1,4 @@
-#rm(list = ls(all=T))
+rm(list = ls(all=T))
 require(RMySQL)
 require(lubridate)
 source('D:/Rcode/code/RSTOCK_TRAIL/DM/juma/car_doc_func.R',encoding = 'utf8')
@@ -129,3 +129,26 @@ write.csv(cusdt,file = paste(savepath,'客户表汇总.csv',sep=''),row.names = 
 #dbSendQuery(conn,'SET NAMES gbk')
 #dbReadTable(conn, "CUSTOMER_INFO") 
 #dbDisconnect(conn)
+
+#微信id
+weixin_path = 'D:/jumpdata/cardoc/sqlresult.csv'
+weixindt = read.csv(weixin_path,head=T,stringsAsFactors = F,na.strings = c("NA",' ','\\',''),
+                 sep=',',strip.white=T,blank.lines.skip=T)
+weixindt$Bind_time = as.POSIXct(weixindt$Bind_time,format = '%Y/%m/%d %H:%S',tz='')
+weixin_info = data.frame()
+for(i in 1:nrow(orderdt))
+{
+  order = orderdt[i,]
+  swei = subset(weixindt,weixindt$User_phone == order$联系方式)
+  if(nrow(swei) >= 1)
+  {
+    r = data.frame(bind_time = swei$Bind_time,wxid = swei$User_wxid)
+  }
+  else
+  {
+    r = data.frame(bind_time = NA,wxid = NA)
+  }
+  weixin_info = rbind(weixin_info,r)
+}
+orderdt = cbind(orderdt,weixin_info)
+write.csv(orderdt,file = paste(savepath,'订单表汇总.csv',sep=''),row.names = F)

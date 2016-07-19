@@ -126,7 +126,7 @@ xx = subset(dt,dt[,2] == 10)
 #活跃度细分
 #未满60天
 #45天以内，体验客户
-cusflag = cus_flag_func(cusdt,orderdt,as.Date('2016-07-08'))
+cusflag = cus_flag_func(cusdt,orderdt,as.Date('2016-07-14'))
 
 dt_cus_flag = aggregate(cusflag$flag,by = list(cusflag$flag),length)
 colnames(dt_cus_flag) = c('客户类别','客户量')

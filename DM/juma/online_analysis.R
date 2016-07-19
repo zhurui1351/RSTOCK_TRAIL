@@ -13,3 +13,14 @@ cor(day_stat$订单量,weixindt$新关注人数)
 cor(day_stat$订单量,weixindt$净增关注人数)
 cor(day_stat$死亡用户数,weixindt$净增关注人数)
 cor(day_stat$死亡用户数,weixindt$取消关注人数)
+
+plot(weixindt$新关注人数,type = 'l')
+lines(day_stat$新增客户,col = 'red')
+
+i = 10
+x = weixindt$取消关注人数
+y = day_stat$死亡用户数
+x = x[(i+1):length(x)]
+y = y[1:(length(y)-i)]
+cor(x,y)
+
