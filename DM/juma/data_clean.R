@@ -152,3 +152,26 @@ for(i in 1:nrow(orderdt))
 }
 orderdt = cbind(orderdt,weixin_info)
 write.csv(orderdt,file = paste(savepath,'订单表汇总.csv',sep=''),row.names = F)
+
+
+####
+ttm = c()
+for(i in 1 : length(starttm))
+{
+  x = starttm[i]
+  x = gsub(' ','',x)
+  x = gsub('：',':',x)
+  
+  if(is.null(x) || is.na(x) || x == '/')
+  {
+   ttm = c(ttm,'00:00:01')
+  }
+  else
+  {
+    ttm = c(ttm,paste(x,':01',sep=''))
+  }
+}
+ttm1 = paste(orderdt$服务日期,ttm,sep = ' ')
+orderdt$服务时间 = ttm1
+
+write.csv(orderdt,file = paste(savepath,'订单表汇总.csv',sep=''),row.names = F)
