@@ -59,6 +59,7 @@ cus_flag_func = function(cusdt_all,orderdt_all,enddate)
     {
       flag = NA
     }
+ 
     r= data.frame(cusno = no,flag = flag,lastdate=lastdate)
     cusflag = rbind(cusflag,r)
   }

@@ -126,7 +126,7 @@ xx = subset(dt,dt[,2] == 10)
 #活跃度细分
 #未满60天
 #45天以内，体验客户
-cusflag = cus_flag_func(cusdt,orderdt,as.Date('2016-07-14'))
+cusflag = cus_flag_func(cusdt,orderdt,as.Date('2016-07-21'))
 
 dt_cus_flag = aggregate(cusflag$flag,by = list(cusflag$flag),length)
 colnames(dt_cus_flag) = c('客户类别','客户量')
@@ -209,7 +209,7 @@ colnames(cuslist) = c('客户姓名','电话','车牌号码','最近一次使用
 #服务能力预估
 
 #服务车辆车次的分布
-car_orders = subset(orderdt,服务日期 >= as.Date('2016-07-01') & 服务日期 <= as.Date('2016-07-08') )
+car_orders = subset(orderdt,服务日期 >= as.Date('2016-07-18') & 服务日期 <= as.Date('2016-07-24') )
 cars_num = data.frame()
 cars = unique(car_orders$服务车编号)
 for(car in cars)
@@ -248,8 +248,8 @@ current_ability = 9 * 7 * 26
 increase_target_change = (current_ability - reaccess_target*1.3) / 1.3
 
 ## 周报数据
-start = as.Date('2016-03-18')
-end = as.Date('2016-06-30')
+start = as.Date('2016-07-15')
+end = as.Date('2016-07-21')
 week_days = seq(start,end,by = 7)
 week_r = data.frame()
 for(i in 1:length(week_days))
@@ -317,12 +317,13 @@ for(w in 2:length(week_days_i))
 
 #技师分析
 
+
 car_code = c('川A0G53H','川A4Z68L','川A4Q85V')
 car_code = cars_num$车牌[c(1:7,9)]
-start = as.Date('2016-06-01')
-end = as.Date('2016-06-30')
-
-driver_order = subset(orderdt,服务车编号 %in% car_code & 服务日期>=start & 服务日期<=end)
+start = as.Date('2016-07-15')
+end = as.Date('2016-07-21')
+driver_order = subset(orderdt,服务日期>=start & 服务日期<=end)
+car_code = unique(driver_order$服务车编号)
 
 car_fee_dt = data.frame()
 
@@ -353,19 +354,19 @@ for(car in car_code)
    n1 = nrow(subset(day_new_order,day_new_order[,2] >=4 & day_new_order[,2] <= 6))
    n2 = nrow(subset(day_new_order,day_new_order[,2] >=7))
    
-   r = data.frame(车牌=car,拉新客户=new_cus_num,拉新订单量=new_order_num,拉新总流水=new_order_fee,拉新客单价=new_order_mean,
+   r = data.frame(日期=start,车牌=car,拉新客户=new_cus_num,拉新订单量=new_order_num,拉新总流水=new_order_fee,拉新客单价=new_order_mean,
                     老客户=old_cus_num,老客户订单量=old_order_num,老客户流水=old_order_fee,老客户客单价=old_order_mean,
-                    拉新4至6个天数=n1,拉新7个以上天数=n2)
+                    拉新4至6个天数=n1,拉新7个以上天数=n2,总订单 =new_order_num + old_order_num,总流水=new_order_fee+old_order_fee)
    car_fee_dt = rbind(car_fee_dt,r)
 
 }
-
+car_fee_dt[,c('日期','车牌','拉新客户','总订单','总流水')]
 #月活
-month_date = as.Date('2016-06-01')
+month_date = as.Date('2016-07-01')
 old_cus = subset(cusdt,首次服务日期<month_date)$序号
 old_cus_num = length(old_cus)
 
-month_date_end = as.Date('2016-06-30')
+month_date_end = as.Date('2016-07-24')
 n_order = subset(orderdt,服务日期>=month_date & 服务日期<=month_date_end)
 n_cus = n_order$cusno
 reaccess_cus = na.omit(old_cus[old_cus %in% n_cus])
@@ -399,3 +400,12 @@ for(m in mon[3:(length(mon)-1)])
   plot(ts$weekday,ts$num,type = 'l',xlab='星期',ylab='订单量',main=m)
 }
 options(para)
+
+#微信
+weixin_cus = na.omit(orderdt[,c('cusno','wxid')])
+weixin_cus = unique(weixin_cus)
+start = as.Date('2016-07-15')
+end = as.Date('2016-07-21')
+weixin_subcus = subset(cusdt,首次服务日期 >= start & 首次服务日期<=end)[,'序号']
+
+sum(weixin_subcus %in% weixin_cus$cusno)
