@@ -58,7 +58,8 @@ legend(l, max(order_dt_m[,2]), paste('预测总用户:',pr_cus_num),bty='n');
 
 #留存率趋势,每个月的客户的留存情况
 
-sur_date = as.Date(c('2016-02-29','2016-03-31','2016-04-30','2016-05-31','2016-06-30'))
+sur_date =  as.Date(c('2016-05-01','2016-05-08','2016-05-15','2016-05-22','2016-05-29','2016-06-05','2016-06-12','2016-06-19'
+                      ,'2016-06-26','2016-07-03','2016-07-10','2016-07-17','2016-07-24'))
 #总留存
 surv_rates = unlist( lapply(sur_date, function(x,ulist,olist){
   cusflag = cus_flag_func(ulist,olist,x)
@@ -362,11 +363,11 @@ for(car in car_code)
 }
 car_fee_dt[,c('日期','车牌','拉新客户','总订单','总流水')]
 #月活
-month_date = as.Date('2016-07-01')
+month_date = as.Date('2016-04-01')
 old_cus = subset(cusdt,首次服务日期<month_date)$序号
 old_cus_num = length(old_cus)
 
-month_date_end = as.Date('2016-07-24')
+month_date_end = as.Date('2016-04-30')
 n_order = subset(orderdt,服务日期>=month_date & 服务日期<=month_date_end)
 n_cus = n_order$cusno
 reaccess_cus = na.omit(old_cus[old_cus %in% n_cus])
@@ -409,3 +410,27 @@ end = as.Date('2016-07-21')
 weixin_subcus = subset(cusdt,首次服务日期 >= start & 首次服务日期<=end)[,'序号']
 
 sum(weixin_subcus %in% weixin_cus$cusno)
+
+#月报
+suborderdt = subset(orderdt,服务日期>=as.Date('2016-05-01'))
+mon_days = unique(suborderdt$服务日期)
+mon_report1 = data.frame()
+for(i in 1:length(mon_days))
+{
+  m = mon_days[i]
+  sorders = subset(orderdt,服务日期 == m)
+  day_cars = unique(sorders$服务车编号)
+  for(car in day_cars)
+  {
+    car_orders = subset(sorders,服务车编号 == car)
+    fee = sum(car_orders$收费合计,na.rm=T)
+    num_order = nrow(car_orders)
+    cus = subset(cusdt,cusdt$序号 %in% na.omit(car_orders$cusno) & cusdt$首次服务日期 >= m)
+    ncus_num = nrow(cus)
+    r = data.frame(日期=m,服务车=car,订单量=num_order,拉新=ncus_num,流水=fee)
+    mon_report1 = rbind(mon_report1,r)
+  }
+}
+
+#write.csv(mon_report1,file = paste(savepath,'mon_report1.csv',sep=''),row.names = F)
+

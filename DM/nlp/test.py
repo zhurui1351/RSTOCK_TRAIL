@@ -63,3 +63,33 @@ fdist = FreqDist([len(w) for w in text1])
 fdist.items()
 fdist.freq(3)
 fdist.max()
+
+sorted([w for w in set(text1) if w.endswith('ableness')])
+[w.upper() for w in text1]
+
+for word in ['Call', 'me', 'Ishmael', '.']:
+    print word
+
+#获取语料库
+nltk.corpus.gutenberg.fileids()
+emma = nltk.corpus.gutenberg.words('austen-emma.txt')
+emma = nltk.Text(nltk.corpus.gutenberg.words('austen-emma.txt'))
+emma.concordance("surprize")
+from nltk.corpus import gutenberg
+gutenberg.fileids()
+
+for fileid in gutenberg.fileids():
+    num_chars = len(gutenberg.raw(fileid))
+    num_words = len(gutenberg.words(fileid))
+    num_sents = len(gutenberg.sents(fileid))
+    num_vocab = len(set([w.lower() for w in gutenberg.words(fileid)]))
+    print int(num_chars/num_words), int(num_words/num_sents), int(num_words/num_vocab), fileid
+
+#句子划分
+macbeth_sentences = gutenberg.sents('shakespeare-macbeth.txt')
+longest_len = max([len(s) for s in macbeth_sentences])
+#网络聊天语料库
+from nltk.corpus import webtext
+from nltk.corpus import nps_chat
+chatroom = nps_chat.posts('10-19-20s_706posts.xml')
+chatroom[123]

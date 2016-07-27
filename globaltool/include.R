@@ -9,6 +9,7 @@ require("randomForest")
 require('rpart')
 require('rpart.plot')
 require('reshape2')
+require('dplyr')
 sourceDir <- function(path, trace = TRUE, ...) {
   for (nm in list.files(path, pattern = "[.][RrSsQq]$")) {
     if(trace) cat(nm,":")
