@@ -66,6 +66,10 @@ cus_flag_func = function(cusdt_all,orderdt_all,enddate)
   return(cusflag)
 }
 
+
+
+
+
 survival_rate = function(cusflag)
 {
   dt_cus_flag = aggregate(cusflag$flag,by = list(cusflag$flag),length)

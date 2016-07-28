@@ -67,6 +67,7 @@ surv_rates = unlist( lapply(sur_date, function(x,ulist,olist){
   return(rate)
   },cusdt,orderdt) )
 
+
 plot(1:length(surv_rates),surv_rates,xaxt = 'n',type='o',col='red',xlab='',ylab = '')
 text(x=1:length(surv_rates),y=surv_rates,labels=round(surv_rates,3),col = 'red')
 axis(1, 1:length(surv_rates),sur_date)
