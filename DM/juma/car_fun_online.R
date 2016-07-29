@@ -3,7 +3,7 @@ cus_flag_func = function(cusdt_all,orderdt_all,enddate)
   cusdt = subset(cusdt_all,create_date <= enddate)
   orderdt = subset(orderdt_all,create_date <= enddate)
   cusflag = data.frame()
-  cusnos = na.omit(cusdt$user_id)
+  cusnos = na.omit(cusdt$id)
   for(no in cusnos)
   {
     cusorders = subset(orderdt,orderdt$customer_id == no)
@@ -69,7 +69,7 @@ cus_flag_func = function(cusdt_all,orderdt_all,enddate)
 month_live = function(cusdt,orderdt,start,end)
 {
   month_date = as.Date(start)
-  old_cus = subset(cusdt,create_date<month_date)$user_id
+  old_cus = subset(cusdt,create_date<month_date)$id
   old_cus_num = length(old_cus)
   
   month_date_end = as.Date(end)

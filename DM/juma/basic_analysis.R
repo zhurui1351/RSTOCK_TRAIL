@@ -434,4 +434,18 @@ for(i in 1:length(mon_days))
 }
 
 #write.csv(mon_report1,file = paste(savepath,'mon_report1.csv',sep=''),row.names = F)
+#配件降价
+x = 110
+y = 1000
+deltx = c(5,10,15,20,25,30)
 
+delty = c()
+
+for(dx in deltx)
+{
+  dy = round(dx*y /(x - dx))
+  delty = c(delty,dy)
+}
+
+p = data.frame(deltx,delty)
+colnames(p) = c('降价幅度（元）','需要增加的销量（桶）')
