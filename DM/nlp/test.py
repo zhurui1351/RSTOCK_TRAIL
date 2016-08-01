@@ -94,3 +94,71 @@ from nltk.corpus import nps_chat
 chatroom = nps_chat.posts('10-19-20s_706posts.xml')
 chatroom[123]
 from nltk.corpus import brown
+brown.categories()
+brown.sents(categories=['news', 'editorial', 'reviews'])
+news_text = brown.words(categories='news')
+fdist = nltk.FreqDist([w.lower() for w in news_text])
+modals = ['can', 'could', 'may', 'might', 'must', 'will']
+for m in modals:
+    print m + ':', fdist[m]
+
+
+cfd = nltk.ConditionalFreqDist(
+    (genre, word)
+    for genre in brown.categories()
+    for word in brown.words(categories=genre))
+genres = ['news', 'religion', 'hobbies', 'science_fiction', 'romance', 'humor']
+modals = ['can', 'could', 'may', 'might', 'must', 'will']
+cfd.tabulate(conditions=genres, samples=modals)
+
+#路透语料库
+
+from nltk.corpus import reuters
+reuters.fileids()
+reuters.categories()
+
+reuters.categories(['training/9865', 'training/9880'])
+reuters.fileids(['barley', 'corn'])
+reuters.words('training/9865')[:14]
+reuters.words(['training/9865', 'training/9880'])
+reuters.words(categories=['barley', 'corn'])
+
+#演说语料库
+from nltk.corpus import inaugural
+inaugural.fileids()
+#多国世界人权宣言
+from nltk.corpus import udhr
+languages = ['Chickasaw', 'English', 'German_Deutsch','Greenlandic_Inuktikut', 'Hungarian_Magyar', 'Ibibio_Efik']
+cfd = nltk.ConditionalFreqDist(
+    (lang, len(word))
+    for lang in languages
+    for word in udhr.words(lang + '-Latin1'))
+        
+cfd.plot(cumulative = True)
+cfd.tabulate(conditions=['English', 'German_Deutsch'],samples=range(10), cumulative=True)
+#条件频率分布
+genre_word = [(genre, word) for genre in ['news', 'romance'] 
+for word in brown.words(categories=genre)]
+
+cfd = nltk.ConditionalFreqDist(genre_word)
+cfd.conditions()
+list(cfd['romance'])
+cfd['romance']['could']
+
+from nltk.corpus import inaugural
+cfd = nltk.ConditionalFreqDist(
+    (target, fileid[:4])
+    for fileid in inaugural.fileids()
+    for w in inaugural.words(fileid)
+    for target in ['america', 'citizen']
+    if w.lower().startswith(target))
+#随机产生文本
+def generate_model(cfdist, word, num=15):
+    for i in range(num):
+        print word,
+        word = cfdist[word].max()
+text = nltk.corpus.genesis.words('english-kjv.txt')
+bigrams = nltk.bigrams(text)
+cfd = nltk.ConditionalFreqDist(bigrams)
+print cfd['living']
+generate_model(cfd, 'living')

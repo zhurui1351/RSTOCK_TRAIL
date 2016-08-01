@@ -447,5 +447,5 @@ for(dx in deltx)
   delty = c(delty,dy)
 }
 
-p = data.frame(deltx,delty)
-colnames(p) = c('降价幅度（元）','需要增加的销量（桶）')
+p = data.frame(deltx,delty,delty/y)
+colnames(p) = c('降价幅度（元）','需要增加的销量（桶）','需要增加的幅度')

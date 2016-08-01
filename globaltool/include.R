@@ -10,6 +10,10 @@ require('rpart')
 require('rpart.plot')
 require('reshape2')
 require('dplyr')
+require('RCurl')
+require("rjson")
+require('XML2R')
+require('rsdmx')
 sourceDir <- function(path, trace = TRUE, ...) {
   for (nm in list.files(path, pattern = "[.][RrSsQq]$")) {
     if(trace) cat(nm,":")
