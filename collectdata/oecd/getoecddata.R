@@ -1,4 +1,1 @@
-
-url <- "http://stats.oecd.org/restsdmx/sdmx.ashx/GetData/WEALTH/AUS+AUT+BEL+CAN+CHL+FIN+FRA+DEU+GRC+ITA+KOR+LUX+NLD+NOR+PRT+SVK+ESP+GBR+USA.MNW+MENW+NFW+FW+LW+MNW_MENW+RATIO_TOP+RATIO_BOTTOM+SHARE10+SHARE5+SHARE1+IDBT_HH+IDBT_HH_INC+IDBT_HH_ASSET+ME_DBT_INC+ME_DBT_ASSET.TP/all?startTime=2010&endTime=2013"
-xml_data <- readSDMX(url)
-data <- as.data.frame(xml_data)
+#https://data.oecd.org/searchresults/?hf=20&b=0&r=f/type/datasets/api+access&l=en

@@ -54,7 +54,8 @@ for(i in 1:(length(all_m)-1))
 }
 
 m = as.Date(now())
-survrate = survival_rate(cus_flag_func(cusdt,orderdt,m))
+cusflag = cus_flag_func(cusdt,orderdt,m)
+survrate = survival_rate(cusflag)
 survrate = ifelse(length(survrate) ==0,0,survrate)
 r = data.frame(date = all_m[length(all_m)],rates = survrate)
 surv_rates = rbind(surv_rates,r)
@@ -99,10 +100,29 @@ for(i in 1: length(days))
   day_info_dt = rbind(day_info_dt,r1)
 }
 
+#n天以上未访问客户
+
 
 conn_td_report <- dbConnect(MySQL(), dbname =dbname_td_report, username=username, password=password,host=host,port=port)
 dbWriteTable(conn_td_report, "summary_m", report_m_1,overwrite = T,row.names=F,field.types = list(date='varchar(10)',cus_num='numeric',order_num='numeric',total_fee='decimal(12,5)',surv_rate='decimal(10,5)',live_rate='decimal(10,5)'))
 dbWriteTable(conn_td_report, "summary_d_info", day_info_dt,overwrite = T,row.names=F,field.types = list(date='Date',artificer_num='numeric',order_num='numeric',new_cus='numeric',num_weixin='numeric',total_fee='decimal(12,5)'))
 dbWriteTable(conn_td_report, "summary_d_artificer", artificer_dt,overwrite = T,row.names=F,field.types = list(date='Date',artificer_id='numeric',order_num='numeric',new_cus='numeric',total_fee='decimal(12,5)'))
+dbWriteTable(conn_td_report, "summary_d_customer_access_date", cusflag[,c(1,3)],overwrite = T,row.names=F,field.types = list(cusno='numeric',lastdate='Date'))
 
 dbDisconnect(conn_td_report)
+
+
+sql = 'SELECT
+  cusno AS 客户号,
+  NAME AS 姓名,
+  phone AS 手机号,
+  date(create_time) AS 首次服务日期,
+  lastdate AS 最近一次访问日期
+FROM t_d_report.summary_d_customer_access_date a
+LEFT JOIN
+t_d.customer b ON a.cusno = b.id
+
+WHERE DATE(NOW()) - lastdate > 40'
+
+dbSendQuery(conn_td_report,'SET NAMES gbk')
+db = dbGetQuery(conn_td_report,sql)
