@@ -1,0 +1,78 @@
+http://data.worldbank.org.cn/ 世界银行数据库
+http://www.yearbookchina.com 中国统计年鉴
+http://www.stockmaster.com/ 市场数据
+
+IMF网站：http://www.imf.org/external/data.htm 
+http://unstats.un.org/unsd/default.htm 联合国数据
+美联储网站：Board of Governors of the Federal Reserve System
+雅虎财经：http://finance.yahoo.com
+http://www.financialwisdomforum.org/gummy-stuff/Yahoo-data.htm 雅虎数据接口
+https://research.stlouisfed.org/ 美国经济调查
+
+各国宏观数据接口 https://data.oecd.org/api/sdmx-json-documentation/
+EUROSTAT http://ec.europa.eu/eurostat/data/database
+
+国家统计局数据
+http://data.stats.gov.cn/ks.htm?cn=C01&zb=A0501
+
+http://tushare.org/ A股市场综合信息 python接口
+
+http://www.csidata.com/
+
+纽约统计局数据
+http://www1.nyc.gov/nyc-resources/categories.page
+
+
+
+http://www.tycho.pitt.edu/ 公共健康数据
+
+http://www.indexmundi.com/commodities/?commodity=soybeans&months=360 大豆期货价格
+
+http://www.cmegroup.com/ 芝加哥交易所
+
+https://www.quandl.com/collections/futures 免费数据库
+https://app.enigma.io/signin 免费数据库
+
+
+http://citeseerx.ist.psu.edu/index 论文库
+
+http://ratedata.gaincapital.com/ 外汇历史收盘数据 tick数据
+http://catalog.data.gov/dataset 美国政府 开放数据
+http://turtletrader.com/hpd/ 免费期货数据
+https://www.dukascopy.com/swiss/english/marketwatch/historical/ 历史数据
+
+http://stooq.com/ 历史价格数据
+
+http://stockq.cn/ 全球市场即时数据
+
+yahoo符号列表
+http://finance.yahoo.com/lookup
+http://www.histdata.com/download-free-forex-data/?/ascii/1-minute-bar-quotes 外汇免费一分钟数据
+http://finviz.com/ 全球市场数据
+
+
+http://investexcel.net/all-yahoo-finance-stock-tickers/ 所有美国证券的符号
+http://www.premiumdata.net/ 收盘数据
+http://www.census.gov/ 美国经济
+
+
+http://www.bis.org/statistics/index.htm ：国际清算银行数据。
+http://www.wto.org/ ：WTO世界贸易数据。
+https://esa.un.org/unpd/wpp/Download/Standard/Population/ 人口数据
+http://fisher.lib.virginia.edu/collections/stats/histcensus/ 美国人口
+
+http://finance.sina.com.cn/mac/#nation-0-0-31-1 新浪宏观经济数据
+
+https://www.quora.com/Where-can-I-find-large-datasets-open-to-the-public quaro经济数据源
+http://www.economagic.com/ 时间序列数据
+
+https://www.ecb.europa.eu/home/html/index.en.html  欧洲央行
+http://ec.europa.eu/eurostat/en/data/sdmx-data-metadata-exchange 欧洲统计局
+
+http://data.cfi.cn/cfidata.aspx 中财网数据库
+http://tushare.org/
+https://www.oanda.com/lang/cns/currency/historical-rates/
+
+https://www.globalfinancialdata.com/Databases/USStocksDatabase.html 全球经济金融数据
+
+www.aol.com google镜像

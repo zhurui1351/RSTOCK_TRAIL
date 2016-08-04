@@ -1,0 +1,50 @@
+https://www.quantstart.com/
+https://quantstrattrader.wordpress.com/
+http://www.quintuitive.com/ 量化
+http://blog.alphaarchitect.com/#gs.xJN81yE 量化新闻
+http://quant.stackexchange.com/ 量化论坛
+http://www.investorhome.com/mining.htm 数据挖掘与量化
+http://turtletrader.com/
+https://cssanalytics.wordpress.com/ 量化
+http://www.thertrader.com/ R量化
+https://stablemarkets.wordpress.com/ R量化
+
+
+http://jspauld.com/
+https://deepmind.com/publications.html google deepmind
+kaggle.com 数据挖掘竞赛
+不错的R 分析博客
+http://analyzecore.com/
+http://blog.jimnovo.com/
+https://aschinchon.wordpress.com/
+http://www.win-vector.com/blog/
+数据博客
+http://www.datakit.cn/
+http://www.geedoo.info/tag/r
+
+http://blog.revolutionanalytics.com/ R博客
+http://systematicinvestor.github.io/ R经济
+http://censix.com/ 机器学习与量化
+https://systematicinvestor.wordpress.com/consulting/ 量化分析
+
+http://www.elitetrader.com/et/ 交易
+http://epchan.blogspot.com/ 量化交易博客
+http://epchan.blogspot.sg/
+http://blog.quantopian.com/ 量化交易博客
+
+http://gekkoquant.com/ 量化交易博客
+
+http://qusma.com/ 量化交易博客
+http://quantocracy.com/ 量化交易博客
+http://www.priceactionlab.com/Blog/ 交易分析
+http://dekalogblog.blogspot.gr/ 交易博客
+
+新闻：
+http://www.ftchinese.com/
+http://cn.reuters.com/
+http://cn.wsj.com/gb/index.asp
+http://www.dailyfx.com/
+
+http://www.datatau.com/ 机器学习
+
+https://www.zhihu.com/question/20874888/answer/61854182?group_id=622294522840014848 知乎量化网站列表
