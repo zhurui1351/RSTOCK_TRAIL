@@ -32,3 +32,19 @@ cpi = ts.get_cpi()
 
 ppi = ts.get_ppi()
 
+df = ts.shibor_data() #取当前年份的数据
+#df = ts.shibor_data(2014) #取2014年的数据
+df.sort('date', ascending=False).head(10)
+
+df = ts.shibor_quote_data() #取当前年份的数据
+#df = ts.shibor_quote_data(2014) #取2014年的数据
+df.sort('date', ascending=False).head(10)
+
+#shibo均值
+df = ts.shibor_ma_data() #取当前年份的数据
+#df = ts.shibor_ma_data(2014) #取2014年的数据
+df.sort('date', ascending=False).head(10)
+
+#贷款基础利率
+lpr = ts.lpr_data() #取当前年份的数据
+#df = ts.lpr_data(2014) #取2014年的数据

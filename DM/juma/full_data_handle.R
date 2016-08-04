@@ -12,10 +12,28 @@ port = 3306
 
 conn_td <- dbConnect(MySQL(), dbname = dbname_td, username=username, password=password,host=host,port=port)
 conn_td_report <- dbConnect(MySQL(), dbname =dbname_td_report, username=username, password=password,host=host,port=port)
-sql = 'SELECT create_time,customer_id,price,artificer_id FROM t_d.order_info WHERE STATUS IN (4,5,6,7)'
+dbSendQuery(conn_td,'SET NAMES gbk')
+dbSendQuery(conn_td_report,'SET NAMES gbk')
+
+sql = 'SELECT create_time,customer_id,price,artificer_id,c.plate_number FROM t_d.order_info d
+LEFT JOIN (
+SELECT
+a.id,
+plate_number
+FROM artificer a LEFT JOIN  vehicle_td b ON a.vehicle_id = b.id
+) c
+ON d.artificer_id = c.id
+WHERE STATUS IN (4,5,6,7)'
+
 orderdt = dbGetQuery(conn_td,sql)
 orderdt$create_date = as.Date(orderdt$create_time)
-sql = 'select id ,create_time ,wx_openid from customer'
+sql = 'SELECT id ,create_time ,wx_openid,plate_number FROM customer  c
+LEFT JOIN (
+SELECT a.customer_id,GROUP_CONCAT(DISTINCT b.plate_number) AS plate_number  FROM customer_vehicle_relation a
+LEFT JOIN customer_vehicle b ON a.customer_vehicle_id = b.id 
+GROUP BY a.customer_id
+) d ON c.id = d.customer_id
+'
 cusdt = dbGetQuery(conn_td,sql)
 cusdt$create_date = as.Date(cusdt$create_time)
 dbDisconnect(conn_td)
@@ -69,24 +87,24 @@ colnames(report_m_1) =c('date','cus_num','order_num','total_fee','surv_rate','li
 
 #日报
 days = unique(orderdt$create_date)
-artificer_dt = data.frame()
+platenumber_dt = data.frame()
 day_info_dt = data.frame()
-artificers = unique(na.omit(orderdt$artificer_id))
+platenumber = unique(na.omit(orderdt$plate_number))
 for(i in 1: length(days))
 {
   day = days[i]
   sorders = subset(orderdt,create_date == day)
-  day_artificers = na.omit(unique(sorders$artificer_id))
+  day_platenumber = na.omit(unique(sorders$plate_number))
   #每个技师的情况
-  for(artificer in day_artificers)
+  for(plate in day_platenumber)
   {
-    artificer_orders = subset(sorders,artificer_id == artificer)
-    fee = sum(artificer_orders$price,na.rm=T)/100
-    num_order = nrow(artificer_orders)
-    cus = subset(cusdt,cusdt$id %in% na.omit(artificer_orders$customer_id) & cusdt$create_date >= day)
+    plate_orders = subset(sorders,plate_number == plate)
+    fee = sum(plate_orders$price,na.rm=T)/100
+    num_order = nrow(plate_orders)
+    cus = subset(cusdt,cusdt$id %in% na.omit(plate_orders$customer_id) & cusdt$create_date >= day)
     ncus_num = nrow(cus)
-    r = data.frame(date=day,artificer_id=artificer,order_num=num_order,new_cus=ncus_num,total_fee=fee)
-    artificer_dt = rbind(artificer_dt,r)
+    r = data.frame(date=day,plate_number=plate,order_num=num_order,new_cus=ncus_num,total_fee=fee)
+    platenumber_dt = rbind(platenumber_dt,r)
   }
   
   #每天情况
@@ -95,8 +113,8 @@ for(i in 1: length(days))
   cus_num = nrow(cus)
   cus_weixin_num = nrow(subset(cus,!is.na(wx_openid)))
   fee = sum(sorders$price,na.rm=T) / 100
-  artificer_num = length(unique(sorders$artificer_id))
-  r1 = data.frame(date=day,artificer_num=artificer_num,order_num=order_num,new_cus=cus_num,num_weixin = cus_weixin_num,total_fee=fee)
+  plate_num = length(unique(sorders$plate_number))
+  r1 = data.frame(date=day,plate_num=plate_num,order_num=order_num,new_cus=cus_num,num_weixin = cus_weixin_num,total_fee=fee)
   day_info_dt = rbind(day_info_dt,r1)
 }
 
@@ -104,12 +122,12 @@ for(i in 1: length(days))
 
 
 conn_td_report <- dbConnect(MySQL(), dbname =dbname_td_report, username=username, password=password,host=host,port=port)
+dbSendQuery(conn_td_report,'SET NAMES gbk')
 dbWriteTable(conn_td_report, "summary_m", report_m_1,overwrite = T,row.names=F,field.types = list(date='varchar(10)',cus_num='numeric',order_num='numeric',total_fee='decimal(12,5)',surv_rate='decimal(10,5)',live_rate='decimal(10,5)'))
-dbWriteTable(conn_td_report, "summary_d_info", day_info_dt,overwrite = T,row.names=F,field.types = list(date='Date',artificer_num='numeric',order_num='numeric',new_cus='numeric',num_weixin='numeric',total_fee='decimal(12,5)'))
-dbWriteTable(conn_td_report, "summary_d_artificer", artificer_dt,overwrite = T,row.names=F,field.types = list(date='Date',artificer_id='numeric',order_num='numeric',new_cus='numeric',total_fee='decimal(12,5)'))
-dbWriteTable(conn_td_report, "summary_d_customer_access_date", cusflag[,c(1,3)],overwrite = T,row.names=F,field.types = list(cusno='numeric',lastdate='Date'))
-
-dbDisconnect(conn_td_report)
+dbWriteTable(conn_td_report, "summary_d_info", day_info_dt,overwrite = T,row.names=F,field.types = list(date='Date',plate_num='numeric',order_num='numeric',new_cus='numeric',num_weixin='numeric',total_fee='decimal(12,5)'))
+dbWriteTable(conn_td_report, "summary_d_plate", platenumber_dt,overwrite = T,row.names=F,field.types = list(date='Date',plate_number='varchar(20)',order_num='numeric',new_cus='numeric',total_fee='decimal(12,5)'))
+dbWriteTable(conn_td_report, "summary_d_customer_access_date", cusflag,overwrite = T,row.names=F,field.types = list(cusno='numeric',flag='varchar(255)',lastdate='Date'))
+#dbDisconnect(conn_td_report)
 
 
 sql = 'SELECT
@@ -126,3 +144,4 @@ WHERE DATE(NOW()) - lastdate > 40'
 
 dbSendQuery(conn_td_report,'SET NAMES gbk')
 db = dbGetQuery(conn_td_report,sql)
+dbDisconnect(conn_td_report)

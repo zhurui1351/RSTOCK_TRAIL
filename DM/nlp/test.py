@@ -169,3 +169,33 @@ def unusual_words(text):
     english_vocab = set(w.lower() for w in nltk.corpus.words.words())
     unusual = text_vocab.difference(english_vocab)
     return sorted(unusual)
+    
+#停用词库
+from nltk.corpus import stopwords
+stopwords.words('english')
+
+
+def content_fraction(text):
+    stopwords = nltk.corpus.stopwords.words('english')
+    content = [w for w in text if w.lower() not in stopwords]
+    return len(content) / len(text)
+    
+puzzle_letters = nltk.FreqDist('egivrvonl')
+obligatory = 'r'
+wordlist = nltk.corpus.words.words()
+[w for w in wordlist if len(w) >= 6
+    and obligatory in w
+    and nltk.FreqDist(w) <= puzzle_letters]
+#名字语料库
+names = nltk.corpus.names
+names.fileids()
+male_names = names.words('male.txt')
+female_names = names.words('female.txt')
+
+cfd = nltk.ConditionalFreqDist(
+    (fileid, name[-1])
+    for fileid in names.fileids()
+    for name in names.words(fileid))
+
+#发音词典库
+entries = nltk.corpus.cmudict.entries()
