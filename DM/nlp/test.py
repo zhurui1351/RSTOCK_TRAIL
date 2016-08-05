@@ -199,3 +199,49 @@ cfd = nltk.ConditionalFreqDist(
 
 #发音词典库
 entries = nltk.corpus.cmudict.entries()
+
+
+# 分词、词干提取等
+from __future__ import division
+import nltk, re, pprint
+from urllib import urlopen
+url = "http://www.gutenberg.org/files/2554/2554.txt"
+raw = urlopen(url).read()
+type(raw)
+
+#代理设置
+#proxies = {'http': 'http://www.someproxy.com:3128'}
+#raw = urlopen(url, proxies=proxies).read()
+
+#分词
+tokens = nltk.word_tokenize(raw)
+tokens[:10]
+
+raw.find("PART I")
+raw.rfind("End of Project Gutenberg's Crime")   
+
+#html处理,建议使用BeautifulSoup包
+url = "http://news.bbc.co.uk/2/hi/health/2284783.stm"
+html = urlopen(url).read()
+html[:60]
+raw = nltk.clean_html(html)
+tokens = nltk.word_tokenize(raw)
+
+#处理RSS订阅博客
+import feedparser
+llog = feedparser.parse("http://languagelog.ldc.upenn.edu/nll/?feed=atom")
+
+#本地文件
+f = open('document.txt')
+
+import os
+os.listdir('.')
+#按行读
+f = open('document.txt', 'rU')
+for line in f:
+    print line.strip()
+#用户输入
+s = raw_input("Enter some text: ")
+#字符串
+couplet = "Shall I compare thee to a Summer's day?"\
+"Thou are more lovely and more temperate:"

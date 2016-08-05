@@ -15,19 +15,22 @@ conn_td_report <- dbConnect(MySQL(), dbname =dbname_td_report, username=username
 dbSendQuery(conn_td,'SET NAMES gbk')
 dbSendQuery(conn_td_report,'SET NAMES gbk')
 
-sql = 'SELECT create_time,customer_id,price,artificer_id,c.plate_number FROM t_d.order_info d
+sql = 'SELECT d.create_time,customer_id,e.name AS customer_name,e.phone,pre_price as price,artificer_id,c.name AS artificer_name,c.plate_number, problem_mark FROM t_d.order_info d
 LEFT JOIN (
 SELECT
-a.id,
+a.id,NAME,
 plate_number
 FROM artificer a LEFT JOIN  vehicle_td b ON a.vehicle_id = b.id
 ) c
 ON d.artificer_id = c.id
-WHERE STATUS IN (4,5,6,7)'
+LEFT JOIN customer e
+ON d.customer_id = e.id
+WHERE STATUS IN (4,5,6,7)
+ORDER BY create_time DESC '
 
 orderdt = dbGetQuery(conn_td,sql)
 orderdt$create_date = as.Date(orderdt$create_time)
-sql = 'SELECT id ,create_time ,wx_openid,plate_number FROM customer  c
+sql = 'SELECT id ,name,phone,create_time ,wx_openid,plate_number FROM customer  c
 LEFT JOIN (
 SELECT a.customer_id,GROUP_CONCAT(DISTINCT b.plate_number) AS plate_number  FROM customer_vehicle_relation a
 LEFT JOIN customer_vehicle b ON a.customer_vehicle_id = b.id 
@@ -120,28 +123,15 @@ for(i in 1: length(days))
 
 #n天以上未访问客户
 
+cusinfo_dt = merge(cusdt,cusflag,by.x = 'id',by.y = 'cusno',all.x = T)
 
 conn_td_report <- dbConnect(MySQL(), dbname =dbname_td_report, username=username, password=password,host=host,port=port)
 dbSendQuery(conn_td_report,'SET NAMES gbk')
 dbWriteTable(conn_td_report, "summary_m", report_m_1,overwrite = T,row.names=F,field.types = list(date='varchar(10)',cus_num='numeric',order_num='numeric',total_fee='decimal(12,5)',surv_rate='decimal(10,5)',live_rate='decimal(10,5)'))
 dbWriteTable(conn_td_report, "summary_d_info", day_info_dt,overwrite = T,row.names=F,field.types = list(date='Date',plate_num='numeric',order_num='numeric',new_cus='numeric',num_weixin='numeric',total_fee='decimal(12,5)'))
 dbWriteTable(conn_td_report, "summary_d_plate", platenumber_dt,overwrite = T,row.names=F,field.types = list(date='Date',plate_number='varchar(20)',order_num='numeric',new_cus='numeric',total_fee='decimal(12,5)'))
-dbWriteTable(conn_td_report, "summary_d_customer_access_date", cusflag,overwrite = T,row.names=F,field.types = list(cusno='numeric',flag='varchar(255)',lastdate='Date'))
-#dbDisconnect(conn_td_report)
+dbWriteTable(conn_td_report, "summary_d_customer_info", cusinfo_dt,overwrite = T,row.names=F,field.types = list(id='numeric',name='varchar(20)',phone='varchar(20)',create_time='datetime',wx_openid='varchar(100)',plate_number='varchar(20)',create_date ='Date',flag='varchar(255)',lastdate='Date'))
+dbWriteTable(conn_td_report, "summary_d_order_info", orderdt,overwrite = T,row.names=F,field.types = list(create_time='datetime',customer_id='numeric',customer_name='varchar(20)',phone='varchar(20)',price='numeric',artificer_id='numeric',artificer_name='varchar(20)',plate_number='varchar(20)',problem_mark='varchar(255)',create_date ='Date'))
 
-
-sql = 'SELECT
-  cusno AS 客户号,
-  NAME AS 姓名,
-  phone AS 手机号,
-  date(create_time) AS 首次服务日期,
-  lastdate AS 最近一次访问日期
-FROM t_d_report.summary_d_customer_access_date a
-LEFT JOIN
-t_d.customer b ON a.cusno = b.id
-
-WHERE DATE(NOW()) - lastdate > 40'
-
-dbSendQuery(conn_td_report,'SET NAMES gbk')
-db = dbGetQuery(conn_td_report,sql)
 dbDisconnect(conn_td_report)
+
