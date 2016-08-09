@@ -1,9 +1,11 @@
+#https://www.r-bloggers.com/financial-data-accessible-from-r-part-iii/
 require(quantmod)
 initial_data_path = 'D:/data/collectdata/index/day/'
 #初始化函数,历史数据由csv构成
 initial_index_data = function(path,symbol)
 {
   data_yahoo = data.frame()
+  data = data.frame()
   begindate = '1900-01-01'
   if(path != '')
   {
