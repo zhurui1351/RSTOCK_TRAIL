@@ -245,3 +245,24 @@ s = raw_input("Enter some text: ")
 #字符串
 couplet = "Shall I compare thee to a Summer's day?"\
 "Thou are more lovely and more temperate:"
+
+
+couplet = """Shall I compare thee to a Summer's day?
+... Thou are more lovely and more temperate:"""
+
+#unicode 编码
+path = nltk.data.find('corpora/unicode_samples/polish-lat2.txt')
+import codecs
+f = codecs.open(path, encoding='latin2')
+ord('a')
+a = u'\u0061'
+nacute = u'\u0144'
+nacute
+nacute_utf = nacute.encode('utf8')
+print repr(nacute_utf)
+
+#正则表达式
+import re
+wordlist = [w for w in nltk.corpus.words.words('en') if w.islower()]
+[w for w in wordlist if re.search('ed$', w)]
+[w for w in wordlist if re.search('^..j..t..$', w)]

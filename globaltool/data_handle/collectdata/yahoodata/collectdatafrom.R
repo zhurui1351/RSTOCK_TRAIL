@@ -5,7 +5,7 @@ flushdata = function()
   path = 'D:/data/collectdata/index'
   
   config = list(c(symbol='000001.SS',file='000001.txt',exp='上证')
-                ,c(symbol='399001.SZ',file='399001.txt',exp='深圳')
+             #   ,c(symbol='399001.SZ',file='399001.txt',exp='深圳')
                 ,c(symbol='^IXIC',file='DJI.txt',exp='纳斯达克')
                 ,c(symbol='^DJI',file='DJI.txt',exp='道琼斯')
                 ,c(symbol='^GSPC',file='GSPC.txt',exp = '标准普尔')
