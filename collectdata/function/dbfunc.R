@@ -1,6 +1,6 @@
 writeToDataBase = function(tablename,data,types = list(Open='decimal(10,2)',High='decimal(10,2)',Low='decimal(10,2)',Close='decimal(10,2)',Volume='decimal(10,2)',date='Date'), dbname= "global_index")
 {
-  username="root"
+  username="zhurui1351"
   password = '123456'
   host = '127.0.0.1'
   port = 3306
@@ -11,7 +11,7 @@ writeToDataBase = function(tablename,data,types = list(Open='decimal(10,2)',High
 
 readFromDataBase = function(tablename,dbname= "global_index")
 {
-  username="root"
+  username="zhurui1351"
   password = '123456'
   host = '127.0.0.1'
   port = 3306
@@ -23,11 +23,11 @@ readFromDataBase = function(tablename,dbname= "global_index")
 
 insertToDataBase = function(tablename,data,types = list(Open='decimal(10,2)',High='decimal(10,2)',Low='decimal(10,2)',Close='decimal(10,2)',Volume='decimal(10,2)',date='Date'), dbname= "global_index")
 {
-  username="root"
+  username="zhurui1351"
   password = '123456'
   host = '127.0.0.1'
   port = 3306
   conn <- dbConnect(MySQL(), dbname = dbname, username=username, password=password,host=host,port=port)
-  dbWriteTable(conn,tablename, data,append = T,row.names=F,field.types = types)
+  dbWriteTable(conn,tablename,data,row.names=F,append=TRUE)
   dbDisconnect(conn)
 }

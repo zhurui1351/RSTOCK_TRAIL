@@ -1,3 +1,5 @@
+rm(list=ls(all=T))
+source('D:/Rcode/code/RSTOCK_TRAIL/collectdata/include.R',encoding='utf8')
 require(quantmod)
 initial_data_path = 'D:/data/collectdata/index/day/'
 #初始化函数,历史数据由csv构成
