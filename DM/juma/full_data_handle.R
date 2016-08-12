@@ -15,7 +15,7 @@ conn_td_report <- dbConnect(MySQL(), dbname =dbname_td_report, username=username
 dbSendQuery(conn_td,'SET NAMES gbk')
 dbSendQuery(conn_td_report,'SET NAMES gbk')
 
-sql = 'SELECT d.create_time,customer_id,e.name AS customer_name,e.phone,pre_price as price,artificer_id,c.name AS artificer_name,c.plate_number, problem_mark FROM t_d.order_info d
+sql = 'SELECT d.create_time,service_date,customer_id,e.name AS customer_name,e.phone, price as amount,pre_price as price,artificer_id,c.name AS artificer_name,c.plate_number, problem_mark,status,channel_id  FROM t_d.order_info d
 LEFT JOIN (
 SELECT
 a.id,NAME,
@@ -25,7 +25,6 @@ FROM artificer a LEFT JOIN  vehicle_td b ON a.vehicle_id = b.id
 ON d.artificer_id = c.id
 LEFT JOIN customer e
 ON d.customer_id = e.id
-WHERE STATUS IN (4,5,6,7)
 ORDER BY create_time DESC '
 
 orderdt = dbGetQuery(conn_td,sql)
@@ -46,11 +45,12 @@ cus_date = cusdt$create_time
 cus_date_m = strftime(cus_date,format = '%Y-%m')
 cus_dt_m = aggregate(cus_date_m,by = list(cus_date_m),length)
 
-order_date = orderdt$create_time
+sub_dt = subset(orderdt,status !='8')
+order_date = sub_dt$create_time
 order_date_m = strftime(order_date,format = '%Y-%m')
 order_dt_m = aggregate(order_date_m,by = list(order_date_m),length)
 
-fee_dt_m = aggregate(as.numeric(orderdt$price),by = list(order_date_m),function(x){sum(x,na.rm=T)})
+fee_dt_m = aggregate(as.numeric(sub_dt$price)/ 100,by = list(order_date_m),function(x){sum(x,na.rm=T)})
 
 #report_m_1[,1] = paste(report_m_1[,1],'-01',sep='')
 #report_m_1$date = as.Date(report_m_1$date)
@@ -96,16 +96,26 @@ platenumber = unique(na.omit(orderdt$plate_number))
 for(i in 1: length(days))
 {
   day = days[i]
-  sorders = subset(orderdt,create_date == day)
+  sorders = subset(orderdt,create_date == day & status != 8 )
   day_platenumber = na.omit(unique(sorders$plate_number))
   #每个技师的情况
   for(plate in day_platenumber)
   {
-    plate_orders = subset(sorders,plate_number == plate)
+    plate_orders = subset(sorders,plate_number == plate & status != 8)
     fee = sum(plate_orders$price,na.rm=T)/100
+    #当天新订单
     num_order = nrow(plate_orders)
+    #历史未处理订单
+    history_order = subset(orderdt,plate_number == plate & create_date <= day & status != 8 & !(status %in% c(6,7)))
     cus = subset(cusdt,cusdt$id %in% na.omit(plate_orders$customer_id) & cusdt$create_date >= day)
+    #拉新
     ncus_num = nrow(cus)
+    #绑定微信
+    cus_weixin_num = nrow(subset(cus,!is.na(wx_openid)))
+    #激活
+    all_cus_day = unique(plate_orders$customer_id)
+    all_cus_day = subset(cusdt,cusdt$id %in% all_cus_day )
+    
     r = data.frame(date=day,plate_number=plate,order_num=num_order,new_cus=ncus_num,total_fee=fee)
     platenumber_dt = rbind(platenumber_dt,r)
   }
@@ -125,6 +135,11 @@ for(i in 1: length(days))
 
 cusinfo_dt = merge(cusdt,cusflag,by.x = 'id',by.y = 'cusno',all.x = T)
 
+#技师维度
+
+
+
+#写入数据库
 conn_td_report <- dbConnect(MySQL(), dbname =dbname_td_report, username=username, password=password,host=host,port=port)
 dbSendQuery(conn_td_report,'SET NAMES gbk')
 dbWriteTable(conn_td_report, "summary_m", report_m_1,overwrite = T,row.names=F,field.types = list(date='varchar(10)',cus_num='numeric',order_num='numeric',total_fee='decimal(12,5)',surv_rate='decimal(10,5)',live_rate='decimal(10,5)'))

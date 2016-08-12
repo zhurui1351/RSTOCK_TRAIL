@@ -27,6 +27,8 @@ for(i in 1:length(newyeardays))
   start  = d - 30
   end = d + 30
   print(d)
-  chartSeries(data[paste(start,end,sep = '/')])
+  subdata = data[paste(start,end,sep = '/')]
+  chartSeries(subdata)
+  print(Cl(subdata))
   readline('next')
 }

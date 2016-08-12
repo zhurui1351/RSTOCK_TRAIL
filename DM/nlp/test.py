@@ -266,3 +266,4 @@ import re
 wordlist = [w for w in nltk.corpus.words.words('en') if w.islower()]
 [w for w in wordlist if re.search('ed$', w)]
 [w for w in wordlist if re.search('^..j..t..$', w)]
+[w for w in wordlist if re.search('^[ghi][mno][jlk][def]$', w)]
