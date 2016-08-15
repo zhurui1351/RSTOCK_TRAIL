@@ -96,27 +96,72 @@ platenumber = unique(na.omit(orderdt$plate_number))
 for(i in 1: length(days))
 {
   day = days[i]
-  sorders = subset(orderdt,create_date == day & status != 8 )
+  sorders = subset(orderdt,create_date == day  )
   day_platenumber = na.omit(unique(sorders$plate_number))
   #每个技师的情况
   for(plate in day_platenumber)
   {
-    plate_orders = subset(sorders,plate_number == plate & status != 8)
+    plate_orders = subset(sorders,plate_number == plate & status != 8 )
+    plate_orders_cancle = subset(sorders,plate_number == plate & status == 8 )
+    plate_orders_cancle_num = nrow(plate_orders_cancle)
     fee = sum(plate_orders$price,na.rm=T)/100
+    reduce_fee = fee - sum(plate_orders$amount,na.rm=T)/100
+    artificer_name = unique(plate_orders$artificer_name)[1]
+    ##客户统计
+    #拉新
+    new_cus = subset(cusdt,cusdt$id %in% na.omit(plate_orders$customer_id) & cusdt$create_date >= day)
+    ncus_num = nrow(new_cus)
+    
+    #绑定微信
+    cus_weixin_num = nrow(subset(new_cus,!is.na(wx_openid)))
+    #不同用户
+    all_cus_day = unique(plate_orders$customer_id)
+    #老用户
+    old_cus = setdiff(all_cus_day,new_cus$id)
+    ocus_num = length(old_cus)
+    #激活用户
+    acus_num = 0
+    for(cu in all_cus_day)
+    {
+      cu_info = subset(cusdt,cusdt$id == cu)
+      cu_order_pre = subset(orderdt,customer_id==cu & create_date<day)
+      if(cu_info$create_date < day && nrow(cu_order_pre) == 1)
+      {
+        acus_num = acus_num + 1
+      }
+    }
+    #订单统计
+    #老用户下单
+    old_cus_order = subset(plate_orders,customer_id %in% old_cus)
+    old_cus_order_num = nrow(old_cus_order)
+    #新用户下单
+    new_cus_order = subset(plate_orders,customer_id %in% new_cus)
+    new_cus_order_num = nrow(new_cus_order)
     #当天新订单
     num_order = nrow(plate_orders)
     #历史未处理订单
     history_order = subset(orderdt,plate_number == plate & create_date <= day & status != 8 & !(status %in% c(6,7)))
-    cus = subset(cusdt,cusdt$id %in% na.omit(plate_orders$customer_id) & cusdt$create_date >= day)
-    #拉新
-    ncus_num = nrow(cus)
-    #绑定微信
-    cus_weixin_num = nrow(subset(cus,!is.na(wx_openid)))
-    #激活
-    all_cus_day = unique(plate_orders$customer_id)
-    all_cus_day = subset(cusdt,cusdt$id %in% all_cus_day )
+    history_order_num = nrow(history_order)
+    #接单数
+    accpt_order = subset(plate_orders,status >=3)
+    accpt_order_num = nrow(accpt_order)
+    #发起结算
+    start_pay_order = subset(plate_orders,status >=4)
+    start_pay_order_num = nrow(start_pay_order)
+    #已支付
+    payed_order = subset(plate_orders,status >=6)
+    payed_order_num = nrow(payed_order)
+    #线上单
+    online_order = subset(plate_orders,channel_id ==1)
+    online_order_num = nrow(online_order)
+    #客服单
+    cuserivice_order = subset(plate_orders,channel_id ==2)
+    cuserivice_order_num = nrow(cuserivice_order)
     
-    r = data.frame(date=day,plate_number=plate,order_num=num_order,new_cus=ncus_num,total_fee=fee)
+   # r = data.frame(date=day,plate_number=plate,order_num=num_order,new_cus=ncus_num,total_fee=fee)
+    r = data.frame(date=day,plate_number=plate,artificer_name=artificer_name,history_order_num=history_order_num,order_num=num_order,new_cus=ncus_num,cus_weixin_num=cus_weixin_num,
+                   active_cus_num=acus_num,new_cus_order_num=new_cus_order_num,old_cus_order_num=old_cus_order_num,accpt_order_num=accpt_order_num,start_pay_order_num=start_pay_order_num,
+                   payed_order_num=payed_order_num,online_order_num=online_order_num,cuserivice_order_num=cuserivice_order_num,plate_orders_cancle_num=plate_orders_cancle_num,total_fee=fee,reduce_fee)
     platenumber_dt = rbind(platenumber_dt,r)
   }
   
@@ -137,16 +182,23 @@ cusinfo_dt = merge(cusdt,cusflag,by.x = 'id',by.y = 'cusno',all.x = T)
 
 #技师维度
 
-
+sorderdt = orderdt[,c('create_time','customer_id','customer_name','phone','price','artificer_id','artificer_name','plate_number','problem_mark','create_date')]
 
 #写入数据库
 conn_td_report <- dbConnect(MySQL(), dbname =dbname_td_report, username=username, password=password,host=host,port=port)
 dbSendQuery(conn_td_report,'SET NAMES gbk')
 dbWriteTable(conn_td_report, "summary_m", report_m_1,overwrite = T,row.names=F,field.types = list(date='varchar(10)',cus_num='numeric',order_num='numeric',total_fee='decimal(12,5)',surv_rate='decimal(10,5)',live_rate='decimal(10,5)'))
+
 dbWriteTable(conn_td_report, "summary_d_info", day_info_dt,overwrite = T,row.names=F,field.types = list(date='Date',plate_num='numeric',order_num='numeric',new_cus='numeric',num_weixin='numeric',total_fee='decimal(12,5)'))
-dbWriteTable(conn_td_report, "summary_d_plate", platenumber_dt,overwrite = T,row.names=F,field.types = list(date='Date',plate_number='varchar(20)',order_num='numeric',new_cus='numeric',total_fee='decimal(12,5)'))
+
+dbWriteTable(conn_td_report, "summary_d_plate", platenumber_dt,overwrite = T,row.names=F,field.types = list(date='Date',plate_number='varchar(20)',artificer_name='varchar(20)',history_order_num='numeric',order_num='numeric',new_cus='numeric',
+                                                                                                            cus_weixin_num='numeric',active_cus_num='numeric',new_cus_order_num='numeric',old_cus_order_num='numeric',accpt_order_num='numeric',
+                                                                                                            start_pay_order_num='numeric',payed_order_num='numeric',online_order_num='numeric',cuserivice_order_num='numeric',
+                                                                                                            plate_orders_cancle_num='numeric',total_fee='decimal(12,5)',reduce_fee='decimal(12,5)'))
+
 dbWriteTable(conn_td_report, "summary_d_customer_info", cusinfo_dt,overwrite = T,row.names=F,field.types = list(id='numeric',name='varchar(20)',phone='varchar(20)',create_time='datetime',wx_openid='varchar(100)',plate_number='varchar(20)',create_date ='Date',flag='varchar(255)',lastdate='Date'))
-dbWriteTable(conn_td_report, "summary_d_order_info", orderdt,overwrite = T,row.names=F,field.types = list(create_time='datetime',customer_id='numeric',customer_name='varchar(20)',phone='varchar(20)',price='numeric',artificer_id='numeric',artificer_name='varchar(20)',plate_number='varchar(20)',problem_mark='varchar(255)',create_date ='Date'))
+
+dbWriteTable(conn_td_report, "summary_d_order_info", sorderdt,overwrite = T,row.names=F,field.types = list(create_time='datetime',customer_id='numeric',customer_name='varchar(20)',phone='varchar(20)',price='numeric',artificer_id='numeric',artificer_name='varchar(20)',plate_number='varchar(20)',problem_mark='varchar(255)',create_date ='Date'))
 
 dbDisconnect(conn_td_report)
 
