@@ -151,6 +151,24 @@ for(i in 1: length(days))
     #已支付
     payed_order = subset(plate_orders,status >=6)
     payed_order_num = nrow(payed_order)
+    #待接单
+    wait_accpt_order =  subset(plate_orders,status == 2)
+    wait_accpt_order_num = nrow(wait_order)
+    #待付款
+    wait_pay_order =  subset(plate_orders,status == 4)
+    wait_pay_order_num = nrow(wait_pay_order)
+    #待确认
+    wait_sure_order =  subset(plate_orders,status == 5)
+    wait_sure_order_num = nrow(wait_sure_order)
+    #接单率
+    accpt_ratio = accpt_order_num / num_order
+    #订单完成率
+    complete_ratio = payed_order_num / num_order
+    #待结算订单率
+    wait_pay_ratio = wait_pay_order_num / num_order
+    #取消率
+    cacel_ratio = plate_orders_cancle_num /  num_order
+    
     #线上单
     online_order = subset(plate_orders,channel_id ==1)
     online_order_num = nrow(online_order)
@@ -166,6 +184,8 @@ for(i in 1: length(days))
   }
   
   #每天情况
+  #拉新
+  day_orders = subset(sorders,status != 8)
   cus = subset(cusdt,cusdt$id %in% na.omit(sorders$customer_id) & cusdt$create_date == day)
   order_num = nrow(sorders)
   cus_num = nrow(cus)
