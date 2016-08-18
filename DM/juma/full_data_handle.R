@@ -15,7 +15,7 @@ conn_td_report <- dbConnect(MySQL(), dbname =dbname_td_report, username=username
 dbSendQuery(conn_td,'SET NAMES gbk')
 dbSendQuery(conn_td_report,'SET NAMES gbk')
 
-sql = 'SELECT d.create_time,service_date,customer_id,e.name AS customer_name,e.phone, price as amount,pre_price as price,artificer_id,c.name AS artificer_name,c.plate_number, problem_mark,status,channel_id  FROM t_d.order_info d
+sql = 'SELECT d.create_time,service_date,customer_id,e.name AS customer_name,e.phone, price as amount,pre_price as price,artificer_id,c.name AS artificer_name,c.plate_number, problem_mark,status,channel_id,order_service_str,order_type_id  FROM t_d.order_info d
 LEFT JOIN (
 SELECT
 a.id,NAME,
@@ -153,7 +153,7 @@ for(i in 1: length(days))
     payed_order_num = nrow(payed_order)
     #待接单
     wait_accpt_order =  subset(plate_orders,status == 2)
-    wait_accpt_order_num = nrow(wait_order)
+    wait_accpt_order_num = nrow(wait_accpt_order)
     #待付款
     wait_pay_order =  subset(plate_orders,status == 4)
     wait_pay_order_num = nrow(wait_pay_order)
@@ -184,15 +184,106 @@ for(i in 1: length(days))
   }
   
   #每天情况
-  #拉新
   day_orders = subset(sorders,status != 8)
-  cus = subset(cusdt,cusdt$id %in% na.omit(sorders$customer_id) & cusdt$create_date == day)
-  order_num = nrow(sorders)
-  cus_num = nrow(cus)
-  cus_weixin_num = nrow(subset(cus,!is.na(wx_openid)))
-  fee = sum(sorders$price,na.rm=T) / 100
-  plate_num = length(unique(sorders$plate_number))
-  r1 = data.frame(date=day,plate_num=plate_num,order_num=order_num,new_cus=cus_num,num_weixin = cus_weixin_num,total_fee=fee)
+  #客户
+  all_day_cus = unique(na.omit(day_orders$customer_id))
+  #拉新
+  new_cus = subset(cusdt,cusdt$id %in% all_day_cus & cusdt$create_date == day)
+  new_cus_num = nrow(new_cus)
+  #历史未处理订单
+  history_order = subset(orderdt,create_date <= day & status != 8 & !(status %in% c(6,7)))
+  history_order_num = nrow(history_order)
+  #老用户
+  old_cus = setdiff(all_cus_day,new_cus$id)
+  ocus_num = length(old_cus)
+  #激活用户
+  acus_num = 0
+  for(cu in all_cus_day)
+  {
+    cu_info = subset(cusdt,cusdt$id == cu)
+    cu_order_pre = subset(orderdt,customer_id==cu & create_date<day)
+    if(cu_info$create_date < day && nrow(cu_order_pre) == 1)
+    {
+      acus_num = acus_num + 1
+    }
+  }
+  #订单统计
+  #老用户下单
+  old_cus_order = subset(day_orders,customer_id %in% old_cus)
+  old_cus_order_num = nrow(old_cus_order)
+  #新用户下单
+  new_cus_order = subset(day_orders,customer_id %in% new_cus)
+  new_cus_order_num = nrow(new_cus_order)
+  
+  #绑定微信
+  cus_weixin_num = nrow(subset(new_cus,!is.na(wx_openid)))
+  #订单
+  order_num = nrow(day_orders)
+  #线上单
+  online_order_num = nrow(subset(day_orders,channel_id ==1))
+  #客服单
+  cuserivice_order_num = nrow(subset(day_orders,channel_id ==2))
+  #接单数
+  accpt_order = subset(day_orders,status >=3)
+  accpt_order_num = nrow(accpt_order)
+  #发起结算
+  start_pay_order = subset(day_orders,status >=4)
+  start_pay_order_num = nrow(start_pay_order)
+  #服务单
+  service_order =  subset(day_orders,order_type_id ==3)
+  service_order_num = nrow(service_order)
+  #维修保养
+  order_service_str = day_orders$order_service_str
+  repair_order = grep('.*[78].*',order_service_str)
+  repair_order_num = length(repair_order)
+  preserv_order = grep('.*[36].*',order_service_str)
+  preserv_order_num =length(preserv_order)
+  #已支付
+  payed_order = subset(day_orders,status >=6)
+  payed_order_num = nrow(day_orders)
+  #已回访
+  reaccess_order =  subset(day_orders,status ==7)
+  reaccess_order_num = nrow(reaccess_order)
+  #取消
+  cancle_order =  subset(day_orders,status ==8)
+  cancle_order_num = nrow(cancle_order)
+  
+  #待派单
+  wait_distribute_order = subset(day_orders,status ==1)
+  wait_distribute_order_num = nrow(wait_distribute_order)
+  #待接单
+  wait_accpt_order =  subset(day_orders,status ==2)
+  wait_accpt_order_num = nrow(wait_accpt_order)
+  #待付款
+  wait_pay_order =  subset(day_orders,status == 4)
+  wait_pay_order_num = nrow(wait_pay_order)
+  #待确认
+  wait_sure_order =  subset(day_orders,status == 5)
+  wait_sure_order_num = nrow(wait_sure_order)
+  #待回访
+  wait_reaccess_order = subset(day_orders,status ==6)
+  wait_reaccess_order_num = nrow(wait_reaccess_order)
+  #接单率
+  accpt_ratio = accpt_order_num / order_num
+  #订单完成率、付款率
+  complete_ratio = payed_order_num / order_num
+  #待结算订单率
+  wait_pay_ratio = wait_pay_order_num / order_num
+  #取消率
+  cacel_ratio = cancle_order_num /  order_num
+  #派单率
+  distribute_ratio = (order_num - wait_distribute_order_num) / order_num
+  #回访率
+  reaccess_ratio = reaccess_order_num / order_num
+  
+  fee = sum(day_orders$price,na.rm=T) / 100
+  reduce_fee = fee - sum(day_orders$amount,na.rm=T)/100
+  
+  repair_fee = sum(day_orders[repair_order,]$price,na.rm = T) / 100
+  preserv_fee = sum(day_orders[preserv_order,]$price,na.rm = T) / 100
+    
+  plate_num = length(unique(day_orders$plate_number))
+  r1 = data.frame(date=day,plate_num=plate_num,order_num=order_num,new_cus=new_cus_num,num_weixin = cus_weixin_num,total_fee=fee)
   day_info_dt = rbind(day_info_dt,r1)
 }
 
