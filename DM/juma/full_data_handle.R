@@ -285,6 +285,23 @@ for(i in 1: length(days))
   plate_num = length(unique(day_orders$plate_number))
   r1 = data.frame(date=day,plate_num=plate_num,order_num=order_num,new_cus=new_cus_num,num_weixin = cus_weixin_num,total_fee=fee)
   day_info_dt = rbind(day_info_dt,r1)
+  
+  
+  
+  
+  #每天客户情况
+  cusflag = cus_flag_func(cusdt,orderdt,day)
+  cus_day = subset(cusdt,create_date <= day)
+  cus_num = nrow(cus_day)
+  new_cus = subset(cusdt,create_date == day)
+  new_cus_num = nrow(new_cus)
+  #微信绑定
+  cus_weixin_num = nrow(subset(cus_day,!is.na(wx_openid)))
+  #留存用户
+  live_cus_num = nrow(subset(cusflag,flag == '留存用户'))
+  #流失用户
+  death_cus_num = nrow(subset(cusflag,flag == '流失用户'))
+  
 }
 
 #n天以上未访问客户
