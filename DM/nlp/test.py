@@ -267,3 +267,31 @@ wordlist = [w for w in nltk.corpus.words.words('en') if w.islower()]
 [w for w in wordlist if re.search('ed$', w)]
 [w for w in wordlist if re.search('^..j..t..$', w)]
 [w for w in wordlist if re.search('^[ghi][mno][jlk][def]$', w)]
+
+regexp = r'^[AEIOUaeiou]+|[AEIOUaeiou]+$|[^AEIOUaeiou]'
+def compress(word):
+    pieces = re.findall(regexp, word)
+    return ''.join(pieces)
+english_udhr = nltk.corpus.udhr.words('English-Latin1')
+print nltk.tokenwrap(compress(w) for w in english_udhr[:75])
+#处理词干
+
+def stem(word):
+    for suffix in ['ing', 'ly', 'ed', 'ious', 'ies', 'ive', 'es', 's', 'ment']:
+        if word.endswith(suffix):
+            return word[:-len(suffix)]
+    return word
+re.findall(r'^.*(ing|ly|ed|ious|ies|ive|es|s|ment)$', 'processing')
+re.findall(r'^.*(?:ing|ly|ed|ious|ies|ive|es|s|ment)$', 'processing')
+re.findall(r'^(.*)(ing|ly|ed|ious|ies|ive|es|s|ment)$', 'processing')
+#非贪婪
+re.findall(r'^(.*?)(ing|ly|ed|ious|ies|ive|es|s|ment)$', 'processes')
+
+def stem(word):
+    regexp = r'^(.*?)(ing|ly|ed|ious|ies|ive|es|s|ment)?$'
+    stem, suffix = re.findall(regexp, word)[0]
+    return stem
+
+from nltk.corpus import gutenberg, nps_chat
+moby = nltk.Text(gutenberg.words('melville-moby_dick.txt'))
+moby.findall(r"<a> (<.*>) <man>")

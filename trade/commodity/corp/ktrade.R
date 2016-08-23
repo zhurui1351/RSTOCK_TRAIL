@@ -13,6 +13,8 @@ doubo_day = to_day(doubo_m)
 douyou_day = to_day(douyou_m)
 corp_day = to_day(corp_m)
 
+
+
 #对齐开盘时间
 index(doubo_m) = index(doubo_m) - 60
 index(douyou_m) = index(douyou_m) - 60

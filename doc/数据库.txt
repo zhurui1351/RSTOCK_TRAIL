@@ -82,3 +82,9 @@ www.aol.com google镜像
 http://stooq.com/
 
 https://www.oanda.com/l
+
+http://www.data360.org/index.aspx 各种经济数据
+
+http://www.indexmundi.com/united_states/
+
+http://www.eia.gov/dnav/pet/hist/LeafHandler.ashx?n=pet&s=rwtc&f=w 原油

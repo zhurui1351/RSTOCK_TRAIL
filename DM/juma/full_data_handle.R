@@ -80,10 +80,12 @@ survrate = survival_rate(cusflag)
 survrate = ifelse(length(survrate) ==0,0,survrate)
 r = data.frame(date = all_m[length(all_m)],rates = survrate)
 surv_rates = rbind(surv_rates,r)
+surv_rates = surv_rates[order(surv_rates$date,decreasing=T),]
 
 live =  month_live_surv(cusdt,orderdt,as.Date(paste(all_m[length(all_m)],'-01',sep='')),m)
 r = data.frame(date = all_m[length(all_m)],rates = live)
 mon_live = rbind(mon_live,r)
+mon_live = mon_live[order(mon_live$date,decreasing=T),]
 
 report_m_1 = cbind(cus_dt_m,order_dt_m[,2],fee_dt_m[,2],surv_rates[,2],mon_live[,2])
 colnames(report_m_1) =c('date','cus_num','order_num','total_fee','surv_rate','live_rate')
