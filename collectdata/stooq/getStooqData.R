@@ -57,4 +57,4 @@ getStooqData <- function(asset_code,static_cookie=TRUE) {
 }
 
 
-stooq_data <- getStooqData("es.f",static_cookie=TRUE)
+stooq_data <- getStooqData("usd_i",static_cookie=TRUE)
