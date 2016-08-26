@@ -95,6 +95,7 @@ days = unique(orderdt$create_date)
 platenumber_dt = data.frame()
 day_info_dt = data.frame()
 platenumber = unique(na.omit(orderdt$plate_number))
+platenumber = platenumber[which(substr(platenumber,1,1)!='测')]
 for(i in 1: length(days))
 {
   day = days[i]
@@ -181,7 +182,8 @@ for(i in 1: length(days))
    # r = data.frame(date=day,plate_number=plate,order_num=num_order,new_cus=ncus_num,total_fee=fee)
     r = data.frame(date=day,plate_number=plate,artificer_name=artificer_name,history_order_num=history_order_num,order_num=num_order,new_cus=ncus_num,cus_weixin_num=cus_weixin_num,
                    active_cus_num=acus_num,new_cus_order_num=new_cus_order_num,old_cus_order_num=old_cus_order_num,accpt_order_num=accpt_order_num,start_pay_order_num=start_pay_order_num,
-                   payed_order_num=payed_order_num,online_order_num=online_order_num,cuserivice_order_num=cuserivice_order_num,plate_orders_cancle_num=plate_orders_cancle_num,total_fee=fee,reduce_fee)
+                   payed_order_num=payed_order_num,online_order_num=online_order_num,cuserivice_order_num=cuserivice_order_num,plate_orders_cancle_num=plate_orders_cancle_num,total_fee=fee,reduce_fee,
+                   wait_accpt_order=wait_accpt_order_num,wait_pay_order=wait_pay_order_num,accpt_ratio=accpt_ratio,complete_ratio=complete_ratio,cacel_ratio)
     platenumber_dt = rbind(platenumber_dt,r)
   }
   
@@ -231,9 +233,9 @@ for(i in 1: length(days))
   #发起结算
   start_pay_order = subset(day_orders,status >=4)
   start_pay_order_num = nrow(start_pay_order)
-  #服务单
-  service_order =  subset(day_orders,order_type_id ==3)
-  service_order_num = nrow(service_order)
+  #活动单
+  activiti_order =  subset(day_orders,order_type_id ==3)
+  activiti_order_num = nrow(activiti_order)
   #维修保养
   order_service_str = day_orders$order_service_str
   repair_order = grep('.*[78].*',order_service_str)
@@ -285,10 +287,14 @@ for(i in 1: length(days))
   preserv_fee = sum(day_orders[preserv_order,]$price,na.rm = T) / 100
     
   plate_num = length(unique(day_orders$plate_number))
-  r1 = data.frame(date=day,plate_num=plate_num,order_num=order_num,new_cus=new_cus_num,num_weixin = cus_weixin_num,total_fee=fee)
+  r1 = data.frame(date=day,plate_num=plate_num,history_order_num=history_order_num,order_num=order_num,cuserivice_order_num=cuserivice_order_num,online_order_num=online_order_num,
+                  activiti_order_num=activiti_order_num,new_cus=new_cus_num,num_weixin = cus_weixin_num,acus_num=acus_num,new_cus_order_num=new_cus_order_num,
+                  old_cus_order_num=old_cus_order_num,new_cus_order_num=new_cus_order_num,accpt_order_num=accpt_order_num,start_pay_order_num=start_pay_order_num,
+                  repair_order_num=repair_order_num,preserv_order_num=preserv_order_num,payed_order_num=payed_order_num,reaccess_order_num=reaccess_order_num,
+                  cancle_order_num=cancle_order_num,total_fee=fee,repair_fee=repair_fee,preserv_fee=preserv_fee,reduce_fee=reduce_fee,wait_distribute_order_num=wait_distribute_order_num,
+                  wait_accpt_order_num=wait_accpt_order_num,wait_pay_order_num=wait_pay_order_num,wait_sure_order_num=wait_sure_order_num,accpt_ratio=accpt_ratio,wait_pay_ratio=wait_pay_ratio,
+                  cacel_ratio=cacel_ratio,distribute_ratio=distribute_ratio,reaccess_ratio=reaccess_ratio)
   day_info_dt = rbind(day_info_dt,r1)
-  
-  
   
   
   #每天客户情况
@@ -324,11 +330,14 @@ dbWriteTable(conn_td_report, "summary_d_info", day_info_dt,overwrite = T,row.nam
 dbWriteTable(conn_td_report, "summary_d_plate", platenumber_dt,overwrite = T,row.names=F,field.types = list(date='Date',plate_number='varchar(20)',artificer_name='varchar(20)',history_order_num='numeric',order_num='numeric',new_cus='numeric',
                                                                                                             cus_weixin_num='numeric',active_cus_num='numeric',new_cus_order_num='numeric',old_cus_order_num='numeric',accpt_order_num='numeric',
                                                                                                             start_pay_order_num='numeric',payed_order_num='numeric',online_order_num='numeric',cuserivice_order_num='numeric',
-                                                                                                            plate_orders_cancle_num='numeric',total_fee='decimal(12,5)',reduce_fee='decimal(12,5)'))
+                                                                                                            plate_orders_cancle_num='numeric',total_fee='decimal(12,5)',reduce_fee='decimal(12,5)',wait_accpt_order='numeric',wait_pay_order='numeric',
+                                                                                                            accpt_ratio='decimal(12,5)',complete_ratio='decimal(12,5)',cacel_ratio='decimal(12,5)'))
 
 dbWriteTable(conn_td_report, "summary_d_customer_info", cusinfo_dt,overwrite = T,row.names=F,field.types = list(id='numeric',name='varchar(20)',phone='varchar(20)',create_time='datetime',wx_openid='varchar(100)',plate_number='varchar(20)',create_date ='Date',flag='varchar(255)',lastdate='Date'))
 
 dbWriteTable(conn_td_report, "summary_d_order_info", sorderdt,overwrite = T,row.names=F,field.types = list(create_time='datetime',customer_id='numeric',customer_name='varchar(20)',phone='varchar(20)',price='numeric',artificer_id='numeric',artificer_name='varchar(20)',plate_number='varchar(20)',problem_mark='varchar(255)',create_date ='Date'))
 
 dbDisconnect(conn_td_report)
+
+
 

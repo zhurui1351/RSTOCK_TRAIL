@@ -91,3 +91,7 @@ http://www.eia.gov/dnav/pet/hist/LeafHandler.ashx?n=pet&s=rwtc&f=w 原油
 
 
 http://blog.csdn.net/zhucai4/article/details/45531705 获取数据的六种途径
+
+
+https://www.dukascopy.com/swiss/chinese/marketwatch/historical/  瑞士外汇银行数据中心
+
