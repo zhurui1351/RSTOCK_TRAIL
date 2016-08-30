@@ -96,6 +96,7 @@ platenumber_dt = data.frame()
 day_info_dt = data.frame()
 platenumber = unique(na.omit(orderdt$plate_number))
 platenumber = platenumber[which(substr(platenumber,1,1)!='测')]
+cus_day_info_dt = data.frame()
 for(i in 1: length(days))
 {
   day = days[i]
@@ -289,7 +290,7 @@ for(i in 1: length(days))
   plate_num = length(unique(day_orders$plate_number))
   r1 = data.frame(date=day,plate_num=plate_num,history_order_num=history_order_num,order_num=order_num,cuserivice_order_num=cuserivice_order_num,online_order_num=online_order_num,
                   activiti_order_num=activiti_order_num,new_cus=new_cus_num,num_weixin = cus_weixin_num,acus_num=acus_num,new_cus_order_num=new_cus_order_num,
-                  old_cus_order_num=old_cus_order_num,new_cus_order_num=new_cus_order_num,accpt_order_num=accpt_order_num,start_pay_order_num=start_pay_order_num,
+                  old_cus_order_num=old_cus_order_num,accpt_order_num=accpt_order_num,start_pay_order_num=start_pay_order_num,
                   repair_order_num=repair_order_num,preserv_order_num=preserv_order_num,payed_order_num=payed_order_num,reaccess_order_num=reaccess_order_num,
                   cancle_order_num=cancle_order_num,total_fee=fee,repair_fee=repair_fee,preserv_fee=preserv_fee,reduce_fee=reduce_fee,wait_distribute_order_num=wait_distribute_order_num,
                   wait_accpt_order_num=wait_accpt_order_num,wait_pay_order_num=wait_pay_order_num,wait_sure_order_num=wait_sure_order_num,accpt_ratio=accpt_ratio,wait_pay_ratio=wait_pay_ratio,
@@ -309,7 +310,8 @@ for(i in 1: length(days))
   live_cus_num = nrow(subset(cusflag,flag == '留存用户'))
   #流失用户
   death_cus_num = nrow(subset(cusflag,flag == '流失用户'))
-  
+  r = data.frame(date=day,cus_num=cus_num,new_cus_num=new_cus_num,cus_weixin_num=cus_weixin_num,live_cus_num=live_cus_num,death_cus_num=death_cus_num)
+  cus_day_info_dt = rbind(cus_day_info_dt,r)
 }
 
 #n天以上未访问客户
@@ -325,7 +327,13 @@ conn_td_report <- dbConnect(MySQL(), dbname =dbname_td_report, username=username
 dbSendQuery(conn_td_report,'SET NAMES gbk')
 dbWriteTable(conn_td_report, "summary_m", report_m_1,overwrite = T,row.names=F,field.types = list(date='varchar(10)',cus_num='numeric',order_num='numeric',total_fee='decimal(12,5)',surv_rate='decimal(10,5)',live_rate='decimal(10,5)'))
 
-dbWriteTable(conn_td_report, "summary_d_info", day_info_dt,overwrite = T,row.names=F,field.types = list(date='Date',plate_num='numeric',order_num='numeric',new_cus='numeric',num_weixin='numeric',total_fee='decimal(12,5)'))
+dbWriteTable(conn_td_report, "summary_d_info", day_info_dt,overwrite = T,row.names=F,field.types = list(date='Date',plate_num='numeric',history_order_num='numeric',order_num='numeric',cuserivice_order_num='numeric',online_order_num='numeric',
+                                                                                                        activiti_order_num='numeric',new_cus='numeric',num_weixin='numeric',acus_num='numeric',new_cus_order_num='numeric',old_cus_order_num='numeric',
+                                                                                                        accpt_order_num='numeric',start_pay_order_num='numeric',repair_order_num='numeric',preserv_order_num='numeric',payed_order_num='numeric',
+                                                                                                        reaccess_order_num='numeric',cancle_order_num='numeric',total_fee='decimal(12,5)',repair_fee='decimal(12,5)',preserv_fee='decimal(12,5)',reduce_fee='decimal(12,5)',wait_distribute_order_num='numeric',
+                                                                                                        wait_accpt_order_num='numeric',wait_pay_order_num='numeric',wait_sure_order_num='numeric',accpt_ratio='decimal(12,5)',wait_pay_ratio='decimal(12,5)',cacel_ratio='decimal(12,5)',distribute_ratio='decimal(12,5)',reaccess_ratio='decimal(12,5)'))
+
+
 
 dbWriteTable(conn_td_report, "summary_d_plate", platenumber_dt,overwrite = T,row.names=F,field.types = list(date='Date',plate_number='varchar(20)',artificer_name='varchar(20)',history_order_num='numeric',order_num='numeric',new_cus='numeric',
                                                                                                             cus_weixin_num='numeric',active_cus_num='numeric',new_cus_order_num='numeric',old_cus_order_num='numeric',accpt_order_num='numeric',

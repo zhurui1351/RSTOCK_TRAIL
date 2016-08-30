@@ -449,3 +449,23 @@ for(dx in deltx)
 
 p = data.frame(deltx,delty,delty/y)
 colnames(p) = c('降价幅度（元）','需要增加的销量（桶）','需要增加的幅度')
+
+
+##不同月份的客户，在指定月份的使用情况
+from_dates = c('2016-03','2016-04','2016-05','2016-06','2016-07')
+to_date = c('2016-07','2016-08')
+m_result = data.frame()
+
+for(d in from_dates)
+{
+  mon_cus = subset(cusdt,substr(create_date,1,7) == d )
+  mon_cus_num = nrow(mon_cus)
+  mon_cus_no =unique(na.omit(mon_cus$id)) 
+  
+  mon_order = subset(orderdt,substr(create_date,1,7) == to_date[1] | substr(create_date,1,7) == to_date[2] )
+  mon_order_cus_no = unique(na.omit(mon_order$customer_id)) 
+  num = sum(mon_cus_no %in% mon_order_cus_no)
+  
+  r = data.frame(date=d,new_cus = mon_cus_num,reaccesscus = num )
+  m_result = rbind(m_result,r)
+}
