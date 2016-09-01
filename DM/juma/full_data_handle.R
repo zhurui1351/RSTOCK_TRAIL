@@ -29,12 +29,17 @@ ORDER BY create_time DESC '
 
 orderdt = dbGetQuery(conn_td,sql)
 orderdt$create_date = as.Date(orderdt$create_time)
-sql = 'SELECT id ,name,phone,create_time ,wx_openid,plate_number FROM customer  c
+sql = 'SELECT id ,NAME,phone,create_time ,wx_openid,plate_number,total_fee,order_num FROM customer  c
 LEFT JOIN (
 SELECT a.customer_id,GROUP_CONCAT(DISTINCT b.plate_number) AS plate_number  FROM customer_vehicle_relation a
 LEFT JOIN customer_vehicle b ON a.customer_vehicle_id = b.id 
 GROUP BY a.customer_id
 ) d ON c.id = d.customer_id
+LEFT JOIN
+(
+  SELECT customer_id,SUM(pre_price) AS total_fee,COUNT(*) AS order_num FROM order_info GROUP BY customer_id
+) e
+  ON c.id = e.customer_id
 '
 cusdt = dbGetQuery(conn_td,sql)
 cusdt$create_date = as.Date(cusdt$create_time)
@@ -315,12 +320,14 @@ for(i in 1: length(days))
 }
 
 #n天以上未访问客户
-
+cusflag = cus_flag_func(cusdt,orderdt,days[1])
 cusinfo_dt = merge(cusdt,cusflag,by.x = 'id',by.y = 'cusno',all.x = T)
 
-#技师维度
-
-sorderdt = orderdt[,c('create_time','customer_id','customer_name','phone','price','artificer_id','artificer_name','plate_number','problem_mark','create_date')]
+#丰富订单内容
+orderdt$channel = ifelse(orderdt$channel==1,'线上','客服')
+orderdt$iscancel = ifelse(orderdt$status==8,'是','否')
+orderdt$order_type = ifelse(orderdt$order_type_id==1,'面对面',ifelse(orderdt$order_type_id==2,'预约','活动'))
+orderdt$order_service = ifelse(grepl('.*[78].*',orderdt$order_service),'维修',ifelse(grepl('.*[36].*',orderdt$order_service),'保养',NA))
 
 #写入数据库
 conn_td_report <- dbConnect(MySQL(), dbname =dbname_td_report, username=username, password=password,host=host,port=port)
@@ -341,9 +348,12 @@ dbWriteTable(conn_td_report, "summary_d_plate", platenumber_dt,overwrite = T,row
                                                                                                             plate_orders_cancle_num='numeric',total_fee='decimal(12,5)',reduce_fee='decimal(12,5)',wait_accpt_order='numeric',wait_pay_order='numeric',
                                                                                                             accpt_ratio='decimal(12,5)',complete_ratio='decimal(12,5)',cacel_ratio='decimal(12,5)'))
 
-dbWriteTable(conn_td_report, "summary_d_customer_info", cusinfo_dt,overwrite = T,row.names=F,field.types = list(id='numeric',name='varchar(20)',phone='varchar(20)',create_time='datetime',wx_openid='varchar(100)',plate_number='varchar(20)',create_date ='Date',flag='varchar(255)',lastdate='Date'))
+dbWriteTable(conn_td_report, "summary_d_customer_info_day", cus_day_info_dt,overwrite = T,row.names=F,field.types = list(date='Date',cus_num='numeric',new_cus_num='numeric',cus_weixin_num='numeric',live_cus_num='numeric',death_cus_num='numeric'))
 
-dbWriteTable(conn_td_report, "summary_d_order_info", sorderdt,overwrite = T,row.names=F,field.types = list(create_time='datetime',customer_id='numeric',customer_name='varchar(20)',phone='varchar(20)',price='numeric',artificer_id='numeric',artificer_name='varchar(20)',plate_number='varchar(20)',problem_mark='varchar(255)',create_date ='Date'))
+dbWriteTable(conn_td_report, "summary_d_customer_info", cusinfo_dt,overwrite = T,row.names=F,field.types = list(id='numeric',name='varchar(20)',phone='varchar(20)',create_time='datetime',wx_openid='varchar(100)',plate_number='varchar(20)',total_fee='decimal(12,5)',order_num='numeric',create_date ='Date',flag='varchar(255)',lastdate='Date'))
+
+dbWriteTable(conn_td_report, "summary_d_order_info", orderdt,overwrite = T,row.names=F,field.types = list(create_time='datetime',service_date='Date',customer_id='numeric',customer_name='varchar(20)',phone='varchar(20)',amount='numeric',price='numeric',artificer_id='numeric',artificer_name='varchar(20)',plate_number='varchar(20)',problem_mark='varchar(255)',status ='numeric',
+                                                                                                          channel_id='numeric',order_service_str='varchar(100)',order_type_id='numeric',create_date='Date',channel='varchar(100)',iscancel='varchar(10)',order_type='varchar(50)',order_service='varchar(50)'))
 
 dbDisconnect(conn_td_report)
 
