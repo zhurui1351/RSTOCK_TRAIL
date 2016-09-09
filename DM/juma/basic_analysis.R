@@ -469,3 +469,4 @@ for(d in from_dates)
   r = data.frame(date=d,new_cus = mon_cus_num,reaccesscus = num )
   m_result = rbind(m_result,r)
 }
+
