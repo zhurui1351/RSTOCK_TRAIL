@@ -96,6 +96,7 @@ report_m_1 = cbind(cus_dt_m,order_dt_m[,2],fee_dt_m[,2],surv_rates[,2],mon_live[
 colnames(report_m_1) =c('date','cus_num','order_num','total_fee','surv_rate','live_rate')
 
 #日报
+orderdt=orderdt[-1,]
 days = unique(orderdt$create_date)
 platenumber_dt = data.frame()
 day_info_dt = data.frame()
@@ -105,6 +106,7 @@ cus_day_info_dt = data.frame()
 for(i in 1: length(days))
 {
   day = days[i]
+  print(day)
   sorders = subset(orderdt,create_date == day  )
   day_platenumber = na.omit(unique(sorders$plate_number))
   #每个技师的情况
