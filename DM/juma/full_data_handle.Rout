@@ -1,0 +1,142 @@
+
+R version 3.3.1 (2016-06-21) -- "Bug in Your Hair"
+Copyright (C) 2016 The R Foundation for Statistical Computing
+Platform: x86_64-w64-mingw32/x64 (64-bit)
+
+RÊÇ×ÔÓÉÈí¼ş£¬²»´øÈÎºÎµ£±£¡£
+ÔÚÄ³Ğ©Ìõ¼şÏÂÄã¿ÉÒÔ½«Æä×ÔÓÉÉ¢²¼¡£
+ÓÃ'license()'»ò'licence()'À´¿´É¢²¼µÄÏêÏ¸Ìõ¼ş¡£
+
+RÊÇ¸öºÏ×÷¼Æ»®£¬ÓĞĞí¶àÈËÎªÖ®×ö³öÁË¹±Ï×.
+ÓÃ'contributors()'À´¿´ºÏ×÷ÕßµÄÏêÏ¸Çé¿ö
+ÓÃ'citation()'»á¸æËßÄãÈçºÎÔÚ³ö°æÎïÖĞÕıÈ·µØÒıÓÃR»òR³ÌĞò°ü¡£
+
+ÓÃ'demo()'À´¿´Ò»Ğ©Ê¾·¶³ÌĞò£¬ÓÃ'help()'À´ÔÄ¶ÁÔÚÏß°ïÖúÎÄ¼ş£¬»ò
+ÓÃ'help.start()'Í¨¹ıHTMLä¯ÀÀÆ÷À´¿´°ïÖúÎÄ¼ş¡£
+ÓÃ'q()'ÍË³öR.
+
+> rm(list = ls(all=T))
+> require(RMySQL)
+ÔØÈëĞèÒªµÄ³Ì¼­°ü£ºRMySQL
+ÔØÈëĞèÒªµÄ³Ì¼­°ü£ºDBI
+> require(lubridate)
+ÔØÈëĞèÒªµÄ³Ì¼­°ü£ºlubridate
+
+ÔØÈë³Ì¼­°ü£º'lubridate'
+
+The following object is masked from 'package:base':
+
+    date
+
+> source('D:/Rcode/code/RSTOCK_TRAIL/DM/juma/car_fun_online.R',encoding = 'utf8')
+> 
+> dbname_td = "t_d"
+> dbname_td_report = 't_d_report'
+> username="wangchao"
+> password = 'juma9156'
+> host = '10.101.0.13'
+> port = 3306
+> 
+> conn_td <- dbConnect(MySQL(), dbname = dbname_td, username=username, password=password,host=host,port=port)
+> conn_td_report <- dbConnect(MySQL(), dbname =dbname_td_report, username=username, password=password,host=host,port=port)
+> dbSendQuery(conn_td,'SET NAMES gbk')
+<MySQLResult:8,0,0>
+> dbSendQuery(conn_td_report,'SET NAMES gbk')
+<MySQLResult:1936876886,1,0>
+> 
+> sql = 'SELECT d.create_time,service_date,customer_id,e.name AS customer_name,e.phone, price as amount,pre_price as price,artificer_id,c.name AS artificer_name,c.plate_number, problem_mark,status,channel_id,order_service_str,order_type_id  FROM t_d.order_info d
++ LEFT JOIN (
++ SELECT
++ a.id,NAME,
++ plate_number
++ FROM artificer a LEFT JOIN  vehicle_td b ON a.vehicle_id = b.id
++ ) c
++ ON d.artificer_id = c.id
++ LEFT JOIN customer e
++ ON d.customer_id = e.id
++ ORDER BY create_time DESC '
+> 
+> orderdt = dbGetQuery(conn_td,sql)
+> orderdt$create_date = as.Date(orderdt$create_time)
+> sql = 'SELECT id ,NAME,phone,create_time ,wx_openid,plate_number,total_fee,order_num FROM customer  c
++ LEFT JOIN (
++ SELECT a.customer_id,GROUP_CONCAT(DISTINCT b.plate_number) AS plate_number  FROM customer_vehicle_relation a
++ LEFT JOIN customer_vehicle b ON a.customer_vehicle_id = b.id 
++ GROUP BY a.customer_id
++ ) d ON c.id = d.customer_id
++ LEFT JOIN
++ (
++   SELECT customer_id,SUM(pre_price) AS total_fee,COUNT(*) AS order_num FROM order_info GROUP BY customer_id
++ ) e
++   ON c.id = e.customer_id
++ '
+> cusdt = dbGetQuery(conn_td,sql)
+Warning message:
+In .local(conn, statement, ...) :
+  Decimal MySQL column 6 imported as numeric
+> cusdt$create_date = as.Date(cusdt$create_time)
+> dbDisconnect(conn_td)
+[1] TRUE
+> dbDisconnect(conn_td_report)
+[1] TRUE
+Warning message:
+Closing open result sets 
+> #æ¯æœˆæ‹‰æ–°,è®¢å•é‡,æµæ°´
+> cus_date = cusdt$create_time
+> cus_date_m = strftime(cus_date,format = '%Y-%m')
+> cus_dt_m = aggregate(cus_date_m,by = list(cus_date_m),length)
+> 
+> sub_dt = subset(orderdt,status !='8')
+> order_date = sub_dt$create_time
+> order_date_m = strftime(order_date,format = '%Y-%m')
+> order_dt_m = aggregate(order_date_m,by = list(order_date_m),length)
+> 
+> fee_dt_m = aggregate(as.numeric(sub_dt$price)/ 100,by = list(order_date_m),function(x){sum(x,na.rm=T)})
+> 
+> #report_m_1[,1] = paste(report_m_1[,1],'-01',sep='')
+> #report_m_1$date = as.Date(report_m_1$date)
+> #ç•™å­˜ã€æœˆæ´»
+> all_m = unique(order_date_m)
+> surv_rates = data.frame()
+> mon_live = data.frame()
+> for(i in 1:(length(all_m)-1))
++ {
++   m = all_m[i]
++   d = paste(m,'-01',sep='')
++   start = as.Date(d)
++   endday = as.Date(d) + months(1) - days(1)
++   survrate = survival_rate(cus_flag_func(cusdt,orderdt,endday))
++   survrate = ifelse(length(survrate) ==0,0,survrate)
++   r = data.frame(date = m,rates = survrate)
++   surv_rates = rbind(surv_rates,r)
++   
++   live = month_live_surv(cusdt,orderdt,start,endday)
++   r = data.frame(date = m,rates = live)
++   mon_live = rbind(mon_live,r)
++ }
+> 
+> m = as.Date(now())
+> cusflag = cus_flag_func(cusdt,orderdt,m)
+> survrate = survival_rate(cusflag)
+> survrate = ifelse(length(survrate) ==0,0,survrate)
+> r = data.frame(date = all_m[length(all_m)],rates = survrate)
+> surv_rates = rbind(surv_rates,r)
+> surv_rates = surv_rates[order(surv_rates$date,decreasing=T),]
+> 
+> live =  month_live_surv(cusdt,orderdt,as.Date(paste(all_m[length(all_m)],'-01',sep='')),m)
+> r = data.frame(date = all_m[length(all_m)],rates = live)
+> mon_live = rbind(mon_live,r)
+> mon_live = mon_live[order(mon_live$date,decreasing=T),]
+> 
+> report_m_1 = cbind(cus_dt_m,order_dt_m[,2],fee_dt_m[,2],surv_rates[,2],mon_live[,2])
+> colnames(report_m_1) =c('date','cus_num','order_num','total_fee','surv_rate','live_rate')
+> 
+> #æ—¥æŠ¥
+> orderdt=orderdt[-1,]
+> days = unique(orderdt$create_date)
+> platenumber_dt = data.frame()
+> day_info_dt = data.frame()
+> platenumber = unique(na.omit(orderdt$plate_number))
+> platenumber = platenumber[which(substr(platenumber,1,1)!='æµ‹')]
+´íÎó: ¾ä·¨·ÖÎöÆ÷1ĞĞÀï²»ÄÜÓĞ¶à×Ö½Ú×Ö·û
+Í£Ö¹Ö´ĞĞ
