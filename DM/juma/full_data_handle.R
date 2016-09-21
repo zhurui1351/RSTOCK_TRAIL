@@ -2,7 +2,6 @@ rm(list = ls(all=T))
 require(RMySQL)
 require(lubridate)
 source('D:/Rcode/code/RSTOCK_TRAIL/DM/juma/car_fun_online.R',encoding = 'utf8')
-
 dbname_td = "t_d"
 dbname_td_report = 't_d_report'
 username="wangchao"
@@ -43,15 +42,18 @@ LEFT JOIN
 '
 cusdt = dbGetQuery(conn_td,sql)
 cusdt$create_date = as.Date(cusdt$create_time)
+print('close db')
 dbDisconnect(conn_td)
 dbDisconnect(conn_td_report)
 #每月拉新,订单量,流水
+print('start computing')
 cus_date = cusdt$create_time
 cus_date_m = strftime(cus_date,format = '%Y-%m')
 cus_dt_m = aggregate(cus_date_m,by = list(cus_date_m),length)
 
 sub_dt = subset(orderdt,status !='8')
 order_date = sub_dt$create_time
+order_date = order_date[order(order_date,decreasing = F)]
 order_date_m = strftime(order_date,format = '%Y-%m')
 order_dt_m = aggregate(order_date_m,by = list(order_date_m),length)
 
@@ -60,11 +62,14 @@ fee_dt_m = aggregate(as.numeric(sub_dt$price)/ 100,by = list(order_date_m),funct
 #report_m_1[,1] = paste(report_m_1[,1],'-01',sep='')
 #report_m_1$date = as.Date(report_m_1$date)
 #留存、月活
+print('stage1')
+
 all_m = unique(order_date_m)
 surv_rates = data.frame()
 mon_live = data.frame()
 for(i in 1:(length(all_m)-1))
 {
+
   m = all_m[i]
   d = paste(m,'-01',sep='')
   start = as.Date(d)
@@ -85,24 +90,30 @@ survrate = survival_rate(cusflag)
 survrate = ifelse(length(survrate) ==0,0,survrate)
 r = data.frame(date = all_m[length(all_m)],rates = survrate)
 surv_rates = rbind(surv_rates,r)
-surv_rates = surv_rates[order(surv_rates$date,decreasing=T),]
+surv_rates = surv_rates[order(surv_rates$date,decreasing=F),]
 
 live =  month_live_surv(cusdt,orderdt,as.Date(paste(all_m[length(all_m)],'-01',sep='')),m)
 r = data.frame(date = all_m[length(all_m)],rates = live)
 mon_live = rbind(mon_live,r)
-mon_live = mon_live[order(mon_live$date,decreasing=T),]
+mon_live = mon_live[order(mon_live$date,decreasing=F),]
 
 report_m_1 = cbind(cus_dt_m,order_dt_m[,2],fee_dt_m[,2],surv_rates[,2],mon_live[,2])
 colnames(report_m_1) =c('date','cus_num','order_num','total_fee','surv_rate','live_rate')
-
 #日报
+print('start day report')
+
 orderdt=orderdt[-1,]
 days = unique(orderdt$create_date)
 platenumber_dt = data.frame()
+
 day_info_dt = data.frame()
 platenumber = unique(na.omit(orderdt$plate_number))
+print(platenumber[which(substr(platenumber,1,1)!='测')])
 platenumber = platenumber[which(substr(platenumber,1,1)!='测')]
+print(3)
 cus_day_info_dt = data.frame()
+print(4)
+
 for(i in 1: length(days))
 {
   day = days[i]
