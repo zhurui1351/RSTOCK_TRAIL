@@ -130,4 +130,104 @@ top1000 = pd.concat(pieces, ignore_index=True)
 top1000.index = np.arange(len(top1000))
 
 
-#命名趋势
+#numpy
+
+data = randn(2, 3)
+data.shape
+data.dtype
+
+data1 = [6,7.5,8,0,1]
+arr1 = np.array(data1)
+data2 = [[1, 2, 3, 4], [5, 6, 7, 8]]
+arr2 = np.array(data2)
+arr2
+arr2.ndim
+arr2.shape
+
+np.zeros(10)
+np.zeros((3, 6))
+np.empty((2, 3, 2))
+np.arange(15)
+arr1 = np.array([1, 2, 3], dtype=np.float64)
+arr2 = np.array([1, 2, 3], dtype=np.int32)
+arr1.dtype
+arr2.dtype
+arr = np.array([1, 2, 3, 4, 5])
+arr.dtype
+float_arr = arr.astype(np.float64)
+float_arr.dtype
+arr = np.array([3.7, -1.2, -2.6, 0.5, 12.9, 10.1])
+arr
+arr.astype(np.int32)
+numeric_strings = np.array(['1.25', '-9.6', '42'], dtype=np.string_)
+numeric_strings.astype(float)
+int_array = np.arange(10)
+calibers = np.array([.22, .270, .357, .380, .44, .50], dtype=np.float64)
+int_array.astype(calibers.dtype)
+empty_uint32 = np.empty(8, dtype='u4')
+empty_uint32
+#数组计算
+arr = np.array([[1., 2., 3.], [4., 5., 6.]])
+arr
+arr * arr
+arr - arr
+1 / arr
+arr ** 0.5
+#高纬
+arr2d = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+arr2d[2]
+arr2d[0][2]
+arr2d[0, 2]
+arr3d = np.array([[[1, 2, 3], [4, 5, 6]], [[7, 8, 9], [10, 11, 12]]])
+arr3d
+arr3d[0]
+arr3d[1, 0]
+old_values = arr3d[0].copy()
+arr3d[0] = 42
+arr3d
+arr3d[0] = old_values
+arr3d
+arr3d[1, 0]
+arr2d[:2]
+arr2d[:2, 1:]
+
+arr2d[1, :2]
+arr2d[2, :1]
+arr2d[:, :1]
+
+#布尔索引
+names = np.array(['Bob', 'Joe', 'Will', 'Bob', 'Will', 'Joe', 'Joe'])
+data = randn(7, 4)
+names
+data
+names == 'Bob'
+data[names == 'Bob']
+data[names == 'Bob', 2:]
+data[names == 'Bob', 3]
+
+names != 'Bob'
+data[-(names == 'Bob')]
+
+mask = (names == 'Bob') | (names == 'Will')
+mask
+data[mask]
+
+data[names != 'Joe'] = 7
+data
+
+# 花式索引
+
+arr = np.empty((8, 4))
+for i in range(8):
+    arr[i] = i
+arr
+arr[[4, 3, 0, 6]]
+arr[[-3, -5, -7]]
+
+arr = np.arange(32).reshape((8, 4))
+arr
+arr[[1, 5, 7, 2], [0, 3, 1, 2]]
+arr[[1, 5, 7, 2]][:, [0, 3, 1, 2]]
+arr[np.ix_([1, 5, 7, 2], [0, 3, 1, 2])]
+#转置和对换
+
