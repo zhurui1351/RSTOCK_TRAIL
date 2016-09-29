@@ -371,3 +371,123 @@ walk.min()
 walk.max()
 (np.abs(walk) >= 10).argmax()
 #pandas学习
+
+from pandas import Series, DataFrame
+import pandas as pd
+from __future__ import division
+from numpy.random import randn
+import numpy as np
+import os
+import matplotlib.pyplot as plt
+np.random.seed(12345)
+plt.rc('figure', figsize=(10, 6))
+from pandas import Series, DataFrame
+import pandas as pd
+np.set_printoptions(precision=4)
+#相关数据结构
+obj = Series([4, 7, -5, 3])
+obj
+
+obj.values
+obj.index
+
+obj2 = Series([4, 7, -5, 3], index=['d', 'b', 'a', 'c'])
+obj2
+
+obj2['a']
+
+
+obj2['d'] = 6
+obj2[['c', 'a', 'd']]
+
+obj2[obj2 > 0]
+obj2 * 2
+
+np.exp(obj2)
+'b' in obj2
+
+sdata = {'Ohio': 35000, 'Texas': 71000, 'Oregon': 16000, 'Utah': 5000}
+obj3 = Series(sdata)
+obj3
+
+states = ['California', 'Ohio', 'Oregon', 'Texas']
+obj4 = Series(sdata, index=states)
+obj4
+pd.isnull(obj4)
+pd.notnull(obj4)
+obj4.isnull()
+obj3 + obj4
+obj4.name = 'population'
+obj4.index.name = 'state'
+obj4
+obj.index = ['Bob', 'Steve', 'Jeff', 'Ryan']
+
+#dataFrame
+data = {'state': ['Ohio', 'Ohio', 'Ohio', 'Nevada', 'Nevada'],
+        'year': [2000, 2001, 2002, 2001, 2002],
+        'pop': [1.5, 1.7, 3.6, 2.4, 2.9]}
+frame = DataFrame(data)
+DataFrame(data, columns=['year', 'state', 'pop'])
+
+frame2 = DataFrame(data, columns=['year', 'state', 'pop', 'debt'],
+                   index=['one', 'two', 'three', 'four', 'five'])
+frame2
+frame2['state'] 
+frame2.year
+frame2.ix['three']
+frame2['debt'] = 16.5
+frame2
+
+frame2['debt'] = np.arange(5.)
+frame2
+
+val = Series([-1.2, -1.5, -1.7], index=['two', 'four', 'five'])
+frame2['debt'] = val
+frame2
+
+frame2['eastern'] = frame2.state == 'Ohio'
+frame2
+del frame2['eastern']
+frame2.columns
+
+pop = {'Nevada': {2001: 2.4, 2002: 2.9},
+       'Ohio': {2000: 1.5, 2001: 1.7, 2002: 3.6}}
+       
+frame3 = DataFrame(pop)
+frame3
+
+frame3.T
+DataFrame(pop, index=[2001, 2002, 2003])
+
+pdata = {'Ohio': frame3['Ohio'][:-1],
+         'Nevada': frame3['Nevada'][:2]}
+DataFrame(pdata)
+
+frame3.index.name = 'year'; frame3.columns.name = 'state'
+frame3
+frame3.values
+
+obj = Series(range(3), index=['a', 'b', 'c'])
+index = obj.index
+index
+index[1:]
+index = pd.Index(np.arange(3))
+obj2 = Series([1.5, -2.5, 0], index=index)
+obj2.index is index
+
+'Ohio' in frame3.columns
+2003 in frame3.index
+#基本功能
+obj = Series([4.5, 7.2, -5.3, 3.6], index=['d', 'b', 'a', 'c'])
+obj
+obj2 = obj.reindex(['a', 'b', 'c', 'd', 'e'])
+obj2
+obj.reindex(['a', 'b', 'c', 'd', 'e'], fill_value=0)
+
+obj3 = Series(['blue', 'purple', 'yellow'], index=[0, 2, 4])
+obj3.reindex(range(6), method='ffill')
+
+
+frame = DataFrame(np.arange(9).reshape((3, 3)), index=['a', 'c', 'd'],
+                  columns=['Ohio', 'Texas', 'California'])
+frame
