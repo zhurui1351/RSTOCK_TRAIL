@@ -1,5 +1,5 @@
 rm(list = ls(all=T))
-path = 'd:/lottery.csv'
+path = 'd:/lottery/lottery.csv'
 data = read.csv(path)
 data$时间 = paste(data$时间,':00',sep='')
 data$时间 = as.POSIXct(data$时间)
