@@ -33,27 +33,41 @@ for t in ts:
     sql_all = sql_all + ' union all ' + s 
     print(tbname)
 
-all_tbs = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dap' AND table_name LIKE 'h%'"
-cursor = conn.cursor()
-cursor.execute(all_tbs)
-results = cursor.fetchall()
-sql_all = ''
-for r in results:
-    tbname = r[0]
-    s = 'select * from ' + tbname
-    sql_all = sql_all + ' union all ' + s 
+#all_tbs = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dap' AND table_name LIKE 'h%'"
+#cursor = conn.cursor()
+#cursor.execute(all_tbs)
+#results = cursor.fetchall()
+#sql_all = ''
+#for r in results:
+#    tbname = r[0]
+#    s = 'select * from ' + tbname
+#    sql_all = sql_all + ' union all ' + s 
+#
+#alldata = 'select * from alldata where pointid = "278657"'
+#cursor = conn.cursor()
+#cursor.execute(alldata)
 
-alldata = 'select * from alldata where pointid = "278657"'
-cursor = conn.cursor()
-cursor.execute(alldata)
+pointdata = "SELECT a.*,b.*  FROM alldata a LEFT JOIN ptai b ON  a.PointID = b.PointID  WHERE a.pointid in ('85475469','11813009') and comment = '总有功功率'"
+pointdata = "SELECT a.*,b.*  FROM alldata a LEFT JOIN ptai b ON  a.PointID = b.PointID  WHERE  comment = '总有功功率'"
 
-pointdata = "SELECT a.*,b.*  FROM alldata a LEFT JOIN ptai b ON  a.PointID = b.PointID  WHERE a.pointid = '278657' limit 1000"
 pdata =  sql.read_sql(pointdata,conn)
 conn.close()
 
-subpdata = pdata[['ADate','ATime','Comment','fValue']]
-ptable = subpdata.pivot_table(index=['ADate','ATime'],columns=['Comment'],values='fValue')
+subpdata = pdata[['PointID','BayName','ADate','ATime','fValue']]
+subpdata = subpdata.iloc[:,1:6]
+tp = pd.timedelta_range(start='0 days', end='1 days', freq='5T')
+tp = tp[0:(len(tp)-1)]
+
+ptable = subpdata.pivot_table(index=['PointID','BayName','ADate'],columns=['ATime'],values='fValue')
+ptable_tp = ptable.reindex(columns=tp)
+ptable_flat = ptable_tp.reset_index()
+
+kw_names = ['kw'+str(i) for i in range(1,289)]
+names = ptable_flat.columns[0:3]
+names = names.tolist() + kw_names
+
+ptable_flat.columns = names
 #http://python.jobbole.com/81212/
 
-
+ptable_flat[ptable_flat.PointID=='11813009' & ptable_flat.ADate=='2016-09-27']
 

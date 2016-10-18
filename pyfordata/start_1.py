@@ -8,6 +8,8 @@ from IPython.core.pylabtools import figsize, getfigs
 from pylab import *
 from numpy import *
 import pandas as pd
+from pandas import DataFrame,Series
+
 
 ## 以上库是在执行ipython --pylab 启动时导入的包
 import json
@@ -49,7 +51,6 @@ from collections import Counter
 counts = Counter(time_zones)
 counts.most_common(10)
 
-from pandas import DataFrame,Series
 frame = DataFrame(records)
 tz_counts = frame['tz'].value_counts()
 #填补空值
@@ -710,3 +711,29 @@ df.fillna(method='ffill')
 df.fillna(method='ffill', limit=2)
 data = Series([1., NA, 3.5, NA, 7])
 data.fillna(data.mean())
+#层次化索引
+data = Series(np.random.randn(10),
+              index=[['a', 'a', 'a', 'b', 'b', 'b', 'c', 'c', 'd', 'd'],
+                     [1, 2, 3, 1, 2, 3, 1, 2, 2, 3]])
+data
+data.index
+data['b']
+data[['b','d']]
+data.ix[['b', 'd']]
+data[:, 2]
+
+data.unstack()
+frame = DataFrame(np.arange(12).reshape((4, 3)),
+                  index=[['a', 'a', 'b', 'b'], [1, 2, 1, 2]],
+                  columns=[['Ohio', 'Ohio', 'Colorado'],
+                           ['Green', 'Red', 'Green']])
+frame
+
+frame.index.names = ['key1', 'key2']
+frame.columns.names = ['state', 'color']
+frame
+frame['Ohio']
+frame['Colorado']
+
+#reshape data
+#时间序列
