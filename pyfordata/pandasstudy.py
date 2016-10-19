@@ -6,6 +6,8 @@ Created on Thu Oct 13 13:12:47 2016
 """
 
 import pandas as pd
+from numpy import *
+import operator
 
 pricedata =  pd.read_csv('D:/data/collectdata/index/DJI.txt',sep=' ')
 pricedata.columns = ['date','open','high','low','close','volume','adjusted']
@@ -26,4 +28,5 @@ pricedata[['open','close']]
 
 #行列出局
 pricedata.iloc[0:3,2:4]
+
 
