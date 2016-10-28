@@ -1,9 +1,12 @@
+require(RCurl)
+require(XML)
 # 判断url是否存在
-url.exists(url="www.baidu.com") # 判断url是否存在
+
+url.exists(url="http://saishi.zgzcw.com/soccer/league/36/2013-2014/") # 判断url是否存在
 # [1] TRUE
 d <- debugGatherer() #收集调试信息
 # verbose = TRUE 这时候，d$value()值是会叠加的
-tmp <- getURL(url="www.baidu.com", debugfunction = d$update, verbose = TRUE)  
+tmp <- getURL(url="http://saishi.zgzcw.com/soccer/league/36/2013-2014/", debugfunction = d$update, verbose = TRUE)  
 
 names(d$value())
 
@@ -15,7 +18,7 @@ d$value() # 清除之后全部为空
 # 查看服务器返回的头信息
 ## 列表形式
 h <- basicHeaderGatherer()
-txt <- getURL(url="http://www.baidu.com", headerfunction = h$update)
+txt <- getURL(url="http://saishi.zgzcw.com/soccer/league/36/2013-2014/", headerfunction = h$update)
 names(h$value())
 h$value()
 
