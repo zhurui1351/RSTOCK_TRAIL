@@ -29,7 +29,7 @@ for(season in seasons)
     {
       hs = getHTMLLinks(hrefs[[i]])
       context = readHTMLList(trs[[i]])
-      r = data.frame(时间=context[1],主队=context[2],比分=context[3],客队=context[3],半场=context[4],
+      r = data.frame(时间=context[1],主队=context[2],比分=context[3],客队=context[4],半场=context[5],
                      亚=hs[1],欧=hs[2],析=hs[3],round=round,season=season)
       result = rbind(result,r)
     }
@@ -81,20 +81,19 @@ fault_eur = c()
 result_eur = data.frame()
 urls = result$欧
 ids = result$id
-for(i in 1:length(urls))
+for(i in 2248:length(urls))
 {
-#  Sys.sleep(5)
+  Sys.sleep(1)
   bug = 
     tryCatch({
-  url = urls[i]
-  if(is.na(url)) next
-  id = ids[i]
-  print(i)
-  print(url)
-  webpage <- getURL(url,encoding = "utf8")
-  webpage = enc2utf8(webpage)
-  tables = readHTMLTable(webpage,header = F)
-  t1 = tables[[3]]},error = function(e){0})
+      url = urls[i]
+      if(is.na(url)) next
+      id = ids[i]
+      webpage <- getURL(url,encoding = "utf8")
+      webpage = enc2utf8(webpage)
+      tables = readHTMLTable(webpage,header = F,encoding='utf8')
+      t1 = tables[[3]]
+    },error=function(e){0})
   if(is.null(t1) || nrow(t1) ==0) next
   if(bug ==0 ){
     fault_eur = c(fault_eur,i)
@@ -104,6 +103,7 @@ for(i in 1:length(urls))
                    '最新概_主','最新概_平','最新概_客','最新凯利_主','最新凯利_平' ,'最新凯利_客','赔付率','历史')
   t1$序号 = id
   result_eur = rbind(result_eur,t1)
-  
+  print(url)
+  print(i)
 }
 write.csv(result_eur,file='d:/football_eur_lottery.csv',row.names=F)
