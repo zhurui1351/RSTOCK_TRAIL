@@ -103,3 +103,50 @@ counts =counts[order(counts,decreasing = F)]
 maxes = unlist(lapply(counts, get_extrem_gap,result)) / (60 * 24)
 mins = unlist(lapply(counts, get_extrem_gap,result,min))
 data.frame(counts,maxes,mins)
+
+#读入数据
+require(RMySQL)
+path = 'd:/football.csv'
+games = read.csv(path)
+games = games[,c('id','season','round','时间','主队','比分','客队','半场')]
+
+score = as.character(games$比分)
+score = strsplit(score,':')
+pre_score = sapply(score,function(x) as.numeric(x[1]))
+aft_score = sapply(score,function(x) as.numeric(x[2]))
+games$主进球 = pre_score
+games$客进球 = aft_score
+
+
+score = as.character(games$半场)
+score = strsplit(score,':')
+pre_score = sapply(score,function(x) as.numeric(x[1]))
+aft_score = sapply(score,function(x) as.numeric(x[2]))
+games$半场主进球 = pre_score
+games$半场客进球 = aft_score
+games = na.omit(games)
+
+
+path = 'd:/football_asia_lottery.csv'
+asia = read.csv(path)
+
+path = 'd:/football_eur_lottery.csv'
+eur = read.csv(path)
+host = '127.0.0.1'
+username="root"
+password = '123456'
+port = 3306
+dbname = 'football'
+conn = dbConnect(MySQL(), dbname = dbname, username=username, password=password,host=host,port=port)
+dbSendQuery(conn,'SET NAMES gbk')
+dbWriteTable(conn,'games',games,overwrite=T,row.names = F)
+dbWriteTable(conn,'asia_lottery',asia,overwrite=T,row.names = F)
+dbWriteTable(conn,'eur_lottery',eur,overwrite=T,row.names = F)
+
+
+dbDisconnect(conn)
+
+dbSendQuery(conn,'SET NAMES gbk')
+games = dbReadTable(conn,'games')
+eur =  dbReadTable(conn,'eur_lottery')
+asia = dbReadTable(conn,'asia_lottery')
