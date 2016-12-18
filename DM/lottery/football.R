@@ -150,3 +150,23 @@ dbSendQuery(conn,'SET NAMES gbk')
 games = dbReadTable(conn,'games')
 eur =  dbReadTable(conn,'eur_lottery')
 asia = dbReadTable(conn,'asia_lottery')
+
+bigtable = merge(games,eur,by.x = 'id',by.y = '序号')
+bigtable = merge(bigtable,asia,by.x='id',by.y='序号')
+
+subgames = subset(games,season == '2013-2014')
+x = aggregate(subgames$比分,by = list(subgames$比分),length)
+total=sum(x$x)
+x$ratio = x$x / total
+colnames(x) = c('fen','num','ratio')
+score = as.character(x$fen)
+score = strsplit(score,':')
+pre_score = sapply(score,function(x) as.numeric(x[1]))
+aft_score = sapply(score,function(x) as.numeric(x[2]))
+x$fst = pre_score
+x$sec = aft_score
+x$total_fen = x$fst + x$sec
+xx = aggregate(x$num,by = list(x$total_fen),sum)
+xx$ratio = xx$x / nrow(subgames)
+xx$cum = cumsum(xx$ratio)
+

@@ -1,7 +1,7 @@
 rm(list=ls(all=T))
-source('D:/Rcode/code/RSTOCK_TRAIL/globaltool/include.R')
-source('D:/Rcode/code/RSTOCK_TRAIL/globaltool/readdata.R')
-sourceDir('D:/Rcode/code/RSTOCK_TRAIL/trade/SNPACKAGE/R',encoding='utf8')
+source('D:/tradingSystem/Rcode/code/RSTOCK_TRAIL/globaltool/include.R')
+source('D:/tradingSystem/Rcode/code/RSTOCK_TRAIL/globaltool/readdata.R')
+sourceDir('D:/tradingSystem/Rcode/code/RSTOCK_TRAIL/trade/SNPACKAGE/R',encoding='utf8')
 
 dou1 = read_dou1_d_wind()
 
