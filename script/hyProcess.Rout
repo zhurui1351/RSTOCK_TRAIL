@@ -1,6 +1,6 @@
 
-R version 3.2.1 (2015-06-18) -- "World-Famous Astronaut"
-Copyright (C) 2015 The R Foundation for Statistical Computing
+R version 3.3.2 (2016-10-31) -- "Sincere Pumpkin Patch"
+Copyright (C) 2016 The R Foundation for Statistical Computing
 Platform: x86_64-w64-mingw32/x64 (64-bit)
 
 R是自由软件，不带任何担保。
@@ -45,4 +45,4 @@ R是个合作计划，有许多人为之做出了贡献.
 > 
 > proc.time()
 用户 系统 流逝 
-0.31 0.01 0.31 
+0.29 0.04 1.78 

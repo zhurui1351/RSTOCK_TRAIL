@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd d:/Rcode/code/RSTOCK_TRAIL/script
+cd D:/tradingSystem/Rcode/code/RSTOCK_TRAIL/script
 R CMD BATCH hyProcess.R
 
 cd d:/data/stock
